@@ -501,7 +501,8 @@ def main():
             manager.start(manager.device)
         if args.hosted:
             def host_closed():
-                sys.stdin.buffer.read()
+                while os.read(sys.stdin.fileno(), 1):
+                    pass
                 manager.cleanup()
                 server.shutdown()
             threading.Thread(target=host_closed, daemon=True).start()

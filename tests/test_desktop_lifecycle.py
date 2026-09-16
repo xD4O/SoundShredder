@@ -32,7 +32,9 @@ def test_real_process_close_reopen_duplicate_and_crash_recovery(tmp_path):
     (home / "desktop.json").write_text('{"pid":123,"url":"https://example.invalid/#old"}')
     (home / "desktop.lock").write_bytes(b"0")
     script = Path(bootstrap.__file__).resolve()
-    command = [getattr(sys, "_base_executable", sys.executable), str(script), "--home", str(home), "--no-browser"]
+    python = getattr(sys, "_base_executable", sys.executable) if os.name == "nt" else sys.executable
+    trace = "import faulthandler,runpy,sys; faulthandler.dump_traceback_later(10); sys.argv[0]=" + repr(str(script)) + "; runpy.run_path(sys.argv[0],run_name='__main__')"
+    command = [python, "-c", trace, "--home", str(home), "--no-browser"]
     flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
     ids = []
     for cycle in range(3):
