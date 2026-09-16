@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+data/
+*.log
+artifacts/
+SoundShredder.zip
+SoundShredder-Mac.zip
+SHA256SUMS.txt
+.env
+.env.*
+!.env.example

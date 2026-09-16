@@ -1,0 +1,99 @@
+SOUNDSHREDDER FOR MAC
+Separate dialogue, music and effects. Keep only the sound you want.
+
+QUICK START
+1. Extract the ZIP by double-clicking it in Finder.
+2. Move the entire SoundShredder folder somewhere writable, such as Documents.
+3. Install Python 3.11 using the "macOS 64-bit universal2 installer":
+   https://www.python.org/downloads/release/python-3119/
+   This installer works on both Apple Silicon and Intel Macs.
+4. Double-click "Start SoundShredder.command" inside the extracted folder.
+   First launch downloads and installs the local Python packages automatically.
+5. Your default browser opens http://127.0.0.1:7860
+   Drop an audio/video file, choose what to keep, and click Separate audio.
+6. Listen to the separate tracks, adjust their levels, and download your mix.
+
+Keep the Terminal window open while using the app. Press Control+C to stop it.
+To use it again, double-click the same launcher. Setup is reused automatically.
+Keep the whole folder together; the launcher needs the other files beside it.
+
+REQUIREMENTS AND PERFORMANCE
+- macOS 12 Monterey or newer.
+- Apple Silicon (M-series) or Intel processor; the installer detects which.
+- Python 3.11 is recommended for this Mac package. Intel: Python 3.10-3.11.
+  Apple Silicon: Python 3.10-3.13. Use native Python, without Rosetta.
+- This Mac version processes on CPU. Auto selects CPU on Mac.
+  Apple Metal/MPS GPU acceleration is not included in this version.
+- CPU processing can take several minutes, even for short clips.
+- Internet is needed for initial installation and the first separation.
+  The model download is approximately 426 MB. Later runs can work offline.
+- The Python runtime is not bundled in this ZIP. No Homebrew, Xcode, separate
+  FFmpeg installation, cloud subscription, or API key is needed.
+
+IF MACOS DOES NOT OPEN THE LAUNCHER
+After extracting this trusted package, try Control-click > Open in Finder.
+You can also launch it directly from Terminal:
+1. Type "bash " (including the trailing space, without quotes).
+2. Drag "Start SoundShredder.command" from Finder into Terminal.
+3. Press Return.
+This also works if your ZIP extractor did not preserve executable permissions.
+Do not run the launcher with sudo.
+
+TROUBLESHOOTING
+- Python not found: install the Python 3.11 universal2 .pkg linked above,
+  then reopen the launcher. Python 3.14+ is not supported by this package.
+- Certificate verification failed after installing Python from python.org:
+  open Applications > Python 3.11 > Install Certificates.command, then retry.
+- Intel Mac: setup automatically uses PyTorch 2.2.2 and NumPy 1.26.4.
+  Do not manually upgrade those packages; newer PyTorch wheels do not support
+  Intel macOS. requirements-mac-intel.txt keeps the compatible versions together.
+  Python 3.12 is also unsuitable for Intel here: the model's disabled compiler
+  calls still trigger a Python-version guard in that older PyTorch release.
+- Rosetta message: turn off "Open using Rosetta" in Terminal's Get Info panel,
+  install native universal2 Python, and start again from a fresh extracted ZIP.
+- Incomplete or incompatible environment: stop the app, then extract a fresh
+  copy of the ZIP to a new folder and launch it. Your old data remains in the
+  original folder; move any finished exports somewhere safe before discarding it.
+- Model download failed: check the internet connection and retry separation.
+- Browser did not open: visit http://127.0.0.1:7860 while Terminal is running.
+- Need another port: in Terminal, cd to the extracted folder and run:
+  .venv/bin/python app.py --port 7861
+
+YOUR FILES
+Audio stays on your computer. Uploads, stems and mixes are saved under data/
+inside this folder. The model is cached in ~/.cache/bandit-infer/.
+Delete this session in the UI removes that session's local copies and outputs.
+Save the files you want to keep elsewhere first. Original source files are not
+overwritten.
+
+MANUAL SETUP (OPTIONAL)
+In Terminal, cd to the extracted SoundShredder folder, then run:
+  python3.11 setup_runtime.py --device cpu
+  .venv/bin/python app.py
+
+Full feature documentation: README.md
+What has and has not been tested: VERIFICATION.md
+
+LISTEN TO SEPARATE TRACKS
+After processing, scroll to Listen to each layer. Dialogue, Music, Sound effects,
+and Removed sounds each have their own waveform, player, volume and download.
+Playing one pauses the others. Keep playback position when switching tracks
+lets you compare the same moment; turn it off for independent positions.
+For Bubble FX, click Prepare isolated tracks once to generate the other three
+tracks from the original audio. It uses CPU on Mac and keeps your cleaned mix
+unchanged. Preview volume does not affect exported files.
+
+BUBBLE FX (EXPERIMENTAL)
+Choose Bubble FX, select the bubble type, and optionally limit cleanup to
+a time range (for example, 7 to 11 seconds). Start at 85% reduction.
+Listen to Removed sound before using the cleaned mix: similar effects can
+be reduced too. Lower reduction or narrow the range, then Update mix for a
+single pass. For stubborn Water bubbles, enable Aggressive multi-pass and
+start with 2 passes; 3 and 4 are stronger and take longer on CPU. Each pass
+analyzes the preceding cleaned audio. Removed sounds includes every pass.
+Changing passes, sound type, or multi-pass strength/timing requires a new run.
+Clean up again reuses the saved source in a new session and keeps prior results.
+This preset uses CPU on Mac and downloads a separate 1.2 GB AudioSep model
+on first use to ~/.cache/soundshredder/audiosep/. It then works offline.
+Outputs are 32-bit float WAV, preserving decoded samples outside your selected
+range exactly. No extra Python packages or accounts are needed.

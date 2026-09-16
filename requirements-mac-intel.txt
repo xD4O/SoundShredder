@@ -1,0 +1,6 @@
+# Intel Mac wheels stop at PyTorch 2.2.2; its NumPy bridge needs NumPy 1.x.
+# Bandit calls torch.compile(disable=True), which still requires Python <=3.11 here.
+-r requirements.txt
+torch==2.2.2
+numpy==1.26.4
+scipy==1.14.1

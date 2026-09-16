@@ -1,0 +1,8 @@
+fastapi>=0.115,<1
+uvicorn>=0.34,<1
+python-multipart>=0.0.20,<1
+numpy>=1.26,<3
+scipy>=1.14,<2
+soundfile>=0.13,<1
+imageio-ffmpeg>=0.6,<1
+bandit-infer @ https://github.com/openmirlab/bandit-infer/archive/7ec03cb568811958db65a96a10fdb8879922b2ac.zip

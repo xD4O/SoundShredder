@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080c13">
+  <meta name="author" content="cyr4x">
+  <title>SoundShredder — Your sound. In focus.</title>
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css?v=6">
+  <script src="/static/app.js?v=5" defer></script>
+</head>
+<body>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-wave" viewBox="0 0 24 24"><path d="M3 10v4m4-8v12m5-16v20m5-16v12m4-8v4"/></symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M4 16v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></symbol>
+    <symbol id="icon-chip" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3m6-3v3M9 19v3m6-3v3M2 9h3m-3 6h3m14-6h3m-3 6h3"/></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="icon-speech" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></symbol>
+    <symbol id="icon-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 9l12-2"/><ellipse cx="6" cy="18" rx="3" ry="3"/><ellipse cx="18" cy="16" rx="3" ry="3"/></symbol>
+    <symbol id="icon-effects" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-13h-8l1-7Z"/></symbol>
+    <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M20 8a8 8 0 1 0 0 8M20 3v5h-5"/></symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></symbol>
+    <symbol id="icon-folder" viewBox="0 0 24 24"><path d="M3 7V5h6l3 3h9v12H3V7Z"/></symbol>
+    <symbol id="icon-spark" viewBox="0 0 24 24"><path d="m12 3 2.3 6.7L21 12l-6.7 2.3L12 21l-2.3-6.7L3 12l6.7-2.3L12 3Z"/></symbol>
+    <symbol id="icon-x" viewBox="0 0 24 24"><path d="m4 3 12.5 18H20L7.5 3H4Zm0 18 7.1-8.1M20 3l-7.1 8.1"/></symbol>
+    <symbol id="icon-instagram" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="icon-youtube" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3V9Z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="icon-external" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>
+  </svg>
+  <a class="skip-link" href="#main">Skip to audio workspace</a>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="SoundShredder home"><img src="/static/icon.svg" alt="" width="37" height="37"><span>SoundShredder<small>THE AUDIO WORKSPACE</small></span></a>
+    <div class="nav-label">CREATE</div>
+    <button class="nav-item selected" id="new-session"><svg class="icon"><use href="#icon-wave"/></svg><span>Audio separator</span><span class="nav-arrow">↗</span></button>
+    <div class="history-heading"><span class="nav-label">RECENT SESSIONS</span><button id="refresh-history" class="icon-button" aria-label="Refresh recent sessions"><svg class="icon"><use href="#icon-refresh"/></svg></button></div>
+    <div id="history" class="history"><p class="muted small">Your next great sound starts here.<br>Completed sessions appear below.</p></div>
+    <div class="sidebar-bottom"><div class="privacy-icon"><svg class="icon"><use href="#icon-shield"/></svg></div><strong>Your sound stays yours.</strong><p>Processed on your computer.<br>No uploads to the cloud.</p><div class="privacy-status"><span class="local-dot"></span> PRIVATE BY DESIGN</div></div>
+    <div class="sidebar-version"><span>SOUNDSHREDDER</span><span>V1.0</span></div>
+  </aside>
+
+  <div class="workspace">
+    <header class="topbar"><span class="maker-credit">Made by <a href="https://higgsfield.ai/@cyr4x" target="_blank" rel="noopener noreferrer" aria-label="cyr4x on Higgsfield (opens in a new tab)">cyr4x <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></span><div class="topbar-right"><span class="engine-label">LOCAL AUDIO ENGINES</span><span class="local-badge"><i></i> Running locally</span></div></header>
+    <main id="main">
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy"><div class="eyebrow"><span></span> LESS NOISE. MORE POSSIBILITY.</div><h1 id="page-title">Your sound.<br><span>In focus.</span></h1><p>Unmix the moment. Separate dialogue, music, and effects.<br class="desktop-break"> Keep exactly what your story needs.</p><div class="hero-tags"><span>One file</span><b>→</b><span>Three layers</span><b>→</b><span>Creative control</span></div></div>
+        <div class="signal-art" aria-hidden="true"><div class="signal-aura"></div>
+          <svg class="signal-visual" viewBox="0 0 500 250" fill="none">
+            <defs><linearGradient id="signal-gradient" x1="38" y1="0" x2="448" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#64f1d2" stop-opacity="0"/><stop offset=".28" stop-color="#6affd9"/><stop offset=".68" stop-color="#66d8ff"/><stop offset="1" stop-color="#9891ff" stop-opacity="0"/></linearGradient><radialGradient id="orb-glow"><stop stop-color="#63f5d3" stop-opacity=".14"/><stop offset="1" stop-color="#63f5d3" stop-opacity="0"/></radialGradient><filter id="signal-glow" x="-50%" y="-100%" width="200%" height="300%"><feGaussianBlur stdDeviation="3"/></filter></defs>
+            <circle cx="255" cy="125" r="118" fill="url(#orb-glow)"/>
+            <g class="signal-orbits" stroke="#4d8b92"><ellipse cx="255" cy="125" rx="148" ry="81" transform="rotate(-24 255 125)" opacity=".22"/><ellipse cx="255" cy="125" rx="148" ry="81" transform="rotate(24 255 125)" opacity=".16"/><circle cx="255" cy="125" r="92" opacity=".17"/><circle cx="255" cy="125" r="115" stroke-dasharray="2 9" opacity=".18"/></g>
+            <path d="M25 125h450" stroke="#7ab6bc" stroke-opacity=".14" stroke-dasharray="3 6"/>
+            <g class="signal-line" stroke="url(#signal-gradient)" stroke-linecap="round" stroke-width="3"><path id="hero-signal" d="M40 123v4m9-8v12m9-15v18m9-20v22m9-12v4m9-14v24m9-29v34m9-45v56m9-66v76m9-68v60m9-26v32m9-51v70m9-104v136m9-151v166m9-149v134m9-98v72m9-34v28m9-76v100m9-111v120m9-100v80m9-52v30m9-21v10m9-34v54m9-59v64m9-46v28m9-18v8m9-15v22m9-35v48m9-47v46m9-30v14m9-19v24m9-24v24m9-21v18m9-13v8m9-7v6m9-7v8m9-7v6m9-4v2m9-4v6m9-5v4m9-3v2m9-3v4m9-3v2m9-2v2"/><use href="#hero-signal" filter="url(#signal-glow)" opacity=".5"/></g>
+            <g fill="#91b5bb" font-family="monospace" font-size="8" letter-spacing="2"><text x="41" y="45">INPUT / MIXED</text><text x="330" y="211">OUTPUT / ISOLATED</text></g>
+            <circle cx="372" cy="49" r="3" fill="#7cf9de"/><circle cx="133" cy="195" r="2" fill="#8faaff"/><path d="M35 58h24m-24 0v17m419 109v17h-24" stroke="#7bb2bd" stroke-opacity=".4"/>
+          </svg><div class="signal-caption"><span class="signal-dot"></span> CLARITY, LAYER BY LAYER</div>
+        </div>
+      </section>
+
+      <div id="error" class="notice error" role="alert" hidden></div>
+      <div class="section-kicker"><span>THE WORKSPACE</span><span>01 — IMPORT & CONFIGURE</span></div>
+      <div class="main-grid">
+        <section class="panel source-panel" aria-labelledby="source-heading">
+          <div class="panel-heading"><h2 id="source-heading"><span class="step">01</span> Bring your audio</h2><span class="mini-label">YOUR ORIGINAL, PRESERVED</span></div>
+          <label id="dropzone" class="dropzone" for="file-input">
+            <input id="file-input" type="file" accept=".wav,.mp3,.flac,.m4a,.aac,.ogg,.opus,.aif,.aiff,.wma,.mp4,.mov,.mkv,.webm">
+            <span class="drop-corner top-left"></span><span class="drop-corner top-right"></span><span class="drop-corner bottom-left"></span><span class="drop-corner bottom-right"></span>
+            <span class="upload-orbit" aria-hidden="true"><span class="upload-icon"><svg class="icon"><use href="#icon-upload"/></svg></span></span>
+            <strong>Drop a file. Find your sound.</strong><span class="browse-copy">Drag your audio here, or <u>browse files</u></span>
+            <small>WAV · MP3 · FLAC · M4A · VIDEO <span>500 MB max / 10 min</span></small>
+          </label>
+          <div id="source-selected" class="source-selected" hidden>
+            <div class="file-row"><div class="file-icon"><svg class="icon"><use href="#icon-wave"/></svg></div><div class="file-details"><strong id="file-name"></strong><span id="file-meta"></span></div><button id="change-file" class="text-button">Change file ↗</button></div>
+            <div class="waveform-wrap"><canvas id="source-wave" aria-label="Source waveform"></canvas><span id="wave-label">SOURCE AUDIO</span></div>
+            <audio id="original-audio" controls preload="metadata" aria-label="Original audio preview"></audio>
+          </div>
+          <div class="source-foot"><svg class="icon"><use href="#icon-folder"/></svg><span>Video works too. We’ll take care of the audio.</span></div>
+        </section>
+        <section class="panel compute-panel" aria-labelledby="compute-heading">
+          <div class="panel-heading"><h2 id="compute-heading"><span class="step">02</span> Power your session</h2><svg class="icon panel-icon"><use href="#icon-chip"/></svg></div>
+          <label class="field-label" for="device">PROCESSING DEVICE</label>
+          <div class="device-select"><select id="device"><option value="auto">Auto · best available device</option><option value="cuda">NVIDIA GPU · faster</option><option value="cpu">CPU · no GPU required</option></select><svg class="select-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></div>
+          <div class="hardware"><span class="hardware-icon"><svg class="icon"><use href="#icon-chip"/></svg></span><div><strong id="hardware-name">Checking your hardware…</strong><p id="hardware-help">CPU mode is always available.</p></div><span class="hardware-led" aria-hidden="true"></span></div>
+          <label class="check-label"><input type="checkbox" id="cpu-fallback" checked><span>Switch to CPU if GPU memory fills up</span></label>
+          <div class="compute-note"><span class="note-dot"></span><p>First use downloads the model. Then you’re ready to work offline. CPU takes longer.</p></div>
+        </section>
+      </div>
+      <section class="panel mix-panel" aria-labelledby="mix-heading">
+        <div class="panel-heading"><h2 id="mix-heading"><span class="step">03</span> Make it your mix</h2><span class="mini-label">THREE LAYERS. TOTAL CONTROL.</span></div>
+        <div class="preset-row" role="group" aria-label="Quick presets"><span>START WITH A PRESET</span><div class="preset-options"><button class="preset active" data-preset="no-music" aria-pressed="true">Remove music</button><button class="preset" data-preset="dialogue" aria-pressed="false">Dialogue only</button><button class="preset" data-preset="effects" aria-pressed="false">Effects only</button><button class="preset" data-preset="no-effects" aria-pressed="false">Remove effects</button><button class="preset" data-preset="no-dialogue" aria-pressed="false">Remove dialogue</button><button class="preset bubble-preset" data-preset="bubble" aria-pressed="false">Bubble FX <small>BETA</small></button></div></div>
+        <div id="bubble-settings" class="bubble-settings" hidden>
+          <div class="bubble-intro"><span class="bubble-orb" aria-hidden="true">◌</span><div><div class="eyebrow">TARGET A SOUND · BETA</div><h3>Less bubble. More scene.</h3><p>Reduce bubble-like sounds in the original mix. Similar pops or liquid effects may also change—check the removed-sound preview.</p></div></div>
+          <div class="bubble-grid">
+            <div><label class="field-label" for="bubble-type">SOUND TO TARGET</label><select id="bubble-type"><option value="water">Water bubbles</option><option value="popping">Bubbling & popping</option><option value="gurgling">Liquid gurgle</option><option value="cartoon">Cartoon boing</option></select><p class="muted small">Changing the sound type requires a new separation.</p></div>
+            <div><div class="level-label"><label for="bubble-strength">REDUCTION</label><output id="bubble-strength-value" for="bubble-strength">85%</output></div><input id="bubble-strength" class="level" type="range" min="0" max="100" value="85" aria-label="Bubble reduction"><p class="muted small">Lower it if wanted effects begin to disappear.</p></div>
+          </div>
+          <div id="bubble-multipass-panel" class="bubble-multipass">
+            <div><label class="check-label"><input id="bubble-multipass" type="checkbox" aria-describedby="bubble-pass-help"><span>Aggressive multi-pass <small>WATER BUBBLES</small></span></label><p id="bubble-pass-help" class="muted small">Catch stubborn bubbles by analyzing the cleaned audio again. Each pass applies your reduction level. Extra passes take longer and may reduce wanted effects.</p></div>
+            <div class="bubble-pass-count"><label class="field-label" for="bubble-passes">CLEANUP PASSES</label><select id="bubble-passes" disabled><option value="2">2 passes · Start here</option><option value="3">3 passes · Stronger</option><option value="4">4 passes · Maximum</option></select></div>
+          </div>
+          <div class="bubble-range-row"><label class="check-label"><input id="bubble-range" type="checkbox"><span>Limit cleanup to a time range</span></label><div class="bubble-times"><label for="bubble-start">From <input id="bubble-start" type="number" min="0" step="0.01" value="7" disabled> sec</label><span aria-hidden="true">→</span><label for="bubble-end">To <input id="bubble-end" type="number" min="0" step="0.01" value="11" disabled> sec</label></div></div>
+          <p class="bubble-foot">Audio outside your selected range stays unchanged. Works on CPU or NVIDIA GPU; first use downloads a separate 1.2 GB model.</p>
+        </div>
+        <div class="tracks">
+          <article class="track speech" data-stem="speech"><div class="track-top"><span class="track-icon"><svg class="icon"><use href="#icon-speech"/></svg></span><span class="track-channel">CH / 01</span><label class="toggle"><input id="keep-speech" type="checkbox" checked aria-label="Keep dialogue"><span></span></label></div><div class="track-title"><h3>Dialogue</h3><span class="track-state">KEEP</span></div><p>Voices, spoken words & vocal detail</p><div class="track-wave" aria-hidden="true" data-wave="speech"></div><div class="level-label"><label for="level-speech">KEEP IN MIX</label><output id="value-speech" for="level-speech">100%</output></div><input id="level-speech" class="level" type="range" min="0" max="100" value="100" aria-label="Dialogue volume"></article>
+          <article class="track music removed" data-stem="music"><div class="track-top"><span class="track-icon"><svg class="icon"><use href="#icon-music"/></svg></span><span class="track-channel">CH / 02</span><label class="toggle"><input id="keep-music" type="checkbox" aria-label="Keep music"><span></span></label></div><div class="track-title"><h3>Music</h3><span class="track-state">REMOVE</span></div><p>The score, soundtrack & background music</p><div class="track-wave" aria-hidden="true" data-wave="music"></div><div class="level-label"><label for="level-music">REMOVE FROM MIX</label><output id="value-music" for="level-music">0%</output></div><input id="level-music" class="level" type="range" min="0" max="100" value="0" aria-label="Music volume"></article>
+          <article class="track effects" data-stem="effects"><div class="track-top"><span class="track-icon"><svg class="icon"><use href="#icon-effects"/></svg></span><span class="track-channel">CH / 03</span><label class="toggle"><input id="keep-effects" type="checkbox" checked aria-label="Keep sound effects"><span></span></label></div><div class="track-title"><h3>Sound effects</h3><span class="track-state">KEEP</span></div><p>Impacts, movement & scene ambience</p><div class="track-wave" aria-hidden="true" data-wave="effects"></div><div class="level-label"><label for="level-effects">KEEP IN MIX</label><output id="value-effects" for="level-effects">100%</output></div><input id="level-effects" class="level" type="range" min="0" max="100" value="100" aria-label="Sound effects volume"></article>
+        </div>
+        <div class="mix-foot"><p id="mix-description">Keep dialogue and effects. Remove the soundtrack.</p><span>Every layer saved. Every choice reversible.</span></div>
+      </section>
+      <div class="action-row"><div class="action-copy"><span class="action-spark"><svg class="icon"><use href="#icon-spark"/></svg></span><div><strong id="action-title">A little less noise. A lot more you.</strong><p id="action-help">Add your file to start separating.</p></div></div><button id="separate" class="primary" disabled>Separate audio <span>↗</span></button></div>
+      <section id="progress-panel" class="panel progress-panel" aria-label="Separation progress" hidden><div class="progress-top"><div><span class="eyebrow"><span></span> ISOLATING YOUR SOUND</span><h3 id="progress-message" role="status" aria-live="polite">Starting…</h3></div><button id="cancel" class="secondary">Cancel</button></div><progress id="progress" value="0" max="1"></progress><div class="progress-bottom"><span id="progress-percent">0%</span><span id="elapsed">0:00 elapsed</span></div></section>
+      <section id="results" class="panel results" aria-labelledby="result-heading" hidden><div class="panel-heading"><h2 id="result-heading"><span class="ready-icon">✓</span> Your sound, refined.</h2><span id="result-device" class="chip"></span></div><div id="result-notice" class="notice" hidden></div><div class="result-body"><div class="result-player"><div class="player-label"><span>CLEANED MIX</span><span>PREVIEW YOUR FINAL CUT</span></div><canvas id="result-wave" aria-label="Cleaned mix waveform"></canvas><audio id="mix-audio" controls preload="metadata" aria-label="Cleaned mix preview"></audio></div><div class="export-actions"><button id="render-mix" class="primary" hidden>Update mix <span>↗</span></button><a id="download-mix" class="primary" download>Download cleaned WAV <svg class="icon"><use href="#icon-download"/></svg></a><a id="download-bundle" class="secondary" download>All tracks + mix (.zip) <svg class="icon"><use href="#icon-download"/></svg></a><a id="download-report" class="text-button" download>Processing report ↗</a></div></div><div class="result-foot"><span id="result-meta"></span><button id="delete-session" class="text-button danger">Delete this session</button></div></section>
+      <section id="listening-panel" class="panel listening-panel" aria-labelledby="listening-heading" hidden>
+        <div class="panel-heading"><h2 id="listening-heading"><svg class="icon"><use href="#icon-wave"/></svg> Listen to each layer</h2><span id="listening-count" class="chip">FOUR SEPARATE TRACKS</span></div>
+        <div class="listening-intro"><div><p id="listening-help">Dialogue, music, and effects are isolated from your original audio. Removed sounds reflects your last exported mix.</p><label class="check-label"><input id="sync-listening" type="checkbox" checked><span>Keep playback position when switching tracks</span></label></div><button id="prepare-listening" class="secondary" hidden>Prepare isolated tracks ↗</button><button id="cancel-listening" class="secondary" hidden>Cancel preparation</button></div>
+        <div id="listening-progress" class="listening-progress" hidden><p id="listening-message" role="status" aria-live="polite"></p><progress id="listening-meter" max="1" value="0"></progress></div>
+        <p id="listening-notice" class="notice" hidden></p>
+        <div class="listening-tracks"><article class="listen-track listen-speech" aria-label="Dialogue isolated track">
+        <div class="listen-identity"><span class="listen-number">01</span><div><h3>Dialogue</h3><p>Voices & vocal detail</p></div></div>
+        <canvas id="listen-wave-speech" aria-label="Dialogue waveform"></canvas>
+        <div class="listen-playback"><audio id="preview-speech" controls preload="metadata" aria-label="Dialogue isolated preview" hidden></audio><p id="listen-empty-speech" class="listen-empty">Prepare this track to listen.</p></div>
+        <a id="download-speech" class="stem-download" download hidden aria-label="Download Dialogue">Download <svg class="icon"><use href="#icon-download"/></svg></a>
+      </article>
+<article class="listen-track listen-music" aria-label="Music isolated track">
+        <div class="listen-identity"><span class="listen-number">02</span><div><h3>Music</h3><p>Score & soundtrack</p></div></div>
+        <canvas id="listen-wave-music" aria-label="Music waveform"></canvas>
+        <div class="listen-playback"><audio id="preview-music" controls preload="metadata" aria-label="Music isolated preview" hidden></audio><p id="listen-empty-music" class="listen-empty">Prepare this track to listen.</p></div>
+        <a id="download-music" class="stem-download" download hidden aria-label="Download Music">Download <svg class="icon"><use href="#icon-download"/></svg></a>
+      </article>
+<article class="listen-track listen-effects" aria-label="Sound effects isolated track">
+        <div class="listen-identity"><span class="listen-number">03</span><div><h3>Sound effects</h3><p>Movement & ambience</p></div></div>
+        <canvas id="listen-wave-effects" aria-label="Sound effects waveform"></canvas>
+        <div class="listen-playback"><audio id="preview-effects" controls preload="metadata" aria-label="Sound effects isolated preview" hidden></audio><p id="listen-empty-effects" class="listen-empty">Prepare this track to listen.</p></div>
+        <a id="download-effects" class="stem-download" download hidden aria-label="Download Sound effects">Download <svg class="icon"><use href="#icon-download"/></svg></a>
+      </article>
+<article class="listen-track listen-removed" aria-label="Removed sounds isolated track">
+        <div class="listen-identity"><span class="listen-number">04</span><div><h3>Removed sounds</h3><p>What your mix takes away</p></div></div>
+        <canvas id="listen-wave-removed" aria-label="Removed sounds waveform"></canvas>
+        <div class="listen-playback"><audio id="removed-audio" controls preload="metadata" aria-label="Removed sounds isolated preview" hidden></audio><p id="listen-empty-removed" class="listen-empty">Prepare this track to listen.</p></div>
+        <a id="download-removed" class="stem-download" download hidden aria-label="Download Removed sounds">Download <svg class="icon"><use href="#icon-download"/></svg></a>
+      </article></div>
+        <div class="listening-foot"><span>ONE TRACK AT A TIME · YOUR MIX STAYS UNCHANGED</span><p id="removed-description">Listen to what was removed before using your cleaned audio.</p></div>
+      </section>
+      <section class="creator-card" aria-label="Creator and community">
+        <div class="creator-identity">
+          <p class="creator-byline">Made by <a href="https://higgsfield.ai/@cyr4x" target="_blank" rel="noopener noreferrer" aria-label="cyr4x on Higgsfield (opens in a new tab)">cyr4x<span class="creator-dot" aria-hidden="true"></span></a></p>
+          <p class="community-credit">Made for <a class="higgsfield-wordmark" href="https://higgsfield.ai" target="_blank" rel="noopener noreferrer" aria-label="Higgsfield (opens in a new tab)"><img src="/static/higgsfield-mark.svg" alt="" width="20" height="20"><span>Higgsfield</span></a> <span>Community</span></p>
+        </div>
+        <nav class="creator-socials" aria-label="Follow cyr4x">
+          <a class="social-link" href="https://x.com/_cyr4x" target="_blank" rel="noopener noreferrer" aria-label="cyr4x on X (opens in a new tab)"><svg class="icon" aria-hidden="true"><use href="#icon-x"/></svg><span>X</span><svg class="social-arrow icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
+          <a class="social-link" href="https://higgsfield.ai/@cyr4x" target="_blank" rel="noopener noreferrer" aria-label="cyr4x on Higgsfield (opens in a new tab)"><img src="/static/higgsfield-mark.svg" alt="" width="17" height="17"><span>Higgsfield</span><svg class="social-arrow icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
+          <a class="social-link" href="https://www.instagram.com/__cyr4x__/" target="_blank" rel="noopener noreferrer" aria-label="cyr4x on Instagram (opens in a new tab)"><svg class="icon" aria-hidden="true"><use href="#icon-instagram"/></svg><span>Instagram</span><svg class="social-arrow icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
+          <a class="social-link" href="https://www.youtube.com/@cyr4xfilms" target="_blank" rel="noopener noreferrer" aria-label="cyr4x on YouTube (opens in a new tab)"><svg class="icon" aria-hidden="true"><use href="#icon-youtube"/></svg><span>YouTube</span><svg class="social-arrow icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
+        </nav>
+      </section>
+      <footer><span><svg class="icon"><use href="#icon-wave"/></svg> BUILT FOR YOUR FINAL CUT</span><p>AI separation isn’t always perfect. Listen for bleed, breaths, and quiet effects.<br>Bubble FX targets a specific sound; similar effects may also be reduced.</p><span class="footer-format">WAV EXPORT <b>·</b> ORIGINAL TIMING</span></footer>
+    </main>
+  </div>
+</body>
+</html>
