@@ -1,5 +1,14 @@
 # Verification on this computer
 
+## Standalone relaunch and recovery (1.1.1, 2026-09-16)
+
+- Replaced the Mac shell launcher with a compiled universal AppKit executable. Native reopening routes to the existing workspace; a persistent waveform menu offers workspace, setup/diagnostics and Quit. Windows keeps separate workspace/setup Start menu shortcuts and repairs missing application files on repeated installer use.
+- Local setup binds without reverse DNS lookup, avoiding the Mac launch stall reproduced on native runners. Saved instance URLs are authenticated, restricted to loopback and checked without proxies/redirects. Stale metadata, file-sharing delays, failed workspaces and explicit certificate settings have regression coverage.
+- Owner pipes connect the native Mac host, setup manager and workspace. Windows uses a nonblocking pipe check to avoid native-library startup deadlocks caused by a blocking CRT stdin read. Server shutdown runs its worker cleanup. Closing a browser tab leaves the app available; quitting closes the server and releases the instance lock.
+- **172 tests passed on Windows**, with two existing framework deprecation warnings; Ruff passed. The installed EXE was exercised with a real cached CPU engine through duplicate launch, reinstall/missing-file repair, three close/relaunch cycles, workspace-crash recovery and manager-crash cleanup. The source app on port 7863 was preserved.
+- Native Apple Silicon and Intel GitHub runners each installed the actual CPU engine, opened app version 1.1.1, reused the same manager after duplicate Launch Services opens, and completed four close/relaunch cycles including native Quit. See [the successful Mac lifecycle workflow](https://github.com/xD4O/SoundShredder/actions/runs/35163101533). These are native OS checks, not simulated Mac-mode tests on Windows.
+- Release packages remain without publisher signing/notarization. Consumer Gatekeeper/quarantine handling, standalone NVIDIA end-to-end inference and real Mac audio-model inference remain outside this validation. Earlier notes below describe historical build state.
+
 ## Separate standalone preview releases (2026-09-16)
 
 - Prepared separate `v1.1.0-windows-preview.1` and `v1.1.0-macos-preview.1` prereleases. Windows has an EXE installer; Mac has Apple Silicon and Intel `.app` ZIPs. Both include platform-specific installation/removal instructions and SHA-256 checksums. The stable source release remains v1.0.3.
