@@ -7,6 +7,8 @@ QUICK START
 3. Install Python 3.11 using the "macOS 64-bit universal2 installer":
    https://www.python.org/downloads/release/python-3119/
    This installer works on both Apple Silicon and Intel Macs.
+   Complete Python's certificate setup too: open Applications > Python 3.11 >
+   Install Certificates.command. Wait for "update complete" before continuing.
 4. Double-click "Start SoundShredder.command" inside the extracted folder.
    First launch downloads and installs the local Python packages automatically.
 5. Your default browser opens http://127.0.0.1:7860
@@ -43,7 +45,8 @@ TROUBLESHOOTING
 - Python not found: install the Python 3.11 universal2 .pkg linked above,
   then reopen the launcher. Python 3.14+ is not supported by this package.
 - Certificate verification failed after installing Python from python.org:
-  open Applications > Python 3.11 > Install Certificates.command, then retry.
+  see CERTIFICATE_VERIFY_FAILED WHEN PROCESSING A VIDEO below, or the complete
+  guide and repair ZIP in support/mac/.
 - Intel Mac: setup automatically uses PyTorch 2.2.2 and NumPy 1.26.4.
   Do not manually upgrade those packages; newer PyTorch wheels do not support
   Intel macOS. requirements-mac-intel.txt keeps the compatible versions together.
@@ -70,6 +73,31 @@ MANUAL SETUP (OPTIONAL)
 In Terminal, cd to the extracted SoundShredder folder, then run:
   python3.11 setup_runtime.py --device cpu
   .venv/bin/python app.py
+
+CERTIFICATE_VERIFY_FAILED WHEN PROCESSING A VIDEO
+The local page can open even when Python cannot verify an HTTPS model download.
+First processing downloads Bandit from Zenodo, or AudioSep from Hugging Face.
+For Python 3.11.9, stop SoundShredder with Control+C in its Terminal window, run:
+  open "/Applications/Python 3.11/Install Certificates.command"
+Then reopen Start SoundShredder.command and retry. Use the matching major/minor
+folder if your installed Python version differs. Never disable SSL verification.
+Python 3.11.9 uses the folder named Python 3.11, not Python 3.11.9.
+
+For an older source installation, an alternative repair launcher is included at:
+  support/mac/SoundShredder-Mac-Certificate-Fix.zip
+Stop the old app with Control+C, extract that ZIP, and copy ONLY
+"Start SoundShredder - Certificate Fix.command" beside your existing app.py.
+Double-click the new launcher and retry. Keep your existing .venv and data folders;
+you do not need to reinstall the runtime or replace the whole project folder.
+Closing the browser tab alone does not stop the old app.
+
+The updated launcher also uses the venv's certifi (or pip's bundled certificate
+store) when Python has no default CA roots. Existing certificate settings are
+preserved. If certificate errors persist, a VPN/proxy or network HTTPS inspection
+may need its trusted certificate configured by the network administrator.
+Retain the full Terminal error, Python version, processing mode and download
+hostname if shown. Full troubleshooting: support/mac/README.md.
+This source repair launcher is not for the standalone .app's bundled Python.
 
 Full feature documentation: README.md
 What has and has not been tested: VERIFICATION.md

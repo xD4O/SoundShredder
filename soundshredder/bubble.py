@@ -16,6 +16,7 @@ import soundfile as sf
 from scipy.signal import istft, stft
 
 from .audio import read_json, resample, sha256, waveform, write_json
+from .certificates import configure_macos_certificates
 from .engine import choose_device
 
 MODEL_RATE = 32000
@@ -45,6 +46,7 @@ def validate_settings(kind="water", strength=0.85, start=0.0, end=None, passes=1
 
 
 def checkpoint(progress):
+    configure_macos_certificates()
     folder = Path.home() / ".cache/soundshredder/audiosep"
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / "audiosep_base_4M_steps.ckpt"

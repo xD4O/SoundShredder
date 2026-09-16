@@ -93,6 +93,7 @@ def test_mac_launcher_bootstraps_and_reuses_an_isolated_environment(tmp_path, ex
     stub.write_text(
         "#!/bin/bash\n"
         "if [ \"$1\" = '-c' ]; then exit 0; fi\n"
+        "if [ \"$1\" = '-m' ] && [ \"$2\" = 'soundshredder.certificates' ]; then exit 0; fi\n"
         "if [ \"${4:-}\" = '--check' ]; then exit " + ("0" if healthy else "1") + "; fi\n"
         "if [ \"$1\" = 'setup_runtime.py' ]; then\n"
         "  printf 'setup\\n' >> actions.log\n"

@@ -9,6 +9,7 @@ from collections.abc import Callable
 import numpy as np
 
 from .audio import STEMS
+from .certificates import configure_macos_certificates
 
 MODEL_RATE = 48000
 BLOCK_SECONDS = 20
@@ -71,6 +72,7 @@ def choose_device(requested: str) -> str:
 
 def run_model(audio: np.ndarray, device: str, progress: Callable[[float, str], None]) -> dict[str, np.ndarray]:
     """Bound accelerator memory using blocks and crossfade their overlapping edges."""
+    configure_macos_certificates()
     import torch
     from bandit_infer import BanditSession
 

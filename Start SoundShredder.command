@@ -47,6 +47,13 @@ if [ ! -x ".venv/bin/python" ] || ! "$python_bin" setup_runtime.py --device cpu 
     "$python_bin" setup_runtime.py --device cpu || fail "Setup did not finish. Your files have been kept; you can retry."
 fi
 
+# python.org's macOS Python may have no roots until Install Certificates.command
+# runs. Use the venv's trusted bundle for this app only; never skip verification.
+certificate_bundle="$("$PWD/.venv/bin/python" -m soundshredder.certificates)" || fail "Python's HTTPS certificates need repair. See the message above."
+if [ -n "$certificate_bundle" ]; then
+    export SSL_CERT_FILE="$certificate_bundle"
+fi
+
 printf '\nOpening http://127.0.0.1:7860 in your browser.\n'
 printf 'Keep this Terminal window open. Press Control+C to stop SoundShredder.\n\n'
 "$PWD/.venv/bin/python" app.py || fail "SoundShredder stopped with an error. See the message above."

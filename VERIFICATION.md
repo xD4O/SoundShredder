@@ -1,5 +1,21 @@
 # Verification on this computer
 
+## Separate standalone preview releases (2026-09-16)
+
+- Prepared separate `v1.1.0-windows-preview.1` and `v1.1.0-macos-preview.1` prereleases. Windows has an EXE installer; Mac has Apple Silicon and Intel `.app` ZIPs. Both include platform-specific installation/removal instructions and SHA-256 checksums. The stable source release remains v1.0.3.
+- **159 tests passed**, with two existing framework deprecation warnings; Ruff and `git diff --check` passed. Rebuilt all three downloads from the current source, including the Mac certificate fallback and Windows storage/no-cache setup changes.
+- The rebuilt Windows payload opened its setup manager and reused the existing private Python 3.13 CPU engine, completed the engine health check, and served app version 1.1.0. The QA manager and its child app were stopped afterward. The user's original port 7863 process was left running. Earlier fresh CPU installation and real separation/WAV-export evidence remains valid; this check did not repeat model inference or validate NVIDIA installation.
+- Verified ZIP integrity, unique entry names, all shared interface/application files matching current source, current setup files/instructions, Mac launcher executable permissions, and exclusion of user media/data. Windows installer: 14,865,920 bytes; Apple Silicon ZIP: 27,726,738 bytes; Intel ZIP: 27,720,429 bytes. Asset checksums are recorded with each release.
+- These previews are unsigned. Mac packages are also unnotarized, and native Finder/Gatekeeper/setup/inference testing on either Mac architecture remains outstanding. The earlier Mac-preview and Windows-artifact notes below describe historical build state; these new builds supersede those artifacts.
+
+## Mac certificate repair (2026-09-16)
+
+- Source launcher, direct app startup and both model paths can use certifi or pip's bundled CA roots when macOS Python's default trust store is empty. Existing CA roots and explicit SSL_CERT_FILE/SSL_CERT_DIR settings are preserved; hostname and certificate-chain validation remain enabled.
+- Added a small, self-contained repair launcher ZIP for existing source installations (including the recommended Python 3.11.9), requiring no runtime reinstall or session migration. It belongs beside the existing app.py and .venv folder.
+- **159 tests passed** on Windows. Tests cover missing roots, pip fallback, preserved custom trust, secure SSLContext settings, and launcher success/failure/environment propagation in paths with spaces. Ruff, shell syntax and ZIP permission/integrity checks passed.
+- Verified HTTPS HEAD requests to the actual Bandit/Zenodo and AudioSep/Hugging Face model URLs both returned 200 with certifi, including the Hugging Face CDN redirect. No model payloads were downloaded for this check. The affected Mac itself has not been tested; proxy/company certificate issues may require a different repair.
+- This is a local source fix and repair ZIP. Previously downloaded source/standalone packages and GitHub releases are not automatically changed.
+
 ## Video preview (v1.0.3)
 
 - 131 Python tests passed on Windows. New API checks cover saved video, byte-range seeking, missing files, audio-only sessions and path confinement. Ruff and JavaScript syntax checks passed.
@@ -60,6 +76,15 @@
 - **Upstream graph comparison:** on the same six-second stereo input and weights, native Torch transforms versus the original TorchLibrosa graph had maximum absolute output difference 0.000002027 and RMS difference 0.00000005742 with TF32 disabled for both comparison runs. An initial comparison with TF32 convolution enabled exceeded the stricter tolerance; full-precision comparison resolved the discrepancy. Learned layers and checkpoint parameters are unchanged; chunked production results can differ from a single full-length upstream call.
 - Browser checks covered actual upload, cleanup, float-WAV playback, removed preview, time-range remix without another model run, and requiring a fresh separation when changing sound type. Desktop and mobile layouts were inspected, with no horizontal overflow at 1440, 390 and 320 pixels. No JavaScript errors were reported. Original preview now uses the decoded WAV after processing so container padding does not change A/B duration.
 - The user auditioned the removed-sound excerpt from 7–11 seconds and confirmed it was the unwanted sound: "Yes thats the sound gj". That confirms this preset's target for this clip; it does not establish zero collateral removal or general accuracy on other clips. Similar effects may still be suppressed. Both release ZIPs include the preset, licenses and instructions, but exclude private media, model weights, runtime environments and test outputs.
+
+## Standalone Mac preview 1.1.0 (2026-09-16)
+
+- Built separate Apple Silicon and Intel `.app` ZIPs on Windows, each approximately 28 MB compressed / 70 MB extracted before engine/model downloads. Bundled CPython 3.11.16 from Astral's 20260901 release matched the pinned upstream SHA-256 hashes. Mach-O executable headers match ARM64 and x86-64 respectively. Unix executable permissions, relative interpreter symlinks, Info.plist, app icon, license files, shared static interface, and absence of user data/model caches were checked.
+- Native-wheel dependency resolution passed for Apple Silicon/Python 3.11 and Intel/Python 3.11. Intel retains PyTorch 2.2.2, NumPy 1.26.4 and SciPy 1.14.1; Apple Silicon uses PyTorch 2.8.0. This resolves packages and does not execute Mac binaries.
+- **149 automated tests passed** on Windows, with two pre-existing framework deprecation warnings. Additional checks cover Mac-only CPU selection, storage isolation, relocated app paths, architecture mismatch rejection, no-cache/isolated pip commands, cached-engine reuse, low-space rejection, simulated POSIX lock contention, bundle contents/permissions, and unsafe archive paths/links. Ruff and shell syntax checks passed.
+- The Mac-mode setup screen was reviewed in Chrome on Windows: shared dark/mint styling and fonts, CPU-only control, Apple Silicon status, storage location/free space, diagnostics and close controls. This is a simulated Mac setup view, not a Safari or Finder test.
+- **Not yet validated:** Finder launch, first-run package installation, Gatekeeper behavior, real audio inference or performance on either Mac architecture. The connected Mac hostname was unreachable. Bundles are unsigned/unnotarized local previews, not published release assets. Signing/notarization and actual Mac tests are required before calling them production-ready. Metal/MPS is not enabled.
+- New setup source disables retained pip package downloads, displays its storage location and free space, and raises Windows installation space reservations. The earlier Windows EXE artifact has not been rebuilt and does not automatically receive these changes.
 
 ## Mac package
 

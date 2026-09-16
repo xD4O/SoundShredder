@@ -8,8 +8,11 @@ import webbrowser
 
 import uvicorn
 
+from soundshredder.certificates import configure_macos_certificates
+
 
 def main():
+    configure_macos_certificates()
     parser = argparse.ArgumentParser(description="SoundShredder — local dialogue, music and effects separation")
     parser.add_argument("--port", type=int, default=7860)
     parser.add_argument("--no-browser", action="store_true")

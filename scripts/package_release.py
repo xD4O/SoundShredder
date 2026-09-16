@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 GUIDE_FILES = [
     "output/html/SoundShredder-Higgsfield-Community-Guide.html",
-    "output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf",
+    "output/pdf/SoundShredder-Higgsfield-Community-Guide-2026-09-16.pdf",
 ]
 FILES = [
     "README.md",
@@ -31,7 +31,7 @@ WINDOWS_FILES = ["Start SoundShredder.bat", "Setup CPU.bat", "Setup NVIDIA GPU.b
 
 def build_release(root, destination, *, mac_only=False):
     sources = [root / name for name in FILES + ([] if mac_only else WINDOWS_FILES)]
-    for directory in ("soundshredder", "static", "tests", "scripts"):
+    for directory in ("soundshredder", "static", "tests", "scripts", "desktop", "support"):
         sources.extend(
             path for path in (root / directory).rglob("*") if path.is_file() and "__pycache__" not in path.parts
         )

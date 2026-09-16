@@ -4,13 +4,22 @@ A local Python audio tool for cleaning up Seedance clips and other mixed soundtr
 
 See the [future-update roadmap](ROADMAP.md) for planned installation, first-run setup, and app-update improvements.
 
+## Standalone Windows and Mac previews (v1.1.0)
+
+Standalone previews include Python and a setup screen styled like the main app. Required audio packages install automatically into a private runtime; no manual Python installation or terminal setup is needed. Initial engine/model downloads still require internet. Sessions live outside the application folder.
+
+- **[Windows standalone preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.0-windows-preview.1)** - EXE installer for Windows 10/11 x64; CPU or NVIDIA GPU. Allow 4 GiB/14 GiB free for setup, plus models and sessions. [Install and uninstall](desktop/WINDOWS-README.md).
+- **[Mac standalone preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.0-macos-preview.1)** - separate Apple Silicon and Intel app ZIPs for macOS 12+; CPU only. Allow 3 GiB free plus models/sessions. [Install and uninstall](desktop/MAC-README.md).
+
+Both are **unsigned prereleases**. Mac Finder launch, Gatekeeper and real inference still need Mac hardware testing. These prereleases are separate from the stable v1.0.3 source downloads below. Setup shows storage location/free space and does not retain duplicate pip downloads. See [build instructions and limitations](desktop/README.md).
+
 **Made by cyr4x · Made for Higgsfield Community.** [X](https://x.com/_cyr4x) · [Higgsfield](https://higgsfield.ai/@cyr4x) · [Instagram](https://www.instagram.com/__cyr4x__/) · [YouTube](https://www.youtube.com/@cyr4xfilms). The interface includes the Higgsfield mark and Space Grotesk typography, bundled locally with the font license; see `static/BRANDING.md` for asset sources.
 
 ## Download v1.0.3
 
 [Windows download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.3/SoundShredder.zip) · [Mac download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.3/SoundShredder-Mac.zip) · [Release notes](https://github.com/xD4O/SoundShredder/releases/tag/v1.0.3)
 
-The illustrated Higgsfield Community guide covers setup, cleanup presets, aggressive multi-pass Water bubbles, isolated-track downloads, session management and updates. [Read the PDF](output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf) or [download the self-contained HTML](https://github.com/xD4O/SoundShredder/releases/download/v1.0.3/SoundShredder-Higgsfield-Community-Guide.html). Both guides are also included in each ZIP under `output/`.
+The illustrated Higgsfield Community guide covers setup, cleanup presets, aggressive multi-pass Water bubbles, isolated-track downloads, session management and updates. [Read the updated PDF](output/pdf/SoundShredder-Higgsfield-Community-Guide-2026-09-16.pdf) or [download the self-contained HTML](https://github.com/xD4O/SoundShredder/releases/download/v1.0.3/SoundShredder-Higgsfield-Community-Guide.html). The v1.0.3 source ZIPs include their original guides under `output/`; updated source packaging includes the revised guide and Mac troubleshooting. For standalone installation, use the platform instructions linked above.
 
 Extract the entire ZIP before running the launcher. These are Python source packages with setup launchers, not standalone executables. Python must be installed separately; dependencies and model weights download on first use. Both ZIPs include installation instructions. Release assets also include `SHA256SUMS.txt` for checking download integrity.
 
@@ -42,6 +51,10 @@ Download and extract **SoundShredder-Mac.zip**, then move the entire extracted f
 3. Upload a file and separate it using **Auto** or **CPU**. Keep the Terminal window open; press Control+C to stop.
 
 Requires **macOS 12 or newer**. The Mac version uses **CPU**; Apple Metal/MPS acceleration is not implemented. Apple Silicon supports Python 3.10–3.13; Intel supports Python 3.10–3.11. Python 3.11 works for both architectures. Use native Python rather than Rosetta.
+
+If the page opens but processing fails with `CERTIFICATE_VERIFY_FAILED`, stop the app and run Python's certificate installer. For Python 3.11.9: `open "/Applications/Python 3.11/Install Certificates.command"`, then reopen the launcher. See [Python's official Mac setup guide](https://docs.python.org/3/using/mac.html). The updated launcher automatically uses certifi or pip's bundled CA roots only when Python's default store is empty; it keeps explicit certificate settings and TLS verification enabled. First processing may need HTTPS access to Zenodo (Bandit) or Hugging Face (Bubble FX), even though the interface itself is on localhost.
+
+See [Mac certificate troubleshooting](support/mac/README.md) for the complete steps and the included repair launcher ZIP for older source installations. The community HTML/PDF guide also has a dedicated Mac troubleshooting page.
 
 Intel setup pins [PyTorch 2.2.2](https://pypi.org/project/torch/2.2.2/) and NumPy 1.26.4; Apple Silicon uses [PyTorch 2.8.0](https://pypi.org/project/torch/2.8.0/). Intel also needs Python 3.11 or older because the model's disabled compiler calls encounter [PyTorch 2.2's Python 3.12 guard](https://github.com/pytorch/pytorch/blob/v2.2.2/torch/__init__.py#L1638-L1640). The ZIP includes **START HERE - MAC.txt** with first-launch, permission, certificate, and recovery instructions. Python is installed separately; model weights download on first separation. No Homebrew or separate FFmpeg installation is needed.
 
