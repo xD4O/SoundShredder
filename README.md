@@ -4,15 +4,17 @@ A local Python audio tool for cleaning up Seedance clips and other mixed soundtr
 
 **Made by cyr4x · Made for Higgsfield Community.** [X](https://x.com/_cyr4x) · [Higgsfield](https://higgsfield.ai/@cyr4x) · [Instagram](https://www.instagram.com/__cyr4x__/) · [YouTube](https://www.youtube.com/@cyr4xfilms). The interface includes the Higgsfield mark and Space Grotesk typography, bundled locally with the font license; see `static/BRANDING.md` for asset sources.
 
-## Download v1.0.1
+## Download v1.0.2
 
-[Windows download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.1/SoundShredder.zip) · [Mac download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.1/SoundShredder-Mac.zip) · [Release notes](https://github.com/xD4O/SoundShredder/releases/tag/v1.0.1)
+[Windows download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.2/SoundShredder.zip) · [Mac download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.2/SoundShredder-Mac.zip) · [Release notes](https://github.com/xD4O/SoundShredder/releases/tag/v1.0.2)
+
+The illustrated Higgsfield Community guide covers setup, cleanup presets, aggressive multi-pass Water bubbles, isolated-track downloads, session management and updates. [Read the PDF](output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf) or [download the self-contained HTML](https://github.com/xD4O/SoundShredder/releases/download/v1.0.2/SoundShredder-Higgsfield-Community-Guide.html). Both guides are also included in each ZIP under `output/`.
 
 Extract the entire ZIP before running the launcher. These are Python source packages with setup launchers, not standalone executables. Python must be installed separately; dependencies and model weights download on first use. Both ZIPs include installation instructions. Release assets also include `SHA256SUMS.txt` for checking download integrity.
 
 ## GitHub and updates
 
-The **GitHub project** link in the interface opens [xD4O/SoundShredder](https://github.com/xD4O/SoundShredder). Beside it, **Check for updates** compares your installed version with the latest published stable GitHub release. A newer release shows a **Get v…** link to its notes and Windows/Mac downloads. Checks happen only when clicked; no audio, filenames, session information, or credentials are sent. Recent successful results are cached for five minutes, and failed attempts for thirty seconds. Offline or rate-limited checks show a retry message and a Releases link; audio processing continues normally.
+The installed version, **GitHub project** link and **Check for updates** live together at the bottom of the left sidebar. On smaller screens, the same card appears at the bottom of the workspace. The project link opens [xD4O/SoundShredder](https://github.com/xD4O/SoundShredder). **Check for updates** compares your installed version with the latest published stable GitHub release. A newer release shows a **Get v…** link to its notes and Windows/Mac downloads. Checks happen only when clicked; no audio, filenames, session information, or credentials are sent. Recent successful results are cached for five minutes, and failed attempts for thirty seconds. Offline or rate-limited checks show a retry message and a Releases link; audio processing continues normally.
 
 Updates are downloaded and installed manually. Finish processing and close SoundShredder, download the matching ZIP, and extract it into a new writable folder. To keep saved sessions, copy the old folder's `data` directory into the new folder while the app is closed. Run the new launcher to set up its environment. Model caches in your home directory are reused. Keep the old folder until you have checked your sessions in the new version.
 

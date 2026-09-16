@@ -6,6 +6,10 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+GUIDE_FILES = [
+    "output/html/SoundShredder-Higgsfield-Community-Guide.html",
+    "output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf",
+]
 FILES = [
     "README.md",
     "VERIFICATION.md",
@@ -20,7 +24,7 @@ FILES = [
     "Start SoundShredder.command",
     ".gitignore",
     ".gitattributes",
-]
+] + GUIDE_FILES
 WINDOWS_FILES = ["Start SoundShredder.bat", "Setup CPU.bat", "Setup NVIDIA GPU.bat"]
 
 
@@ -65,6 +69,9 @@ def main():
         checksums.append(f"{digest}  SoundShredder.zip")
     digest = build_release(ROOT, ROOT / "SoundShredder-Mac.zip", mac_only=True)
     checksums.append(f"{digest}  SoundShredder-Mac.zip")
+    for name in GUIDE_FILES:
+        guide = ROOT / name
+        checksums.append(f"{hashlib.sha256(guide.read_bytes()).hexdigest()}  {guide.name}")
     (ROOT / "SHA256SUMS.txt").write_text("\n".join(checksums) + "\n", encoding="utf-8")
 
 

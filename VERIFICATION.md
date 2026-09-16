@@ -1,5 +1,13 @@
 # Verification on this computer
 
+## Sidebar and community guides (v1.0.2)
+
+- Moved the version, GitHub project link and manual update checker into one bottom-left sidebar card with matching action rows. When the sidebar collapses, the same controls move to the bottom of the workspace; their current status and event handlers survive resizing. No duplicate version or update controls remain.
+- Browser checks at 1440 px, 1100 px and 390 px verified the location, equal action sizes, live update responses, preserved status across resizing and no horizontal overflow. A short desktop sidebar can scroll to keep controls reachable. The app's JavaScript syntax check passed with no browser errors.
+- **129 automated tests passed** on Windows with Python 3.12/PyTorch 2.8, including updated checks that both release ZIPs contain the HTML/PDF guides and retain the Mac launcher's permissions. Ruff passed. The earlier 36 update/API checks also passed immediately after the sidebar change.
+- The self-contained HTML and nine-page PDF were checked for image loading, internal links, responsive layout and page overflow. The guide includes real interface screenshots, installation, presets, multi-pass Water bubbles, track downloads, session deletion versus starting fresh, and manual updates. Both guides are packaged and offered separately as release assets.
+- Audio engines are unchanged in this release. Earlier inference results below remain historical evidence; Mac hardware remains untested.
+
 ## GitHub project link and update checks (v1.0.1)
 
 - Added a project link and on-demand update checks beside the running app version. `/api/system` reports that version from the Python package; the interface no longer uses a fixed sidebar version label.

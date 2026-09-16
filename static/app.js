@@ -438,6 +438,14 @@ document.querySelectorAll("audio").forEach(player => player.addEventListener("pl
 document.querySelectorAll("audio").forEach(player => {
   for (const event of ["pause", "ended"]) player.addEventListener(event, () => player.closest(".listen-track")?.classList.remove("is-playing"));
 });
+// Keep one set of controls and its state when the desktop sidebar collapses.
+const compactProjectLayout = window.matchMedia("(max-width: 1000px)");
+function placeProjectTools() {
+  const host = $(compactProjectLayout.matches ? "compact-project" : "sidebar-project");
+  host.append($("project-updates"));
+}
+compactProjectLayout.addEventListener("change", placeProjectTools);
+placeProjectTools();
 $("check-updates").addEventListener("click", async () => {
   if (!updatesAvailable || $("check-updates").disabled) return;
   const button = $("check-updates"); button.disabled = true; button.setAttribute("aria-busy", "true");

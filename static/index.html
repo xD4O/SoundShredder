@@ -7,8 +7,8 @@
   <meta name="author" content="cyr4x">
   <title>SoundShredder — Your sound. In focus.</title>
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=7">
-  <script src="/static/app.js?v=6" defer></script>
+  <link rel="stylesheet" href="/static/style.css?v=8">
+  <script src="/static/app.js?v=7" defer></script>
 </head>
 <body>
   <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -27,6 +27,7 @@
     <symbol id="icon-instagram" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/></symbol>
     <symbol id="icon-youtube" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="m10 9 5 3-5 3V9Z" fill="currentColor" stroke="none"/></symbol>
     <symbol id="icon-external" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>
+    <symbol id="icon-github" viewBox="0 0 24 24"><path d="M9 19c-4 1-4-2-6-2m12 5v-4a3.5 3.5 0 0 0-1-2.7c3.3-.4 6.8-1.6 6.8-7A5.4 5.4 0 0 0 19.3 4a5 5 0 0 0-.1-3s-1.2-.4-4 1.5a13.8 13.8 0 0 0-7 0C5.4.6 4.2 1 4.2 1A5 5 0 0 0 4.1 4a5.4 5.4 0 0 0-1.5 3.7c0 5.4 3.5 6.6 6.8 7A3.5 3.5 0 0 0 8.4 18v4"/></symbol>
   </svg>
   <a class="skip-link" href="#main">Skip to audio workspace</a>
   <aside class="sidebar">
@@ -35,8 +36,18 @@
     <button class="nav-item selected" id="new-session"><svg class="icon"><use href="#icon-wave"/></svg><span>Audio separator</span><span class="nav-arrow">↗</span></button>
     <div class="history-heading"><span class="nav-label">RECENT SESSIONS</span><button id="refresh-history" class="icon-button" aria-label="Refresh recent sessions"><svg class="icon"><use href="#icon-refresh"/></svg></button></div>
     <div id="history" class="history"><p class="muted small">Your next great sound starts here.<br>Completed sessions appear below.</p></div>
-    <div class="sidebar-bottom"><div class="privacy-icon"><svg class="icon"><use href="#icon-shield"/></svg></div><strong>Your sound stays yours.</strong><p>Processed on your computer.<br>No uploads to the cloud.</p><div class="privacy-status"><span class="local-dot"></span> PRIVATE BY DESIGN</div></div>
-    <div class="sidebar-version"><span>SOUNDSHREDDER</span><span data-app-version>—</span></div>
+    <div id="sidebar-project" class="sidebar-project">
+      <section id="project-updates" class="project-tools" aria-label="Project and updates">
+        <div class="project-version"><span>SoundShredder</span><strong data-app-version>—</strong></div>
+        <div class="project-actions">
+          <a class="project-action project-link" href="https://github.com/xD4O/SoundShredder" target="_blank" rel="noopener noreferrer" aria-label="SoundShredder on GitHub (opens in a new tab)"><svg class="icon" aria-hidden="true"><use href="#icon-github"/></svg><span>GitHub project</span><svg class="icon action-arrow" aria-hidden="true"><use href="#icon-external"/></svg></a>
+          <button id="check-updates" class="project-action update-button" aria-describedby="update-help" disabled><svg class="icon" aria-hidden="true"><use href="#icon-refresh"/></svg><span>Check for updates</span></button>
+        </div>
+        <div id="update-result" class="update-result" hidden><p id="update-status" role="status" aria-live="polite"></p><a id="update-release" class="project-link" href="https://github.com/xD4O/SoundShredder/releases" target="_blank" rel="noopener noreferrer">View releases ↗</a><p id="update-checked" class="update-checked" hidden></p></div>
+        <p id="update-help" class="update-help">Checks GitHub only when you click.</p>
+        <div class="project-privacy"><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg><p><strong>Your sound stays yours.</strong><span>Local processing. No cloud uploads.</span></p></div>
+      </section>
+    </div>
   </aside>
 
   <div class="workspace">
@@ -57,12 +68,6 @@
         </div>
       </section>
 
-      <section id="project-updates" class="project-tools" aria-label="Project and updates">
-        <div class="project-version"><span class="local-dot" aria-hidden="true"></span><span>SoundShredder <strong data-app-version>—</strong></span></div>
-        <div class="project-actions"><a class="project-link" href="https://github.com/xD4O/SoundShredder" target="_blank" rel="noopener noreferrer" aria-label="SoundShredder on GitHub (opens in a new tab)">GitHub project <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a><button id="check-updates" class="update-button" disabled><svg class="icon" aria-hidden="true"><use href="#icon-refresh"/></svg><span>Check for updates</span></button></div>
-        <div id="update-result" class="update-result" hidden><p id="update-status" role="status" aria-live="polite"></p><a id="update-release" class="project-link" href="https://github.com/xD4O/SoundShredder/releases" target="_blank" rel="noopener noreferrer">View releases ↗</a><p id="update-checked" class="update-checked" hidden></p></div>
-        <p id="update-help" class="update-help">Checks GitHub only when you click. Your audio stays on this computer.</p>
-      </section>
       <div id="error" class="notice error" role="alert" hidden></div>
       <div class="section-kicker"><span>THE WORKSPACE</span><span>01 — IMPORT & CONFIGURE</span></div>
       <div class="main-grid">
@@ -160,6 +165,7 @@
           <a class="social-link" href="https://www.youtube.com/@cyr4xfilms" target="_blank" rel="noopener noreferrer" aria-label="cyr4x on YouTube (opens in a new tab)"><svg class="icon" aria-hidden="true"><use href="#icon-youtube"/></svg><span>YouTube</span><svg class="social-arrow icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
         </nav>
       </section>
+      <div id="compact-project" class="compact-project"></div>
       <footer><span><svg class="icon"><use href="#icon-wave"/></svg> BUILT FOR YOUR FINAL CUT</span><p>AI separation isn’t always perfect. Listen for bleed, breaths, and quiet effects.<br>Bubble FX targets a specific sound; similar effects may also be reduced.</p><span class="footer-format">WAV EXPORT <b>·</b> ORIGINAL TIMING</span></footer>
     </main>
   </div>

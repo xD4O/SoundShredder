@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.package_release import FILES, WINDOWS_FILES, build_release
+from scripts.package_release import FILES, GUIDE_FILES, WINDOWS_FILES, build_release
 from setup_runtime import runtime_plan
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -58,6 +58,7 @@ def test_release_has_executable_mac_launcher_and_no_local_audio(tmp_path, mac_on
     source = tmp_path / "source"
     source.mkdir()
     for filename in FILES + WINDOWS_FILES:
+        (source / filename).parent.mkdir(parents=True, exist_ok=True)
         (source / filename).write_bytes(b"#!/bin/bash\r\n" if filename.endswith(".command") else b"example\n")
     for filename in ["soundshredder/engine.py", "data/private.wav", ".venv/private", "tests/__pycache__/cache.pyc"]:
         target = source / filename
@@ -72,6 +73,8 @@ def test_release_has_executable_mac_launcher_and_no_local_audio(tmp_path, mac_on
         assert b"\r" not in archive.read(launcher)
         assert not any("private" in name or "__pycache__" in name for name in archive.namelist())
         assert ("SoundShredder/Start SoundShredder.bat" in archive.namelist()) is (not mac_only)
+        for guide in GUIDE_FILES:
+            assert archive.read("SoundShredder/" + guide) == (source / guide).read_bytes()
 
 
 @pytest.mark.parametrize("existing,healthy", [(False, True), (True, True), (True, False)])
