@@ -3,19 +3,18 @@ import os
 import subprocess
 import sys
 import threading
-from http.server import ThreadingHTTPServer
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 import pytest
 
-from desktop.bootstrap import Manager, acquire_lock, default_home, handler_for
+from desktop.bootstrap import LocalServer, Manager, acquire_lock, default_home, handler_for
 
 
 @pytest.fixture
 def setup_server(tmp_path):
     manager = Manager(tmp_path / "user", tmp_path / "app")
-    server = ThreadingHTTPServer(("127.0.0.1", 0), handler_for(manager))
+    server = LocalServer(("127.0.0.1", 0), handler_for(manager))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     yield manager, f"http://127.0.0.1:{server.server_port}"

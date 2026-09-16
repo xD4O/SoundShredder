@@ -20,8 +20,17 @@ import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from socketserver import TCPServer
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+class LocalServer(ThreadingHTTPServer):
+    def server_bind(self):
+        # HTTPServer calls getfqdn here, which can stall offline/VPN Mac launches.
+        TCPServer.server_bind(self)
+        self.server_name = "127.0.0.1"
+        self.server_port = self.server_address[1]
 
 
 def default_home(system=None):
@@ -491,7 +500,7 @@ def main():
         lock.close()
         return
     manager = Manager(home=home)
-    server = ThreadingHTTPServer(("127.0.0.1", 0), handler_for(manager))
+    server = LocalServer(("127.0.0.1", 0), handler_for(manager))
     url = f"http://127.0.0.1:{server.server_port}/#{manager.token}"
     try:
         write_json(home / "desktop.json", {"url": url, "pid": os.getpid()})
@@ -501,8 +510,11 @@ def main():
             manager.start(manager.device)
         if args.hosted:
             def host_closed():
-                while os.read(sys.stdin.fileno(), 1):
-                    pass
+                import select
+                while True:
+                    readable, _, _ = select.select([sys.stdin.fileno()], [], [], 1)
+                    if readable and not os.read(sys.stdin.fileno(), 1024):
+                        break
                 manager.cleanup()
                 server.shutdown()
             threading.Thread(target=host_closed, daemon=True).start()

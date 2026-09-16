@@ -4,7 +4,6 @@ import subprocess
 import sys
 import threading
 import time
-from http.server import ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
@@ -145,7 +144,7 @@ def test_local_lifecycle_requests_reject_redirects(tmp_path):
             self.end_headers()
         def log_message(self, *args):
             pass
-    server = ThreadingHTTPServer(("127.0.0.1", 0), Redirect)
+    server = bootstrap.LocalServer(("127.0.0.1", 0), Redirect)
     thread = threading.Thread(target=server.serve_forever)
     thread.start()
     try:
@@ -156,3 +155,12 @@ def test_local_lifecycle_requests_reject_redirects(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join()
+
+
+def test_local_server_startup_never_uses_network_name_resolution(tmp_path, monkeypatch):
+    def forbidden(*args):
+        raise AssertionError("Local startup must not do a reverse DNS lookup")
+    monkeypatch.setattr(bootstrap.socket, "getfqdn", forbidden)
+    manager = bootstrap.Manager(tmp_path)
+    with bootstrap.LocalServer(("127.0.0.1", 0), bootstrap.handler_for(manager)) as server:
+        assert server.server_name == "127.0.0.1" and server.server_port > 0

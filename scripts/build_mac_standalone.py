@@ -117,7 +117,7 @@ def build(machine, wheel, launcher=None):
             for path in sorted((ROOT / folder).rglob("*")):
                 if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc":
                     add_file(archive, APP + "Resources/" + path.relative_to(ROOT).as_posix(), path.read_bytes())
-        for name in ("bootstrap.py", "serve.py", "setup.html", "MAC-README.md"):
+        for name in ("bootstrap.py", "serve.py", "lifetime.py", "setup.html", "MAC-README.md"):
             add_file(archive, APP + "Resources/desktop/" + name, (ROOT / "desktop" / name).read_bytes())
         add_file(archive, APP + "Resources/desktop/platform.json", json.dumps(bundle, indent=2).encode())
         add_file(archive, APP + "Resources/desktop/requirements.txt", requirements_for(machine).encode())
