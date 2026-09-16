@@ -189,3 +189,31 @@ def test_rerun_saved_source_creates_new_session_and_retains_previous(client):
     client.post(f"/api/jobs/{new}/cancel")
     (folder / "source.wav").unlink()
     assert client.post(f"/api/jobs/{job}/rerun", json=settings).status_code == 404
+
+def test_video_preview_streams_saved_upload_and_ranges(client):
+    payload = b'0123456789abcdef'
+    response = client.post('/api/jobs', files={'file': ('clip.mp4', payload, 'video/mp4')})
+    job = response.json()['id']
+    assert client.get(f'/api/jobs/{job}').json()['video_preview'] is True
+    preview = client.get(f'/api/jobs/{job}/video')
+    assert preview.status_code == 200 and preview.content == payload
+    assert preview.headers['content-type'] == 'video/mp4'
+    part = client.get(f'/api/jobs/{job}/video', headers={'Range': 'bytes=2-5'})
+    assert part.status_code == 206 and part.content == b'2345'
+    assert part.headers['content-range'] == 'bytes 2-5/16'
+    (server.DATA / job / 'source.mp4').unlink()
+    assert client.get(f'/api/jobs/{job}/video').status_code == 404
+
+
+def test_video_preview_rejects_audio_and_source_outside_session(client, tmp_path):
+    job = client.post('/api/jobs', files={'file': ('clip.wav', wav())}).json()['id']
+    assert client.get(f'/api/jobs/{job}').json()['video_preview'] is False
+    assert client.get(f'/api/jobs/{job}/video').status_code == 404
+    outside = server.DATA / 'outside.mp4'
+    outside.write_bytes(b'private')
+    path = server.DATA / job / 'request.json'
+    request = read_json(path)
+    request['source'] = '../outside.mp4'
+    write_json(path, request)
+    assert client.get(f'/api/jobs/{job}/video').status_code == 404
+    assert client.get('/api/jobs/not-a-session/video').status_code == 404

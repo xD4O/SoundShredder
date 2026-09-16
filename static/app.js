@@ -161,6 +161,7 @@ window.addEventListener("resize", redraw);
 
 function reset() {
   if (busy) return;
+  videoPreview.setSource(null);
   clearTimeout(listeningTimer); listeningData = null; listeningBusy = false; activeAudio = null; $("listening-panel").hidden = true;
   clearTimeout(pollTimer); currentJob = null; jobData = null; lastMix = null; selectedFile = null;
   if (sourceURL) URL.revokeObjectURL(sourceURL); sourceURL = null;
@@ -182,6 +183,7 @@ function selectFile(file) {
   $("file-name").textContent = file.name;
   $("file-meta").textContent = `${(file.size / 1048576).toFixed(1)} MB · ready to separate`;
   sourceURL = URL.createObjectURL(file); $("original-audio").src = sourceURL;
+  videoPreview.setSource(/\.(mp4|mov|mkv|webm)$/i.test(file.name) ? sourceURL : null);
   sourcePeaks = null; $("wave-label").hidden = false;
   requestAnimationFrame(redraw); setBusy(false);
   $("action-help").textContent = mode === "bubble" ? "Choose the bubble type and time range, then clean up your clip." : "Choose your layers, then separate. Your original stays untouched.";
@@ -229,6 +231,7 @@ function showResult(data) {
   $("separate").innerHTML = bubble ? "Clean up again <span>↗</span>" : "Separate again <span>↗</span>";
 }
 function updateSource(data) {
+  if (data.video_preview !== undefined) videoPreview.setSource(data.video_preview ? `/api/jobs/${currentJob}/video` : null);
   if (!data.source) return;
   sourcePeaks = data.source.waveform;
   $("file-name").textContent = data.filename;
@@ -427,6 +430,10 @@ $("cancel-listening").addEventListener("click", async () => {
   catch (error) { showError(error.message); $("cancel-listening").disabled = false; }
 });
 // A/B switching solos one track. Optional cursor sync never changes exported levels.
+$("video-track").addEventListener("change", () => {
+  // The monitor already transfers the cursor; preserve subsequent paused seeks.
+  activeAudio = $($("video-track").value);
+});
 document.querySelectorAll("audio").forEach(player => player.addEventListener("play", () => {
   if (activeAudio && activeAudio !== player && $("sync-listening").checked && Number.isFinite(player.duration)) {
     player.currentTime = Math.min(activeAudio.currentTime, Math.max(0, player.duration - 0.01));

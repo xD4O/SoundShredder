@@ -33,6 +33,7 @@ PROCESSES: dict[str, subprocess.Popen] = {}
 LISTENING_PROCESSES: dict[str, subprocess.Popen] = {}
 GUARD = threading.RLock()
 MIX_LOCK = threading.Lock()
+VIDEO_TYPES = {".mp4": "video/mp4", ".mov": "video/quicktime", ".mkv": "video/x-matroska", ".webm": "video/webm"}
 
 
 def job_path(job_id: str) -> Path:
@@ -61,6 +62,7 @@ def snapshot(job_id: str) -> dict:
         "id": job_id,
         **progress,
         "filename": settings["filename"],
+        "video_preview": Path(settings["source"]).suffix.lower() in VIDEO_TYPES,
         "settings": {key: settings[key] for key in ("device", "gains", "cpu_fallback", "mode", "cleanup") if key in settings},
     }
     for key, filename in (("source", "source.json"), ("report", "separation.json"), ("mix", "mix.json")):
@@ -376,6 +378,16 @@ def remix(job_id: str, levels: MixLevels):
             return export_mix(directory, levels.model_dump(include={"speech", "music", "effects"}))
         except ValueError as exc:
             raise HTTPException(400, str(exc)) from exc
+
+
+@app.get("/api/jobs/{job_id}/video")
+def video_preview(job_id: str):
+    directory = job_path(job_id)
+    saved = read_json(directory / "request.json")
+    source = (directory / saved["source"]).resolve()
+    if source.parent != directory.resolve() or source.suffix.lower() not in VIDEO_TYPES or not source.is_file():
+        raise HTTPException(404, "This session has no available video preview.")
+    return FileResponse(source, media_type=VIDEO_TYPES[source.suffix.lower()], content_disposition_type="inline")
 
 
 @app.get("/api/jobs/{job_id}/files/{filename}")

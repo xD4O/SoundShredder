@@ -7,8 +7,9 @@
   <meta name="author" content="cyr4x">
   <title>SoundShredder — Your sound. In focus.</title>
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=8">
-  <script src="/static/app.js?v=7" defer></script>
+  <link rel="stylesheet" href="/static/style.css?v=9">
+  <script src="/static/video.js?v=1" defer></script>
+  <script src="/static/app.js?v=8" defer></script>
 </head>
 <body>
   <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -118,6 +119,17 @@
           <article class="track effects" data-stem="effects"><div class="track-top"><span class="track-icon"><svg class="icon"><use href="#icon-effects"/></svg></span><span class="track-channel">CH / 03</span><label class="toggle"><input id="keep-effects" type="checkbox" checked aria-label="Keep sound effects"><span></span></label></div><div class="track-title"><h3>Sound effects</h3><span class="track-state">KEEP</span></div><p>Impacts, movement & scene ambience</p><div class="track-wave" aria-hidden="true" data-wave="effects"></div><div class="level-label"><label for="level-effects">KEEP IN MIX</label><output id="value-effects" for="level-effects">100%</output></div><input id="level-effects" class="level" type="range" min="0" max="100" value="100" aria-label="Sound effects volume"></article>
         </div>
         <div class="mix-foot"><p id="mix-description">Keep dialogue and effects. Remove the soundtrack.</p><span>Every layer saved. Every choice reversible.</span></div>
+      </section>
+      <section id="video-panel" class="panel video-panel" aria-labelledby="video-heading" hidden>
+        <div class="panel-heading"><h2 id="video-heading">Your footage, in sync.</h2><label class="check-label"><input id="show-video" type="checkbox" checked aria-controls="video-body"><span>Show video preview</span></label></div>
+        <div id="video-body" class="video-body">
+          <video id="footage" muted playsinline preload="metadata" aria-label="Muted footage synchronized with the selected audio track"></video>
+          <div class="video-toolbar"><button id="video-play" class="secondary" type="button">Play</button><label for="video-track">Listen to</label><select id="video-track" aria-label="Video soundtrack">
+            <option value="original-audio">Original</option><option value="mix-audio">Cleaned mix</option><option value="preview-speech">Dialogue</option><option value="preview-music">Music</option><option value="preview-effects">Sound effects</option><option value="removed-audio">Removed sounds</option>
+          </select><span id="video-time">0:00 / 0:00</span></div>
+          <input id="video-seek" class="video-seek" type="range" min="0" max="0" value="0" step="0.01" aria-label="Footage playback position">
+          <p id="video-help" class="muted small" role="status">Footage follows the selected audio. Preview only; downloads remain audio files.</p>
+        </div>
       </section>
       <div class="action-row"><div class="action-copy"><span class="action-spark"><svg class="icon"><use href="#icon-spark"/></svg></span><div><strong id="action-title">A little less noise. A lot more you.</strong><p id="action-help">Add your file to start separating.</p></div></div><button id="separate" class="primary" disabled>Separate audio <span>↗</span></button></div>
       <section id="progress-panel" class="panel progress-panel" aria-label="Separation progress" hidden><div class="progress-top"><div><span class="eyebrow"><span></span> ISOLATING YOUR SOUND</span><h3 id="progress-message" role="status" aria-live="polite">Starting…</h3></div><button id="cancel" class="secondary">Cancel</button></div><progress id="progress" value="0" max="1"></progress><div class="progress-bottom"><span id="progress-percent">0%</span><span id="elapsed">0:00 elapsed</span></div></section>

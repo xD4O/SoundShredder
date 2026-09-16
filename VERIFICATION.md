@@ -1,5 +1,13 @@
 # Verification on this computer
 
+## Video preview (v1.0.3)
+
+- 131 Python tests passed on Windows. New API checks cover saved video, byte-range seeking, missing files, audio-only sessions and path confinement. Ruff and JavaScript syntax checks passed.
+- Browser checks verified muted footage synchronized with original, cleaned and removed audio, seeking, show/hide persistence, saved-session loading and new-session cleanup.
+- Preview does not export video. Codec support and container start offsets can affect playback; Mac hardware validation remains outstanding.
+- Updated community guides include detailed Windows PC installation, Mac setup, video controls and clearly labelled future installation improvements.
+
+
 ## Sidebar and community guides (v1.0.2)
 
 - Moved the version, GitHub project link and manual update checker into one bottom-left sidebar card with matching action rows. When the sidebar collapses, the same controls move to the bottom of the workspace; their current status and event handlers survive resizing. No duplicate version or update controls remain.

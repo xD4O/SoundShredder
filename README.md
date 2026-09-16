@@ -2,13 +2,15 @@
 
 A local Python audio tool for cleaning up Seedance clips and other mixed soundtracks. Upload one file, separate **dialogue, music and sound effects**, then choose what stays. Includes a browser interface and a command line tool.
 
+See the [future-update roadmap](ROADMAP.md) for planned installation, first-run setup, and app-update improvements.
+
 **Made by cyr4x · Made for Higgsfield Community.** [X](https://x.com/_cyr4x) · [Higgsfield](https://higgsfield.ai/@cyr4x) · [Instagram](https://www.instagram.com/__cyr4x__/) · [YouTube](https://www.youtube.com/@cyr4xfilms). The interface includes the Higgsfield mark and Space Grotesk typography, bundled locally with the font license; see `static/BRANDING.md` for asset sources.
 
-## Download v1.0.2
+## Download v1.0.3
 
-[Windows download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.2/SoundShredder.zip) · [Mac download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.2/SoundShredder-Mac.zip) · [Release notes](https://github.com/xD4O/SoundShredder/releases/tag/v1.0.2)
+[Windows download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.3/SoundShredder.zip) · [Mac download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.3/SoundShredder-Mac.zip) · [Release notes](https://github.com/xD4O/SoundShredder/releases/tag/v1.0.3)
 
-The illustrated Higgsfield Community guide covers setup, cleanup presets, aggressive multi-pass Water bubbles, isolated-track downloads, session management and updates. [Read the PDF](output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf) or [download the self-contained HTML](https://github.com/xD4O/SoundShredder/releases/download/v1.0.2/SoundShredder-Higgsfield-Community-Guide.html). Both guides are also included in each ZIP under `output/`.
+The illustrated Higgsfield Community guide covers setup, cleanup presets, aggressive multi-pass Water bubbles, isolated-track downloads, session management and updates. [Read the PDF](output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf) or [download the self-contained HTML](https://github.com/xD4O/SoundShredder/releases/download/v1.0.3/SoundShredder-Higgsfield-Community-Guide.html). Both guides are also included in each ZIP under `output/`.
 
 Extract the entire ZIP before running the launcher. These are Python source packages with setup launchers, not standalone executables. Python must be installed separately; dependencies and model weights download on first use. Both ZIPs include installation instructions. Release assets also include `SHA256SUMS.txt` for checking download integrity.
 
@@ -153,3 +155,9 @@ Tests use small deterministic fixtures for routing, resampling, mix levels, sile
 - [Bandit v2 research implementation](https://github.com/kwatcharasupat/bandit-v2) by Karn Watcharasupat and collaborators; [paper](https://arxiv.org/abs/2407.07275).
 - [bandit-infer](https://github.com/openmirlab/bandit-infer) packages the inference graph and verifies the official checkpoint. This app pins its source revision for reproducibility.
 - Upstream code is Apache-2.0. The official v2 checkpoint is distributed under **CC BY-SA 4.0**, as documented by the adapter and its [Zenodo source](https://zenodo.org/records/12701995). The checkpoint is downloaded separately, not bundled here.
+
+## Preview your footage
+
+Video uploads now have a **Your footage, in sync** panel. Toggle **Show video preview** to show or hide it; your browser remembers the preference. Choose **Original**, **Cleaned mix**, **Dialogue**, **Music**, **Sound effects**, or **Removed sounds** in **Listen to** once that track is available. Play, pause, or scrub under the video; using any existing audio player also makes the footage follow that track. The footage stays muted so you hear only the chosen audio. Hiding it leaves audio playback available.
+
+Saved video sessions can reopen the original footage without uploading it again. Browser codec support varies; H.264 MP4 is the most compatible option. A clip that cannot preview can still be processed for audio. Audio-only uploads hide the video panel. Preview does not change your mix or export a video: downloads remain WAV/ZIP files. For containers with audio/video start offsets, check synchronization against the original in your editor.

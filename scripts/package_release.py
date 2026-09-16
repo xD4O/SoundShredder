@@ -12,6 +12,7 @@ GUIDE_FILES = [
 ]
 FILES = [
     "README.md",
+    "ROADMAP.md",
     "VERIFICATION.md",
     "RELEASE_NOTES.md",
     "app.py",
