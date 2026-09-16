@@ -1,7 +1,7 @@
-"""Build native-architecture .app ZIPs without requiring a Mac build host.
+"""Build native-architecture .app ZIPs with a compiled AppKit launcher.
 
 Python binaries come from checksum-pinned Astral python-build-standalone releases.
-This packages real Mac binaries; executing, signing and notarizing requires macOS.
+Compile the universal launcher on macOS, or supply one from the Mac CI workflow.
 """
 from __future__ import annotations
 

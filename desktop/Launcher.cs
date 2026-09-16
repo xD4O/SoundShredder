@@ -35,7 +35,7 @@ class Launcher {
             try {
             Directory.CreateDirectory(root);
             string complete = Path.Combine(root, "install-complete.txt");
-            if (!File.Exists(complete)) {
+            bool completeInstall = File.Exists(complete);
             using (var payload = Assembly.GetExecutingAssembly().GetManifestResourceStream("payload.zip"))
             using (var zip = new ZipArchive(payload, ZipArchiveMode.Read)) {
                 foreach (var entry in zip.Entries) {
@@ -43,11 +43,12 @@ class Launcher {
                     if (!dest.StartsWith(Path.GetFullPath(root) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) throw new Exception("Invalid package path.");
                     Directory.CreateDirectory(Path.GetDirectoryName(dest));
                     if (String.IsNullOrEmpty(entry.Name)) continue;
+                    // Reopening an installer leaves loaded files alone and repairs missing files.
+                    if (completeInstall && File.Exists(dest) && new FileInfo(dest).Length == entry.Length) continue;
                     using (var source = entry.Open()) using (var target = File.Create(dest)) source.CopyTo(target);
                 }
             }
             File.WriteAllText(complete, "@VERSION@");
-            }
             Shortcut("SoundShredder", root, "");
             Shortcut("SoundShredder Setup", root, "--setup");
             } finally { installLock.ReleaseMutex(); }

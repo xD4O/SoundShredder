@@ -22,6 +22,8 @@ This preview is **unsigned**. Windows may show publisher/SmartScreen warnings. O
 
 ## Storage and uninstall
 
+**Upgrade from 1.1.0:** use Close SoundShredder in the old setup screen, then open the new installer. Keep the engine, data and model folders. The updated Start menu shortcuts point to 1.1.1 and reuse your engine and sessions. Reopening this installer also repairs missing app files and recreates the shortcuts; close the app first when repairing damaged files.
+
 - App: `%LOCALAPPDATA%\Programs\SoundShredder\1.1.1`
 - Engines: `%LOCALAPPDATA%\SoundShredder\runtimes`
 - Sessions: `%LOCALAPPDATA%\SoundShredder\data`

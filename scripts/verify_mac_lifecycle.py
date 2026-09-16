@@ -54,7 +54,7 @@ def main():
             raise RuntimeError(state["message"])
         return state if state["status"] == "ready" else None
 
-    for cycle in range(3):
+    for cycle in range(4):
         subprocess.run(["open", "-a", str(app), "--args", "--no-browser", "--home", str(home)], check=True)
         wait_for(lambda: metadata.exists())
         state = wait_for(lambda: api("/api/state"))
@@ -70,10 +70,14 @@ def main():
         wait_for(lambda previous=previous: log.read_text().count("reopen-workspace") > previous)
         assert api("/api/state")["status"] == "ready" and instance()[0]["pid"] == first
         # The normal setup Close control must terminate the native host as well.
-        api("/api/stop", {})
+        if cycle == 2:
+            # Exercise the native Quit action and its active-job/setup preflight.
+            subprocess.run(["osascript", "-e", f"tell application {json.dumps(str(app))} to quit"], check=True, timeout=30)
+        else:
+            api("/api/stop", {})
         wait_for(lambda: not metadata.exists())
         wait_for(lambda cycle=cycle: log.read_text().count("native-app-closed") >= cycle + 1)
-        evidence["cycles"].append({"cycle": cycle + 1, "version": system["version"], "manager_pid": first, "duplicate_reopen": True, "closed": True})
+        evidence["cycles"].append({"cycle": cycle + 1, "version": system["version"], "manager_pid": first, "duplicate_reopen": True, "closed": True, "close_method": "native-quit" if cycle == 2 else "setup"})
         print(json.dumps(evidence["cycles"][-1]), flush=True)
     (folder / "verification.json").write_text(json.dumps(evidence, indent=2))
 

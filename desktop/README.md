@@ -8,7 +8,7 @@ Separate [Windows](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.1-win
 2. Choose **CPU** or **NVIDIA GPU** in the setup screen, then **Set up SoundShredder**. Keep an internet connection during the initial downloads. The setup progress bar represents stages, not a precise download percentage; Setup details shows package download progress.
 3. Select **Open workspace** when ready. The familiar interface, video preview, presets, sessions, and track downloads remain available. Browser popup blocking may require clicking this button.
 4. Reopen using **SoundShredder** in the Windows Start menu. Setup reuses its installed engine and checks it before opening the workspace. Launching the shortcut twice reopens the existing standalone manager.
-5. Use **Close SoundShredder** in the setup screen to stop the app. Finish or cancel active audio jobs first. Closing a browser tab alone does not stop the server. Reopen the Start menu shortcut to get back to these controls.
+5. Use **Close SoundShredder** in the setup screen to stop the app. Finish or cancel active audio jobs first. Closing a browser tab alone does not stop the server. **SoundShredder Setup** in the Start menu reopens these controls. After quitting, open **SoundShredder** to start again using the saved engine and sessions.
 
 The installer is currently unsigned. Code signing and broader clean-machine testing are required before treating it as a polished public installer. No administrator privileges or global Python changes are needed. Dependencies and models are not all bundled: setup downloads the selected engine automatically. CPU PyTorch is about 620 MB; NVIDIA PyTorch is about 3.2 GB, plus other packages. Keep at least 4 GiB free for CPU setup or 14 GiB for NVIDIA setup, plus model and session space. This build does not retain duplicate pip downloads. Layer separation downloads about 426 MB of model weights; Bubble FX downloads about 1.2 GB on first use.
 
@@ -34,9 +34,15 @@ The build downloads the official CPython 3.13.15 embedded AMD64 package and chec
 
 Separate Apple Silicon and Intel `.app` ZIPs now include private Python 3.11.16 from checksum-pinned [Astral Python standalone builds](https://github.com/astral-sh/python-build-standalone/releases/tag/20260901). Both use the same web interface and branded setup screen. Intel retains PyTorch 2.2.2/NumPy 1.26.4/SciPy 1.14.1; Apple Silicon uses PyTorch 2.8.0. Processing uses CPU; Metal/MPS is not enabled.
 
-See [the included Mac installation and uninstall guide](MAC-README.md). Build with `python scripts/build_mac_standalone.py` on a host with Python and pip. Both ZIPs and SHA256SUMS.txt are written under `artifacts/mac-standalone/`. ZIP Unix executable permissions and relative interpreter symlinks are preserved even when packaged on Windows. Python and pip license files remain in the app bundle. No audio, sessions or model caches are included.
+See [the included Mac installation and uninstall guide](MAC-README.md). Build with `python scripts/build_mac_standalone.py` on macOS with Python, pip and the Xcode command-line tools. The native AppKit launcher is compiled for both architectures. The Mac CI workflow builds and tests on Apple Silicon and Intel runners. Other hosts can package using `--launcher` with that compiled universal binary. Both ZIPs and SHA256SUMS.txt are written under `artifacts/mac-standalone/`. ZIP Unix executable permissions and relative interpreter symlinks are preserved. Python and pip license files remain in the app bundle. No audio, sessions or model caches are included.
 
-The Mac builds are unsigned and unnotarized. Dependency resolution and package contents have been checked, but native Mac launch, Gatekeeper and inference have not been exercised here. They must remain previews until those checks pass. The older Mac source ZIP is still supported and still requires a separately installed Python.
+The Mac builds lack Developer ID signing and notarization. Native Apple Silicon and Intel CI checks now cover first engine installation, workspace startup, duplicate reopening, close, and repeated relaunch through Launch Services. This does not validate browser-downloaded Gatekeeper behavior or real audio inference on consumer Macs; the builds remain previews. The older Mac source ZIP still requires a separately installed Python.
+
+## Relaunch and recovery in 1.1.1
+
+The Mac app uses a persistent AppKit launcher with native reopen handling and a waveform menu-bar control. Windows keeps separate workspace and setup Start menu shortcuts. Launchers authenticate and check the live local manager instead of trusting a stale saved URL. Closed apps start again, cached engines are reused, dead workspace processes can restart, and stale files do not block a fresh launch. Local setup startup does not depend on DNS or proxy settings. If the manager crashes, its server receives an owner-pipe closure and shuts down rather than remaining orphaned.
+
+Before upgrading, close the old standalone through its setup screen (or the Mac menu-bar Quit control). Install the new Windows version, or replace the Mac app in Applications. Keep the profile, runtimes and data folders to preserve engines and sessions. Existing browser tabs point to a stopped server after quitting; use the installed application to reopen it.
 
 ## Storage fix in the published Windows preview
 
