@@ -2,7 +2,6 @@ import io
 import plistlib
 import tarfile
 import zipfile
-from pathlib import Path
 
 import pytest
 
@@ -30,15 +29,17 @@ def test_mac_package_contains_native_launcher_permissions_and_shared_interface(t
     wheel.write_bytes(b"fixture")
     monkeypatch.setattr(package, "WORK", tmp_path)
     monkeypatch.setattr(package, "python_archive", lambda _: (runtime, "https://example.invalid/runtime", "digest"))
-    result = package.build("arm64", wheel)
+    native = tmp_path / "native-launcher"
+    native.write_bytes(b"Mach-O AppKit fixture")
+    result = package.build("arm64", wheel, native)
     with zipfile.ZipFile(tmp_path / result["file"]) as archive:
         plist = plistlib.loads(archive.read(package.APP + "Info.plist"))
         assert plist["CFBundleExecutable"] == "SoundShredder"
         assert plist["LSArchitecturePriority"] == ["arm64"]
         launcher = archive.getinfo(package.APP + "MacOS/SoundShredder")
         assert (launcher.external_attr >> 16) & 0o111 == 0o111
-        assert b'expected="arm64"' in archive.read(launcher)
-        assert b"\r" not in archive.read(launcher)
+        assert archive.read(launcher) == native.read_bytes()
+        assert package.APP + "Resources/desktop/serve.py" in archive.namelist()
         py = archive.getinfo(package.APP + "Resources/python/bin/python3.11")
         assert (py.external_attr >> 16) & 0o111 == 0o111
         link = archive.getinfo(package.APP + "Resources/python/bin/python3")
@@ -65,8 +66,7 @@ def test_intel_constraints_are_kept_in_standalone_package():
     assert "bandit-infer @" not in apple + intel
 
 
-def test_launcher_does_not_require_system_python():
-    source = (Path(__file__).resolve().parents[1] / "desktop/mac-launcher.sh").read_text()
-    assert '"$resources/python/bin/python3.11" -I' in source
-    assert "unset PYTHONHOME PYTHONPATH" in source
-    assert "@ARCH@" in source
+def test_cross_platform_builder_requires_a_native_mac_launcher(tmp_path, monkeypatch):
+    monkeypatch.setattr(package.sys, "platform", "win32")
+    with pytest.raises(RuntimeError, match="Build the AppKit launcher on macOS"):
+        package.native_launcher(tmp_path / "launcher")

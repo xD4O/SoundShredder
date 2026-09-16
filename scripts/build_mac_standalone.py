@@ -83,7 +83,16 @@ def add_python(archive, source):
                 raise ValueError("Unexpected Python archive entry")
 
 
-def build(machine, wheel):
+def native_launcher(destination):
+    if sys.platform != "darwin":
+        raise RuntimeError("Build the AppKit launcher on macOS, or supply --launcher built by the Mac CI workflow.")
+    subprocess.run(["clang", "-fobjc-arc", "-Wall", "-Wextra", "-Wno-unused-parameter", "-framework", "Cocoa",
+                    "-mmacosx-version-min=12.0", "-arch", "arm64", "-arch", "x86_64",
+                    str(ROOT / "desktop/MacLauncher.m"), "-o", str(destination)], check=True)
+    return destination
+
+
+def build(machine, wheel, launcher=None):
     from soundshredder import __version__
     source, url, digest = python_archive(machine)
     label = RUNTIMES[machine][1]
@@ -100,14 +109,15 @@ def build(machine, wheel):
     with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as archive:
         add_file(archive, APP + "Info.plist", plistlib.dumps(plist))
         add_file(archive, APP + "PkgInfo", b"APPL????")
-        launcher = (ROOT / "desktop/mac-launcher.sh").read_text().replace("@ARCH@", machine)
-        add_file(archive, APP + "MacOS/SoundShredder", launcher.encode(), 0o100755)
+        if launcher is None:
+            launcher = native_launcher(WORK / "SoundShredder-launcher")
+        add_file(archive, APP + "MacOS/SoundShredder", Path(launcher).read_bytes(), 0o100755)
         add_python(archive, source)
         for folder in ("soundshredder", "static"):
             for path in sorted((ROOT / folder).rglob("*")):
                 if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc":
                     add_file(archive, APP + "Resources/" + path.relative_to(ROOT).as_posix(), path.read_bytes())
-        for name in ("bootstrap.py", "setup.html", "MAC-README.md"):
+        for name in ("bootstrap.py", "serve.py", "setup.html", "MAC-README.md"):
             add_file(archive, APP + "Resources/desktop/" + name, (ROOT / "desktop" / name).read_bytes())
         add_file(archive, APP + "Resources/desktop/platform.json", json.dumps(bundle, indent=2).encode())
         add_file(archive, APP + "Resources/desktop/requirements.txt", requirements_for(machine).encode())
@@ -129,6 +139,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--arch", choices=["arm64", "x86_64", "all"], default="all")
     parser.add_argument("--bandit-wheel", type=Path, help="Reuse a wheel built from this repo's pinned Bandit commit")
+    parser.add_argument("--launcher", type=Path, help="Precompiled universal AppKit launcher from the Mac CI workflow")
     args = parser.parse_args()
     WORK.mkdir(parents=True, exist_ok=True)
     if args.bandit_wheel:
@@ -140,7 +151,8 @@ def main():
         subprocess.run([sys.executable, "-m", "pip", "wheel", "--no-cache-dir", "--no-deps", "--wheel-dir", str(wheels), bandit], check=True)
         wheel = next(wheels.glob("bandit_infer-*.whl"))
     machines = RUNTIMES if args.arch == "all" else [args.arch]
-    builds = [build(machine, wheel) for machine in machines]
+    launcher = args.launcher or native_launcher(WORK / "SoundShredder-launcher")
+    builds = [build(machine, wheel, launcher) for machine in machines]
     (WORK / "build.json").write_text(json.dumps(builds, indent=2), encoding="utf-8")
     (WORK / "SHA256SUMS.txt").write_text("".join(f"{b['sha256']}  {b['file']}\n" for b in builds), encoding="utf-8")
 

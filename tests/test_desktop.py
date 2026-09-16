@@ -84,14 +84,12 @@ def test_stopped_app_is_reported_as_retryable(tmp_path):
 
 
 def test_close_refuses_to_interrupt_audio_job(tmp_path, monkeypatch):
-    from contextlib import closing
-    from io import BytesIO
     from types import SimpleNamespace
     manager = Manager(tmp_path)
     manager.status, manager.url = "ready", "http://127.0.0.1:1234"
     stopped = []
     manager.process = SimpleNamespace(poll=lambda: None, terminate=lambda: stopped.append(True))
-    monkeypatch.setattr("desktop.bootstrap.urllib.request.urlopen", lambda *a, **k: closing(BytesIO(b'{"active_jobs":["job"]}')))
+    monkeypatch.setattr("desktop.bootstrap.local_request", lambda *a, **k: {"active_jobs": ["job"]})
     with pytest.raises(ValueError, match="Finish or cancel"):
         manager.stop()
     assert not stopped and not manager.stopping

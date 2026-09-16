@@ -19,6 +19,8 @@ CSC = Path("C:/Windows/Microsoft.NET/Framework64/v4.0.30319/csc.exe")
 
 
 def build():
+    sys.path.insert(0, str(ROOT))
+    from soundshredder import __version__
     if sys.platform != "win32" or not CSC.exists():
         raise SystemExit("Build on 64-bit Windows with the .NET Framework C# compiler.")
     WORK.mkdir(parents=True, exist_ok=True)
@@ -49,7 +51,9 @@ def build():
     requirements = "\n".join(line for line in (ROOT / "requirements.txt").read_text().splitlines() if not line.startswith("bandit-infer")) + "\n"
     (STAGE / "desktop" / "requirements.txt").write_text(requirements, encoding="utf-8")
     compile_args = [str(CSC), "/nologo", "/target:winexe", "/platform:x64", "/win32icon:" + str(ROOT / "desktop" / "icon.ico"), "/reference:System.Windows.Forms.dll", "/reference:System.IO.Compression.dll", "/reference:System.IO.Compression.FileSystem.dll"]
-    subprocess.run([*compile_args, "/out:" + str(STAGE / "SoundShredder.exe"), str(ROOT / "desktop" / "Launcher.cs")], check=True)
+    launcher = WORK / "Launcher.cs"
+    launcher.write_text((ROOT / "desktop/Launcher.cs").read_text().replace("@VERSION@", __version__), encoding="utf-8")
+    subprocess.run([*compile_args, "/out:" + str(STAGE / "SoundShredder.exe"), str(launcher)], check=True)
     payload = WORK / "payload.zip"
     with zipfile.ZipFile(payload, "w", zipfile.ZIP_DEFLATED) as z:
         for path in sorted(STAGE.rglob("*")):
@@ -57,8 +61,8 @@ def build():
             allowed = relative.parts[0] in {"soundshredder", "static", "desktop", "python", "README.md", "ROADMAP.md", "requirements.txt", "SoundShredder.exe"}
             if path.is_file() and allowed and "__pycache__" not in relative.parts and path.suffix != ".pyc":
                 z.write(path, path.relative_to(STAGE).as_posix())
-    installer = WORK / "SoundShredder-Setup-1.1.0-Windows.exe"
-    subprocess.run([*compile_args, "/define:INSTALLER", "/resource:" + str(payload) + ",payload.zip", "/out:" + str(installer), str(ROOT / "desktop" / "Launcher.cs")], check=True)
+    installer = WORK / f"SoundShredder-Setup-{__version__}-Windows.exe"
+    subprocess.run([*compile_args, "/define:INSTALLER", "/resource:" + str(payload) + ",payload.zip", "/out:" + str(installer), str(launcher)], check=True)
     manifest = {"installer": installer.name, "bytes": installer.stat().st_size,
                 "sha256": hashlib.sha256(installer.read_bytes()).hexdigest(),
                 "python": PYTHON_VERSION, "python_sha256": PYTHON_SHA256}

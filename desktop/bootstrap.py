@@ -11,8 +11,11 @@ import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import threading
 import time
+import urllib.error
+import urllib.parse
 import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -33,15 +36,81 @@ FLAGS = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
 def read_json(path, default=None):
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        value = json.loads(path.read_text(encoding="utf-8"))
+        return value if isinstance(value, dict) else default
     except (OSError, ValueError):
         return default
 
 
 def write_json(path, value):
-    temporary = path.with_suffix(".tmp")
-    temporary.write_text(json.dumps(value), encoding="utf-8")
-    os.replace(temporary, path)
+    # Readers/antivirus can briefly hold Windows files open during a relaunch.
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent, delete=False) as stream:
+        temporary = Path(stream.name)
+        json.dump(value, stream)
+    try:
+        for attempt in range(8):
+            try:
+                os.replace(temporary, path)
+                break
+            except PermissionError:
+                if attempt == 7:
+                    raise
+                time.sleep(.025 * (attempt + 1))
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args, **kwargs):
+        return None
+
+
+def local_request(url, *, token=None, payload=None, timeout=3):
+    """Local lifecycle requests must never use a proxy or follow redirects."""
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme != "http" or parts.hostname != "127.0.0.1" or not parts.port or parts.username or parts.password:
+        raise ValueError("Invalid local application address.")
+    headers = {"X-Setup-Token": token} if token else {}
+    data = json.dumps(payload).encode() if payload is not None else None
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+    with opener.open(urllib.request.Request(url, data=data, headers=headers), timeout=timeout) as response:
+        body = response.read(65537)
+    if len(body) > 65536:
+        raise ValueError("Invalid local response.")
+    value = json.loads(body)
+    if not isinstance(value, dict):
+        raise ValueError("Invalid local response.")
+    return value
+
+
+def existing_instance(home):
+    saved = read_json(home / "desktop.json", {})
+    try:
+        parts = urllib.parse.urlsplit(saved.get("url", ""))
+        if parts.path != "/" or parts.query or not parts.fragment or not isinstance(saved.get("pid"), int):
+            return None
+        base = urllib.parse.urlunsplit((parts.scheme, parts.netloc, "", "", ""))
+        state = local_request(base + "/api/state", token=parts.fragment, timeout=.8)
+        # v1.1.0 also returns home/status; accept its authenticated setup endpoint.
+        if state.get("home") != str(home) or state.get("status") not in {"idle", "installing", "starting", "ready", "error"}:
+            return None
+        return dict(base=base, token=parts.fragment, saved=saved, state=state)
+    except (OSError, ValueError, TypeError):
+        return None
+
+
+def claim_instance(home, timeout=12):
+    deadline = time.monotonic() + timeout
+    while True:
+        lock = acquire_lock(home)
+        if lock is not None:
+            return lock, None  # stale metadata alone never prevents a new launch
+        existing = existing_instance(home)
+        if existing:
+            return None, existing
+        if time.monotonic() >= deadline:
+            raise RuntimeError("SoundShredder is still closing or its setup manager is not responding. Wait a moment and reopen it. If needed, close the previous SoundShredder process in Activity Monitor or Task Manager; your sessions are retained.")
+        time.sleep(.2)
 
 
 def free_port():
@@ -79,16 +148,18 @@ class Manager:
         self.machine = machine or platform.machine()
         self.mac = self.system == "darwin"
         self.home.mkdir(parents=True, exist_ok=True)
-        self.guard = threading.Lock()
+        self.guard = threading.RLock()
+        self.actions = threading.RLock()
         self.token = secrets.token_urlsafe(32)
         self.status = "idle"
         self.message = "Choose how you want to process your sound."
         self.progress = 0
         self.process = None
+        self.command = None
         self.url = None
         self.stopping = False
         self.device = (read_json(self.home / "settings.json", {}) or {}).get("device", "cpu")
-        if self.mac:
+        if self.mac or self.device not in {"cpu", "cuda"}:
             self.device = "cpu"
         self.nvidia = not self.mac and bool(shutil.which("nvidia-smi"))
         self.log = self.home / "setup.log"
@@ -104,7 +175,7 @@ class Manager:
 
     def environment(self, python=None):
         env = {**os.environ, "PYTHONUTF8": "1", "PYTHONNOUSERSITE": "1", "PIP_NO_CACHE_DIR": "1"}
-        if self.mac and python:
+        if self.mac and python and not (env.get("SSL_CERT_FILE") or env.get("SSL_CERT_DIR")):
             cert = Path(python).parent.parent / "lib/python3.11/site-packages/pip/_vendor/certifi/cacert.pem"
             if cert.exists():
                 env["SSL_CERT_FILE"] = str(cert)
@@ -114,7 +185,7 @@ class Manager:
         with self.guard:
             if self.status == "ready" and self.process and self.process.poll() is not None:
                 self.status, self.message, self.url = "error", "The app stopped. Retry to reopen it. See diagnostics for details.", None
-            return dict(status=self.status, message=self.message, progress=self.progress,
+            return dict(name="SoundShredder Desktop", pid=os.getpid(), status="closing" if self.stopping else self.status, message=self.message, progress=self.progress,
                         url=self.url, device=self.device, nvidia=self.nvidia,
                         platform=self.system, machine=self.machine, home=str(self.home),
                         free_gib=round(shutil.disk_usage(self.home).free / 1024**3, 1),
@@ -130,6 +201,8 @@ class Manager:
         if self.mac and device != "cpu":
             raise ValueError("This Mac build uses CPU. NVIDIA CUDA and Apple Metal are not supported.")
         with self.guard:
+            if self.stopping:
+                raise ValueError("SoundShredder is closing. Reopen the installed application.")
             if self.status in {"installing", "starting", "ready"}:
                 raise ValueError("Setup or the app is already running.")
             self.status, self.message, self.progress = "installing", "Preparing your private runtime…", 5
@@ -139,9 +212,21 @@ class Manager:
     def run(self, args, *, timeout=3600):
         with self.log.open("ab") as log:
             log.write(("\n" + " ".join(map(str, args)) + "\n").encode("utf-8"))
-            result = subprocess.run(args, cwd=self.root, stdout=log, stderr=subprocess.STDOUT,
-                                    creationflags=FLAGS, timeout=timeout, env=self.environment(args[0]))
-        if result.returncode:
+            with self.guard:
+                if self.stopping:
+                    raise RuntimeError("SoundShredder is closing.")
+                self.command = subprocess.Popen(args, cwd=self.root, stdout=log, stderr=subprocess.STDOUT,
+                                                creationflags=FLAGS, env=self.environment(args[0]))
+                command = self.command
+            try:
+                command.wait(timeout=timeout)
+            finally:
+                if command.poll() is None:
+                    command.terminate()
+                    command.wait(timeout=10)
+                with self.guard:
+                    self.command = None
+        if command.returncode:
             raise RuntimeError("Setup could not finish. Check your connection and free disk space, then retry. Details are in diagnostics.")
 
     def prepare_runtime(self, device):
@@ -215,22 +300,24 @@ class Manager:
         port = free_port()
         url = f"http://127.0.0.1:{port}"
         with (self.home / "app.log").open("ab") as log:
-            self.process = subprocess.Popen([*self.python_command(python), "-m", "uvicorn", "soundshredder.server:app", "--host", "127.0.0.1", "--port", str(port)],
-                cwd=self.root, stdout=log, stderr=subprocess.STDOUT, creationflags=FLAGS,
-                env={**self.environment(python), "SOUNDSHREDDER_DATA": str(self.home / "data")})
+            with self.guard:
+                if self.stopping:
+                    raise RuntimeError("SoundShredder is closing.")
+                self.process = subprocess.Popen([*self.python_command(python), str(self.root / "desktop/serve.py"), str(port)],
+                    cwd=self.root, stdin=subprocess.PIPE, stdout=log, stderr=subprocess.STDOUT, creationflags=FLAGS,
+                    env={**self.environment(python), "SOUNDSHREDDER_DATA": str(self.home / "data")})
         for _ in range(120):
             if self.process.poll() is not None:
                 raise RuntimeError("The app could not start. Open diagnostics and retry.")
             try:
-                with urllib.request.urlopen(url + "/api/system", timeout=2) as response:
-                    if json.load(response).get("name") == "SoundShredder":
-                        with self.guard:
-                            self.url = url
-                        self.update("ready", "Your sound workspace is ready.", 100)
-                        return
+                if local_request(url + "/api/system", timeout=2).get("name") == "SoundShredder":
+                    with self.guard:
+                        self.url = url
+                    self.update("ready", "Your sound workspace is ready.", 100)
+                    return
             except (OSError, ValueError):
                 time.sleep(.5)
-        self.process.terminate()
+        self.close_process(self.process)
         raise RuntimeError("The app took too long to start. See diagnostics and retry.")
 
     def diagnostics(self):
@@ -243,15 +330,42 @@ class Manager:
                     parts += ["\n" + name, stream.read().decode("utf-8", errors="replace")]
         return "\n".join(parts)
 
-    def stop_app(self):
+    def stop_app(self, *, closing=False):
         if self.status in {"installing", "starting"}:
             raise ValueError("Wait for setup to finish before closing SoundShredder.")
         if self.process and self.process.poll() is None:
-            with urllib.request.urlopen(self.url + "/api/system", timeout=5) as response:
-                if json.load(response).get("active_jobs"):
-                    raise ValueError("Finish or cancel audio processing in the workspace before closing.")
-            self.process.terminate()
-            self.process.wait(timeout=10)
+            if local_request(self.url + "/api/system", timeout=5).get("active_jobs"):
+                raise ValueError("Finish or cancel audio processing in the workspace before closing.")
+            if closing:
+                self.stopping = True
+            self.close_process(self.process)
+
+    @staticmethod
+    def close_process(process):
+        if process and process.poll() is None:
+            # EOF requests graceful server shutdown, including audio-worker cleanup.
+            if getattr(process, "stdin", None):
+                process.stdin.close()
+            else:
+                process.terminate()
+            try:
+                process.wait(timeout=15)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=10)
+
+    def cleanup(self):
+        with self.guard:
+            self.stopping = True
+            command, process = self.command, self.process
+        self.close_process(command)
+        self.close_process(process)
+
+    def reopen(self):
+        state = self.state()
+        if state["status"] == "error" and self.process is not None and self.process.poll() is not None:
+            self.start(self.device)
+        return self.state()
 
     def change_engine(self):
         self.stop_app()
@@ -259,7 +373,7 @@ class Manager:
         self.update("idle", "Choose a different audio engine. Existing sessions are kept.", 0)
 
     def stop(self):
-        self.stop_app()
+        self.stop_app(closing=True)
         self.stopping = True
 
 
@@ -318,17 +432,20 @@ def handler_for(manager):
                 payload = json.loads(self.rfile.read(length) or b"{}")
                 if not isinstance(payload, dict):
                     raise ValueError("Expected an object.")
-                if self.path == "/api/start":
-                    manager.start(payload.get("device"))
-                elif self.path == "/api/change-engine":
-                    manager.change_engine()
-                elif self.path == "/api/stop":
-                    manager.stop()
-                    threading.Thread(target=self.server.shutdown, daemon=True).start()
-                else:
-                    return self.send(404, {"error": "Not found."})
+                with manager.actions:
+                    if self.path == "/api/start":
+                        manager.start(payload.get("device"))
+                    elif self.path == "/api/reopen":
+                        return self.send(200, manager.reopen())
+                    elif self.path == "/api/change-engine":
+                        manager.change_engine()
+                    elif self.path == "/api/stop":
+                        manager.stop()
+                        threading.Thread(target=self.server.shutdown, daemon=True).start()
+                    else:
+                        return self.send(404, {"error": "Not found."})
                 self.send(200, {"ok": True})
-            except (ValueError, OSError) as exc:
+            except (ValueError, OSError, subprocess.TimeoutExpired) as exc:
                 self.send(400, {"error": str(exc)})
     return Handler
 
@@ -336,30 +453,64 @@ def handler_for(manager):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--no-browser", action="store_true")
+    parser.add_argument("--home", type=Path, default=HOME)
+    parser.add_argument("--setup", action="store_true")
+    parser.add_argument("--quit", action="store_true")
+    parser.add_argument("--reopen-only", action="store_true")
+    parser.add_argument("--hosted", action="store_true", help="Keep the native Mac host attached to the manager")
     args = parser.parse_args()
-    lock = acquire_lock(HOME)
-    if lock is None:
-        for _ in range(30):
-            existing = read_json(HOME / "desktop.json", {}) or {}
-            if existing.get("url"):
-                if not args.no_browser:
-                    webbrowser.open(existing["url"])
-                return
-            time.sleep(.1)
+    home = args.home.resolve()
+    lock, existing = claim_instance(home)
+    if existing:
+        if args.quit:
+            local_request(existing["base"] + "/api/stop", token=existing["token"], payload={})
+            return
+        state = existing["state"]
+        try:
+            state = local_request(existing["base"] + "/api/reopen", token=existing["token"], payload={})
+        except urllib.error.HTTPError as exc:
+            if exc.code != 404:  # Compatibility with an already-running v1.1.0 manager.
+                raise
+        target = existing["saved"]["url"]
+        if not args.setup and state.get("status") == "ready":
+            candidate = state.get("url", "")
+            try:
+                if local_request(candidate + "/api/system").get("name") == "SoundShredder":
+                    target = candidate
+            except (OSError, ValueError):
+                pass
+        if not args.no_browser:
+            webbrowser.open(target)
+        if args.hosted:
+            # A native host may attach to an existing manager; stay until it closes.
+            while existing_instance(home):
+                time.sleep(.5)
         return
-    manager = Manager()
+    if args.quit or args.reopen_only:
+        lock.close()
+        return
+    manager = Manager(home=home)
     server = ThreadingHTTPServer(("127.0.0.1", 0), handler_for(manager))
     url = f"http://127.0.0.1:{server.server_port}/#{manager.token}"
-    write_json(HOME / "desktop.json", {"url": url, "pid": os.getpid()})
-    if not args.no_browser:
-        webbrowser.open(url)
-    # Returning users only wait for the health check, not another download.
-    if (HOME / "settings.json").exists():
-        manager.start(manager.device)
     try:
+        write_json(home / "desktop.json", {"url": url, "pid": os.getpid()})
+        if not args.no_browser:
+            webbrowser.open(url)
+        if (home / "settings.json").exists():
+            manager.start(manager.device)
+        if args.hosted:
+            def host_closed():
+                sys.stdin.buffer.read()
+                manager.cleanup()
+                server.shutdown()
+            threading.Thread(target=host_closed, daemon=True).start()
         server.serve_forever()
     finally:
+        manager.cleanup()
         server.server_close()
+        saved = read_json(home / "desktop.json", {})
+        if saved.get("pid") == os.getpid():
+            (home / "desktop.json").unlink(missing_ok=True)
         lock.close()
 
 
@@ -373,7 +524,7 @@ if __name__ == "__main__":
         if sys.platform == "win32":
             import ctypes
             ctypes.windll.user32.MessageBoxW(None, "SoundShredder could not open. See launcher-error.log in " + str(HOME), "SoundShredder", 0x10)
-        elif sys.platform == "darwin":
+        elif sys.platform == "darwin" and "--quit" not in sys.argv and "--reopen-only" not in sys.argv:
             subprocess.run(["/usr/bin/osascript", "-e",
                             'display alert "SoundShredder could not open" message "See launcher-error.log in ~/Library/Application Support/SoundShredder for details." as critical'],
                            check=False)
