@@ -9,6 +9,7 @@ let selectedFile = null, currentJob = null, jobData = null, busy = false;
 let sourceURL = null, pollTimer = null, startedAt = null, lastMix = null;
 let sourcePeaks = null, mixPeaks = null, mode = "stems", bubbleAvailable = false;
 let multipassAvailable = false, rerunAvailable = false;
+let updatesAvailable = false;
 let listeningAvailable = false, listeningTimer = null, listeningData = null, listeningBusy = false, activeAudio = null;
 let listeningAnchorPending = location.hash === "#listening-panel";
 const listeningColors = {speech:"#79f6d3", music:"#8eaeff", effects:"#c2a0ff", removed:"#ffbe96"};
@@ -437,6 +438,38 @@ document.querySelectorAll("audio").forEach(player => player.addEventListener("pl
 document.querySelectorAll("audio").forEach(player => {
   for (const event of ["pause", "ended"]) player.addEventListener(event, () => player.closest(".listen-track")?.classList.remove("is-playing"));
 });
+$("check-updates").addEventListener("click", async () => {
+  if (!updatesAvailable || $("check-updates").disabled) return;
+  const button = $("check-updates"); button.disabled = true; button.setAttribute("aria-busy", "true");
+  button.querySelector("span").textContent = "Checking…";
+  $("update-result").hidden = false; $("update-result").dataset.state = "checking";
+  $("update-status").textContent = "Checking the latest GitHub release…";
+  $("update-release").hidden = true; $("update-checked").hidden = true;
+  try {
+    const result = await api("/api/updates/check", {method:"POST"});
+    $("update-status").textContent = result.message;
+    $("update-result").dataset.state = result.status;
+    const link = $("update-release");
+    // Only link to this project's GitHub releases, including when a check fails.
+    const destination = new URL(result.release_url);
+    link.href = destination.origin === "https://github.com" && /^\/xD4O\/SoundShredder\/releases(?:\/tag\/[v0-9.]+)?$/.test(destination.pathname) ?
+      destination.href : "https://github.com/xD4O/SoundShredder/releases";
+    link.textContent = result.status === "available" ? `Get v${result.latest_version} ↗` : "View releases ↗";
+    const checked = new Date(result.checked_at);
+    if (!Number.isNaN(checked.getTime())) {
+      $("update-checked").textContent = `${result.status === "unavailable" ? "Attempted" : "Checked"} ${checked.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}${result.cached ? " · recent check" : ""}`;
+      $("update-checked").hidden = false;
+    }
+  } catch {
+    $("update-status").textContent = "Couldn't check for updates. Keep the app running and try again, or open Releases.";
+    $("update-result").dataset.state = "unavailable";
+    $("update-release").href = "https://github.com/xD4O/SoundShredder/releases";
+    $("update-release").textContent = "View releases ↗";
+  } finally {
+    $("update-release").hidden = false; button.disabled = false; button.removeAttribute("aria-busy");
+    button.querySelector("span").textContent = "Check for updates";
+  }
+});
 async function boot() {
   try {
     const info = await api("/api/system");
@@ -444,6 +477,10 @@ async function boot() {
     listeningAvailable = !!info.features?.listening_tracks;
     multipassAvailable = !!info.features?.bubble_multipass;
     rerunAvailable = !!info.features?.rerun_source;
+    updatesAvailable = !!info.features?.update_check;
+    document.querySelectorAll("[data-app-version]").forEach(el => { el.textContent = info.version ? `v${info.version}` : ""; });
+    $("check-updates").disabled = !updatesAvailable;
+    if (!updatesAvailable) $("update-help").textContent = "Restart the updated SoundShredder app to enable update checks. Releases are available on GitHub.";
     updateControls();
     if (!bubbleAvailable) document.querySelector("[data-preset=bubble]").title = "Restart SoundShredder to enable the new preset.";
     $("hardware-name").textContent = info.gpu_name || "CPU processing available";

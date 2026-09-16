@@ -68,6 +68,24 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible { 
 .local-badge { display:flex; align-items:center; gap:7px; font-size:10px; color:#a1baaf; border:1px solid #2b443d; background:#172a2390; border-radius:20px; padding:7px 10px; }
 .local-badge i { width:5px; height:5px; border-radius:50%; background:#84edbb; box-shadow:0 0 6px #67f5bb4a; }
 
+.project-tools {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 22px;padding:16px 19px;margin:0 0 26px;border:1px solid #29404c;border-radius:10px;background:linear-gradient(110deg,#132b2d88,#101923)}
+.project-version {display:flex;align-items:center;gap:7px;font-size:11px;color:#a0b8c5}
+.project-version strong {color:#d3ede8;font:10px var(--mono);margin-left:5px}
+.project-actions {display:flex;flex-wrap:wrap;align-items:center;gap:20px}
+.project-link {display:inline-flex;gap:5px;align-items:center;color:#9fcdca;font-size:11px}
+.project-link:hover {color:var(--mint)}
+.project-link .icon {width:14px;height:14px}
+.update-button {display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid #42685f;border-radius:6px;background:#1c383280;color:#b8f4e1;font-size:11px}
+.update-button:hover {background:#284f45}
+.update-button .icon {width:13px;height:13px}
+.update-help {flex-basis:100%;color:#7d98a7;font-size:10px;line-height:1.6;margin:0}
+.update-result {flex-basis:100%;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;border-top:1px solid #2c454e;padding-top:13px}
+.update-result p {font-size:12px;line-height:1.6;margin:0;color:#b6cdd7}
+.update-result[data-state=available] #update-status {color:var(--mint)}
+.update-result[data-state=unavailable] #update-status {color:#e3c399}
+.update-result .update-checked {width:100%;font-size:10px;color:#7d98a7}
+@media(max-width:540px) {.project-tools {padding:16px;gap:15px}.project-actions {width:100%;justify-content:space-between;gap:10px}.project-link,.update-button {font-size:10px}}
+
 /* Signal hero */
 main { max-width:1440px; margin:auto; padding:33px 42px 25px; }
 .intro { display:grid; grid-template-columns:1.1fr 1fr; align-items:center; min-height:234px; margin-bottom:27px; position:relative; }

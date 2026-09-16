@@ -74,6 +74,14 @@ In Terminal, cd to the extracted SoundShredder folder, then run:
 Full feature documentation: README.md
 What has and has not been tested: VERIFICATION.md
 
+GITHUB AND UPDATES
+Use GitHub project or Check for updates in the app. Checks run only when clicked
+and compare your installed version with the latest stable GitHub release.
+A newer version links to the release downloads. No audio or session data is sent.
+To update, close the app, extract the new ZIP into a new folder, and copy your
+old data folder into it to retain sessions. Run the new launcher. Keep your old
+folder until the new version works. See README.md for the full update guide.
+
 LISTEN TO SEPARATE TRACKS
 After processing, scroll to Listen to each layer. Dialogue, Music, Sound effects,
 and Removed sounds each have their own waveform, player, volume and download.

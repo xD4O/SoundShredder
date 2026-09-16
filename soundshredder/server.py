@@ -20,9 +20,11 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from . import __version__
 from .audio import EXTENSIONS, MAX_BYTES, export_mix, read_json, validate_gains, write_json
 from .bubble import MAX_PASSES, export_cleanup, validate_settings
 from .listening import manifest as listening_manifest
+from .updates import RELEASES_URL, REPOSITORY_URL, check_latest
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = Path(os.environ.get("SOUNDSHREDDER_DATA", str(ROOT / "data"))).resolve()
@@ -86,7 +88,7 @@ async def lifespan(_app):
                            {"status": "cancelled", "progress": 0, "message": "Stopped when SoundShredder closed."})
 
 
-app = FastAPI(title="SoundShredder", lifespan=lifespan)
+app = FastAPI(title="SoundShredder", version=__version__, lifespan=lifespan)
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
 
 
@@ -119,15 +121,23 @@ def system():
     available = torch.cuda.is_available()
     return {
         "name": "SoundShredder",
+        "version": __version__,
+        "repository_url": REPOSITORY_URL,
+        "releases_url": RELEASES_URL,
         "gpu_available": available,
         "gpu_name": torch.cuda.get_device_name(0) if available else None,
         "torch": torch.__version__,
         "max_mb": MAX_BYTES // (1024 * 1024),
         "active_jobs": active_jobs(),
         "features": {"bubble_cleanup": True, "listening_tracks": True,
-                     "bubble_multipass": True, "rerun_source": True},
+                     "bubble_multipass": True, "rerun_source": True, "update_check": True},
         "max_bubble_passes": MAX_PASSES,
     }
+
+
+@app.post("/api/updates/check")
+def check_updates():
+    return check_latest()
 
 
 @app.get("/api/jobs")

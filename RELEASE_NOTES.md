@@ -1,35 +1,32 @@
-# SoundShredder v1.0.0
+# SoundShredder v1.0.1
 
-The first community release of SoundShredder: a local audio cleanup workspace made by **cyr4x** for the **Higgsfield Community**.
+SoundShredder now links directly to its GitHub project and can check for new releases from the app.
 
-Upload one audio or video file, separate dialogue, music and sound effects, then choose what stays. Your audio is processed on your computer.
+## What's new
 
-## Downloads and installation
+- **GitHub project** link beside the installed version, visible on desktop and mobile.
+- **Check for updates** compares your version with the latest published stable release and offers a **Get v…** link when a newer version is available.
+- Clear up-to-date, newer-local-version, offline and GitHub-limit messages, with a fallback link to Releases.
+- Update checks run only when clicked. They send no audio, filenames, saved-session information or credentials. Recent results are cached to avoid repeated GitHub requests.
 
-- **Windows:** download `SoundShredder.zip`, extract the entire folder, install Python 3.12 with **Add Python to PATH**, and double-click **Start SoundShredder.bat**. Choose **Setup CPU.bat** for CPU-only setup or **Setup NVIDIA GPU.bat** for NVIDIA acceleration.
-- **Mac:** download `SoundShredder-Mac.zip`, extract it to a writable folder, install Python 3.11 from the macOS universal2 installer, and double-click **Start SoundShredder.command**. If Finder will not launch it, run `bash ` followed by the dragged launcher path in Terminal. See **START HERE - MAC.txt** for the full guide.
-- Keep the launcher window open while using the browser interface. First use downloads dependencies and model weights; an account or API key is not required.
-- These are source packages with setup launchers. Python is installed separately. `SHA256SUMS.txt` contains the checksums for both downloads.
+All v1.0.0 features remain included: dialogue/music/effects separation, four listening tracks, multi-pass Water bubbles cleanup, Windows/Mac launchers and CPU/NVIDIA GPU support.
 
-## Included
+## Downloads and setup
 
-- Bandit v2 separation into dialogue, music and sound effects, with presets, level controls and WAV/ZIP exports.
-- Four separate listening tracks: Dialogue, Music, Sound effects and Removed sounds, with waveforms, playback controls and downloads.
-- Experimental **Bubble FX** cleanup with four sound targets, reduction strength and optional time ranges.
-- **Water bubbles → Aggressive multi-pass:** 2, 3 or 4 passes, each analyzing the previous cleaned result. Start with 2 passes and check the combined Removed sounds track.
-- Saved sessions and **Clean up again** to rerun the original upload without another upload. Earlier sessions and exports are retained.
-- Auto, NVIDIA GPU or CPU processing, plus optional CPU fallback when GPU memory runs out. Mac uses CPU.
-- A responsive dark interface, cyr4x social links and Higgsfield Community branding.
-- A Windows fix for temporary access-denied errors while updating progress files.
+- **Windows:** download `SoundShredder.zip`, extract it, install Python 3.12 with **Add Python to PATH**, and run **Start SoundShredder.bat**. CPU and NVIDIA setup launchers are included.
+- **Mac:** download `SoundShredder-Mac.zip`, extract it, install Python 3.11 using the macOS universal2 installer, and run **Start SoundShredder.command**. See **START HERE - MAC.txt** for launch troubleshooting.
+- Both downloads include the full installation guide. These are Python source packages with setup launchers; dependencies and model weights download on first use. `SHA256SUMS.txt` contains both ZIP checksums.
 
-## Tested and known limits
+## Updating from v1.0.0
 
-106 automated tests passed in both tested Windows Python/PyTorch environments. Real GPU and CPU runs, saved-source reruns, audio previews and export timing were checked. The Mac launcher and dependency handling are included, but actual Mac hardware has not been tested; Apple Metal/MPS acceleration is not implemented.
+Finish processing and close SoundShredder. Extract the new ZIP into a new writable folder. To retain saved sessions, copy your old `data` folder into the new folder while the app is closed, then run the new launcher. The model cache is reused. Keep the old folder until you have checked the new installation. Updates are installed manually; the button checks for availability and opens release downloads.
 
-AI separation can leave bleed or reduce wanted sounds. Bubble FX is experimental, and additional passes can remove overlapping effects. Compare the original, cleaned audio and Removed sounds before using a result. Samples outside a selected bubble-cleanup interval are preserved exactly in the float WAV. Numerical checks do not establish perceptual quality inside that interval.
+## Verification and limits
 
-Model weights, uploaded clips, saved sessions and local environments are excluded from these packages. Bundled AudioSep code and Space Grotesk include their upstream licenses; model attribution and branding sources are documented in the included README and notices.
+129 automated tests passed on Windows with Python 3.12/PyTorch 2.8. The 36 update/API checks also passed with Python 3.11/PyTorch 2.2.2 CPU. Coverage includes numeric version ordering, offline/time-out/rate-limit recovery, rejecting draft or prerelease metadata, fixed project links, cached concurrent checks and explicit same-origin checks. Browser verification exercised live GitHub checks and simulated newer-release/offline responses on desktop and mobile.
+
+Mac uses CPU; actual Mac hardware remains untested. Bubble FX remains experimental, and extra passes can reduce wanted sounds. Compare the original, cleaned and Removed sounds previews. Uploaded media, saved sessions, model weights and local environments are excluded from the release packages.
 
 **Made by cyr4x · Made for Higgsfield Community**
 
-[X](https://x.com/_cyr4x) · [Higgsfield](https://higgsfield.ai/@cyr4x) · [Instagram](https://www.instagram.com/__cyr4x__/) · [YouTube](https://www.youtube.com/@cyr4xfilms)
+[GitHub](https://github.com/xD4O/SoundShredder) · [X](https://x.com/_cyr4x) · [Higgsfield](https://higgsfield.ai/@cyr4x) · [Instagram](https://www.instagram.com/__cyr4x__/) · [YouTube](https://www.youtube.com/@cyr4xfilms)

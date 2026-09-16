@@ -1,5 +1,12 @@
 # Verification on this computer
 
+## GitHub project link and update checks (v1.0.1)
+
+- Added a project link and on-demand update checks beside the running app version. `/api/system` reports that version from the Python package; the interface no longer uses a fixed sidebar version label.
+- The local server checks the fixed public GitHub latest-release endpoint with a six-second timeout, numeric version comparison, bounded response size and no authorization or user-media payload. Drafts, prereleases, malformed metadata and oversized responses do not produce an up-to-date result. Release links are constructed within this project's GitHub URL. Successful checks are cached for five minutes, failures for thirty seconds; concurrent clicks share one request.
+- **129 tests passed** under Windows Python 3.12/PyTorch 2.8; **36 targeted update/API tests passed** under Python 3.11/PyTorch 2.2.2 CPU. These include version ordering, offline/time-out/HTTP failures, retry recovery, concurrency, explicit checks and rejecting cross-origin requests. Ruff and JavaScript syntax checks passed.
+- Browser verification covers the live GitHub response, simulated newer-release and offline responses, retry controls, project links and responsive layout. No automatic check or download occurs on startup. A failed update check leaves local audio controls usable. Mac hardware remains untested.
+
 ## Water bubbles: aggressive multi-pass
 
 - Optional 2, 3, or 4 passes for Water bubbles, with a single pass still the default. Each pass runs AudioSep inference on the preceding cleaned result, applying the chosen strength and time range. The model is reused across passes, and GPU OOM fallback retries the failed pass on CPU. The removed track combines all passes without applying strength or selection fades twice.

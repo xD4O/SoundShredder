@@ -7,8 +7,8 @@
   <meta name="author" content="cyr4x">
   <title>SoundShredder — Your sound. In focus.</title>
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=6">
-  <script src="/static/app.js?v=5" defer></script>
+  <link rel="stylesheet" href="/static/style.css?v=7">
+  <script src="/static/app.js?v=6" defer></script>
 </head>
 <body>
   <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -36,7 +36,7 @@
     <div class="history-heading"><span class="nav-label">RECENT SESSIONS</span><button id="refresh-history" class="icon-button" aria-label="Refresh recent sessions"><svg class="icon"><use href="#icon-refresh"/></svg></button></div>
     <div id="history" class="history"><p class="muted small">Your next great sound starts here.<br>Completed sessions appear below.</p></div>
     <div class="sidebar-bottom"><div class="privacy-icon"><svg class="icon"><use href="#icon-shield"/></svg></div><strong>Your sound stays yours.</strong><p>Processed on your computer.<br>No uploads to the cloud.</p><div class="privacy-status"><span class="local-dot"></span> PRIVATE BY DESIGN</div></div>
-    <div class="sidebar-version"><span>SOUNDSHREDDER</span><span>V1.0</span></div>
+    <div class="sidebar-version"><span>SOUNDSHREDDER</span><span data-app-version>—</span></div>
   </aside>
 
   <div class="workspace">
@@ -57,6 +57,12 @@
         </div>
       </section>
 
+      <section id="project-updates" class="project-tools" aria-label="Project and updates">
+        <div class="project-version"><span class="local-dot" aria-hidden="true"></span><span>SoundShredder <strong data-app-version>—</strong></span></div>
+        <div class="project-actions"><a class="project-link" href="https://github.com/xD4O/SoundShredder" target="_blank" rel="noopener noreferrer" aria-label="SoundShredder on GitHub (opens in a new tab)">GitHub project <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a><button id="check-updates" class="update-button" disabled><svg class="icon" aria-hidden="true"><use href="#icon-refresh"/></svg><span>Check for updates</span></button></div>
+        <div id="update-result" class="update-result" hidden><p id="update-status" role="status" aria-live="polite"></p><a id="update-release" class="project-link" href="https://github.com/xD4O/SoundShredder/releases" target="_blank" rel="noopener noreferrer">View releases ↗</a><p id="update-checked" class="update-checked" hidden></p></div>
+        <p id="update-help" class="update-help">Checks GitHub only when you click. Your audio stays on this computer.</p>
+      </section>
       <div id="error" class="notice error" role="alert" hidden></div>
       <div class="section-kicker"><span>THE WORKSPACE</span><span>01 — IMPORT & CONFIGURE</span></div>
       <div class="main-grid">

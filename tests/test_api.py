@@ -1,4 +1,5 @@
 import io
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -31,7 +32,12 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setattr(server, "DATA", tmp_path)
     monkeypatch.setattr(server, "PROCESSES", {})
     monkeypatch.setattr(server, "LISTENING_PROCESSES", {})
-    monkeypatch.setattr(server.subprocess, "Popen", FakeProcess)
+    # Mock the server's worker launcher without changing subprocess for PyTorch imports.
+    monkeypatch.setattr(server, "subprocess", SimpleNamespace(
+        Popen=FakeProcess, STDOUT=server.subprocess.STDOUT,
+        TimeoutExpired=server.subprocess.TimeoutExpired,
+        CREATE_NO_WINDOW=getattr(server.subprocess, "CREATE_NO_WINDOW", 0),
+    ))
     with TestClient(server.app) as instance:
         yield instance
 
@@ -40,6 +46,21 @@ def wav():
     stream = io.BytesIO()
     sf.write(stream, np.zeros((80, 1)), 8000, format="WAV")
     return stream.getvalue()
+
+
+def test_update_check_is_explicit_and_same_origin(client, monkeypatch):
+    from soundshredder import __version__
+
+    calls = []
+    monkeypatch.setattr(server, "check_latest", lambda: calls.append(True) or {"status": "current"})
+    system = client.get("/api/system").json()
+    assert system["version"] == __version__ and system["features"]["update_check"]
+    assert system["repository_url"] == "https://github.com/xD4O/SoundShredder"
+    assert not calls
+    assert client.post("/api/updates/check", headers={"Origin": "https://external.example"}).status_code == 403
+    assert not calls
+    assert client.post("/api/updates/check").json()["status"] == "current"
+    assert len(calls) == 1
 
 
 def test_upload_cancel_and_delete(client):
