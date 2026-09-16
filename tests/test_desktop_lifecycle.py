@@ -26,7 +26,7 @@ def wait_for(check, timeout=15):
 
 
 def test_real_process_close_reopen_duplicate_and_crash_recovery(tmp_path):
-    home = tmp_path / "Profile with spaces"
+    home = (tmp_path / "Profile with spaces").resolve()
     home.mkdir()
     # Leftovers from an old/crashed process must not block or redirect startup.
     (home / "desktop.json").write_text('{"pid":123,"url":"https://example.invalid/#old"}')
@@ -36,9 +36,14 @@ def test_real_process_close_reopen_duplicate_and_crash_recovery(tmp_path):
     flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
     ids = []
     for cycle in range(3):
-        process = subprocess.Popen(command, creationflags=flags)
+        log = (tmp_path / f"child-{cycle}.log").open("w+")
+        process = subprocess.Popen(command, creationflags=flags, stdout=log, stderr=subprocess.STDOUT)
         try:
-            instance = wait_for(lambda: bootstrap.existing_instance(home))
+            try:
+                instance = wait_for(lambda: bootstrap.existing_instance(home))
+            except AssertionError:
+                log.seek(0)
+                raise AssertionError(f"Child exit: {process.poll()}; output: {log.read()}; metadata: {bootstrap.read_json(home / 'desktop.json')}") from None
             ids.append(instance["saved"]["pid"])
             assert instance["saved"]["pid"] == process.pid
             again = subprocess.run(command, capture_output=True, timeout=15, creationflags=flags)
@@ -55,6 +60,7 @@ def test_real_process_close_reopen_duplicate_and_crash_recovery(tmp_path):
             if process.poll() is None:
                 process.kill()
                 process.wait(timeout=10)
+            log.close()
     assert len(set(ids)) == 3
 
 

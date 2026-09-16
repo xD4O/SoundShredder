@@ -4,12 +4,12 @@ A local Python audio tool for cleaning up Seedance clips and other mixed soundtr
 
 See the [future-update roadmap](ROADMAP.md) for planned installation, first-run setup, and app-update improvements.
 
-## Standalone Windows and Mac previews (v1.1.0)
+## Standalone Windows and Mac previews (v1.1.1)
 
 Standalone previews include Python and a setup screen styled like the main app. Required audio packages install automatically into a private runtime; no manual Python installation or terminal setup is needed. Initial engine/model downloads still require internet. Sessions live outside the application folder.
 
-- **[Windows standalone preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.0-windows-preview.1)** - EXE installer for Windows 10/11 x64; CPU or NVIDIA GPU. Allow 4 GiB/14 GiB free for setup, plus models and sessions. [Install and uninstall](desktop/WINDOWS-README.md).
-- **[Mac standalone preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.0-macos-preview.1)** - separate Apple Silicon and Intel app ZIPs for macOS 12+; CPU only. Allow 3 GiB free plus models/sessions. [Install and uninstall](desktop/MAC-README.md).
+- **[Windows standalone preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.1-windows-preview.1)** - EXE installer for Windows 10/11 x64; CPU or NVIDIA GPU. Allow 4 GiB/14 GiB free for setup, plus models and sessions. [Install and uninstall](desktop/WINDOWS-README.md).
+- **[Mac standalone preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.1-macos-preview.1)** - separate Apple Silicon and Intel app ZIPs for macOS 12+; CPU only. Allow 3 GiB free plus models/sessions. [Install and uninstall](desktop/MAC-README.md).
 
 Both are **unsigned prereleases**. Mac Finder launch, Gatekeeper and real inference still need Mac hardware testing. These prereleases are separate from the stable v1.0.3 source downloads below. Setup shows storage location/free space and does not retain duplicate pip downloads. See [build instructions and limitations](desktop/README.md).
 

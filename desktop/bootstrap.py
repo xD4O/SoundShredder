@@ -84,6 +84,7 @@ def local_request(url, *, token=None, payload=None, timeout=3):
 
 
 def existing_instance(home):
+    home = home.resolve()
     saved = read_json(home / "desktop.json", {})
     try:
         parts = urllib.parse.urlsplit(saved.get("url", ""))
@@ -92,7 +93,7 @@ def existing_instance(home):
         base = urllib.parse.urlunsplit((parts.scheme, parts.netloc, "", "", ""))
         state = local_request(base + "/api/state", token=parts.fragment, timeout=.8)
         # v1.1.0 also returns home/status; accept its authenticated setup endpoint.
-        if state.get("home") != str(home) or state.get("status") not in {"idle", "installing", "starting", "ready", "error"}:
+        if not state.get("home") or Path(state["home"]).resolve() != home or state.get("status") not in {"idle", "installing", "starting", "ready", "error"}:
             return None
         return dict(base=base, token=parts.fragment, saved=saved, state=state)
     except (OSError, ValueError, TypeError):
@@ -521,10 +522,10 @@ if __name__ == "__main__":
         import traceback
         HOME.mkdir(parents=True, exist_ok=True)
         (HOME / "launcher-error.log").write_text(traceback.format_exc(), encoding="utf-8")
-        if sys.platform == "win32":
+        if sys.platform == "win32" and "--no-browser" not in sys.argv:
             import ctypes
             ctypes.windll.user32.MessageBoxW(None, "SoundShredder could not open. See launcher-error.log in " + str(HOME), "SoundShredder", 0x10)
-        elif sys.platform == "darwin" and "--quit" not in sys.argv and "--reopen-only" not in sys.argv:
+        elif sys.platform == "darwin" and not any(flag in sys.argv for flag in ("--quit", "--reopen-only", "--no-browser")):
             subprocess.run(["/usr/bin/osascript", "-e",
                             'display alert "SoundShredder could not open" message "See launcher-error.log in ~/Library/Application Support/SoundShredder for details." as critical'],
                            check=False)

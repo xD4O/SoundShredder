@@ -1,4 +1,4 @@
-# SoundShredder for Mac — standalone preview 1.1.0
+# SoundShredder for Mac â€” standalone preview 1.1.1
 
 Made by cyr4x. Made for the Higgsfield Community.
 
@@ -22,9 +22,9 @@ Models download on first use: approximately 426 MB for layer separation and 1.2 
 
 ## Reopen, close, and troubleshoot
 
-Open SoundShredder.app again to return to setup and reopen your workspace. A second launch reuses the existing standalone manager. Your installed engine is checked and reused. Close any older source-package instance before launching the standalone app.
+Open SoundShredder.app from Applications whenever you want to return, including after quitting. If already running, it reopens the existing workspace through a native macOS reopen handler. The waveform menu-bar icon offers **Open SoundShredder**, **Setup and diagnostics**, and **Quit SoundShredder**. Closing only the browser leaves the app available in that menu. Your installed engine is checked and reused. Close any older source-package instance before launching the standalone app.
 
-Use **Close SoundShredder** on the setup screen to stop its background server. Finish/cancel audio jobs first. Closing a browser tab alone does not stop it. While setup is installing packages, wait for it to finish; this preview has no package-install cancellation control. Reopen the app to get back to the setup screen.
+Use **Close SoundShredder** on the setup screen to stop its background server. Finish/cancel audio jobs first. Closing a browser tab alone does not stop it. While setup is installing packages, wait for it to finish; this preview has no package-install cancellation control. Use the waveform menu > Setup and diagnostics to get back to the setup screen.
 
 If setup fails, use **Retry setup** and check free space/network access. **Setup details** provides copyable diagnostics. Review local paths before sharing logs. Do not move the .app while setup or processing is running. If you move it later, reopen the .app at its new location; the runtime's app path is refreshed automatically.
 
@@ -42,7 +42,7 @@ The app is about 70 MB extracted; dependencies, models and audio use additional 
 
 To uninstall, first use Close SoundShredder. Move the .app to Trash. In Finder choose Go > Go to Folder, enter `~/Library/Application Support/SoundShredder`, and remove only `runtimes` to reclaim engine space while keeping sessions. Remove the whole SoundShredder support folder only if you also want to permanently discard its sessions/settings. Remove the SoundShredder-specific bubble cache only if you no longer need it. Do not delete shared Hugging Face or pip caches indiscriminately. Empty only these items from Trash when you are ready to reclaim the space.
 
-Mac preview release: https://github.com/xD4O/SoundShredder/releases/tag/v1.1.0-macos-preview.1
+Mac preview release: https://github.com/xD4O/SoundShredder/releases/tag/v1.1.1-macos-preview.1
 
 Project and updates: https://github.com/xD4O/SoundShredder
 Creator: https://higgsfield.ai/@cyr4x

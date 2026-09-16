@@ -35,6 +35,11 @@ def build():
     with zipfile.ZipFile(archive) as z:
         z.extractall(runtime)
     for folder in ("soundshredder", "static", "desktop"):
+        target = STAGE / folder
+        if target.exists():
+            if target.is_symlink() or target.resolve().parent != STAGE.resolve():
+                raise RuntimeError("Unexpected staging directory.")
+            shutil.rmtree(target)
         shutil.copytree(ROOT / folder, STAGE / folder, dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     for name in ("README.md", "ROADMAP.md", "requirements.txt"):

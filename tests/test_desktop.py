@@ -45,13 +45,13 @@ def test_setup_rejects_invalid_device_and_duplicate_start(tmp_path, monkeypatch)
     monkeypatch.setattr(manager, "setup", lambda: None)
     manager.start("cpu")
     with pytest.raises(ValueError, match="already"):
-        manager.start("cuda")
+        manager.start("cpu")
     with pytest.raises(ValueError, match="Wait"):
         manager.stop()
 
 
 def test_failed_setup_can_retry_without_ready_marker(tmp_path):
-    manager = Manager(tmp_path / "user", tmp_path / "missing-app")
+    manager = Manager(tmp_path / "user", tmp_path / "missing-app", system="win32")
     manager.setup()
     assert manager.state()["status"] == "error"
     assert not list(manager.home.rglob("ready.json"))
@@ -62,12 +62,12 @@ def test_embedded_runtime_is_private_and_can_follow_moved_app(tmp_path):
     root = tmp_path / "app with spaces"
     (root / "python").mkdir(parents=True)
     (root / "python" / "python.exe").write_bytes(b"fixture")
-    manager = Manager(tmp_path / "user", root)
+    manager = Manager(tmp_path / "user", root, system="win32")
     runtime = manager.prepare_runtime("cpu")
     assert runtime.is_relative_to(manager.home)
     assert str(root) in (runtime / "python313._pth").read_text()
     (runtime / "sentinel").write_text("keep dependencies")
-    moved = Manager(manager.home, tmp_path / "new app")
+    moved = Manager(manager.home, tmp_path / "new app", system="win32")
     moved.prepare_runtime("cpu")
     assert str(moved.root) in (runtime / "python313._pth").read_text()
     assert (runtime / "sentinel").read_text() == "keep dependencies"

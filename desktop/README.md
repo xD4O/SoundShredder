@@ -1,10 +1,10 @@
 # Standalone apps
 
-Separate [Windows](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.0-windows-preview.1) and [Mac](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.0-macos-preview.1) prereleases are available. Each build includes its own Python interpreter and opens the same SoundShredder web interface, with a matching dark/mint setup screen. Users do not install Python, edit PATH, open a terminal, or install packages themselves.
+Separate [Windows](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.1-windows-preview.1) and [Mac](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.1-macos-preview.1) prereleases are available. Each build includes its own Python interpreter and opens the same SoundShredder web interface, with a matching dark/mint setup screen. Users do not install Python, edit PATH, open a terminal, or install packages themselves.
 
 ## Using the installer
 
-1. Open **SoundShredder-Setup-1.1.0-Windows.exe** on 64-bit Windows 10 or 11.
+1. Open **SoundShredder-Setup-1.1.1-Windows.exe** on 64-bit Windows 10 or 11.
 2. Choose **CPU** or **NVIDIA GPU** in the setup screen, then **Set up SoundShredder**. Keep an internet connection during the initial downloads. The setup progress bar represents stages, not a precise download percentage; Setup details shows package download progress.
 3. Select **Open workspace** when ready. The familiar interface, video preview, presets, sessions, and track downloads remain available. Browser popup blocking may require clicking this button.
 4. Reopen using **SoundShredder** in the Windows Start menu. Setup reuses its installed engine and checks it before opening the workspace. Launching the shortcut twice reopens the existing standalone manager.
@@ -14,7 +14,7 @@ The installer is currently unsigned. Code signing and broader clean-machine test
 
 ## Files and upgrades
 
-- Application: `%LOCALAPPDATA%\Programs\SoundShredder\1.1.0`
+- Application: `%LOCALAPPDATA%\Programs\SoundShredder\1.1.1`
 - Sessions: `%LOCALAPPDATA%\SoundShredder\data`
 - Private engines: `%LOCALAPPDATA%\SoundShredder\runtimes`
 - Settings and setup/app diagnostic logs: `%LOCALAPPDATA%\SoundShredder`
