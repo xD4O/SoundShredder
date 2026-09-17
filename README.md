@@ -4,6 +4,15 @@ A local Python audio tool for cleaning up Seedance clips and other mixed soundtr
 
 See the [future-update roadmap](ROADMAP.md) for planned installation, first-run setup, and app-update improvements.
 
+## Electron desktop previews (v1.2.0)
+
+The same dark/mint interface now runs in its own desktop window, with bundled Python, automatic engine setup, native menus and Save dialogs. Closing the window quits the app after work finishes; reopening reuses saved sessions and engines. Duplicate launches focus the existing window. An earlier standalone must be quit before using Electron with its shared profile.
+
+- **[Windows Electron](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-windows-preview.1)** — Windows 10/11 x64 installer, CPU or NVIDIA. [Windows installation and troubleshooting](electron/docs/WINDOWS.md).
+- **[macOS Electron](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1)** — separate Apple Silicon (`arm64`) and Intel (`x64`) DMGs/ZIPs, **macOS 13+**, CPU processing. [macOS installation and troubleshooting](electron/docs/MACOS.md).
+
+These are unsigned previews; macOS builds are not Developer ID signed/notarized. Initial engine/model downloads require internet. Updates are manual through **Help > Check for Electron updates**; the workspace sidebar still checks stable source releases. Each download includes only its matching installation guide. [Electron build instructions and verification](electron/README.md).
+
 ## Standalone Windows and Mac previews (v1.1.1)
 
 Standalone previews include Python and a setup screen styled like the main app. Required audio packages install automatically into a private runtime; no manual Python installation or terminal setup is needed. Initial engine/model downloads still require internet. Sessions live outside the application folder.

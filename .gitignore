@@ -6,6 +6,7 @@ __pycache__/
 data/
 *.log
 artifacts/
+node_modules/
 SoundShredder.zip
 SoundShredder-Mac.zip
 SHA256SUMS.txt

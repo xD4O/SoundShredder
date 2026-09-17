@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 import subprocess
+import sys
 import time
 import urllib.parse
 import urllib.request
@@ -24,6 +25,8 @@ def wait_for(check, timeout=60):
 
 
 def main():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from soundshredder import __version__
     parser = argparse.ArgumentParser()
     parser.add_argument("archive", type=Path)
     args = parser.parse_args()
@@ -64,7 +67,7 @@ def main():
         state = wait_for(ready, timeout=900)
         with urllib.request.urlopen(state["url"] + "/api/system", timeout=10) as response:
             system = json.load(response)
-        assert system["name"] == "SoundShredder" and system["version"] == "1.1.1"
+        assert system["name"] == "SoundShredder" and system["version"] == __version__
         previous = log.read_text().count("reopen-workspace")
         subprocess.run(["open", "-a", str(app)], check=True)
         wait_for(lambda previous=previous: log.read_text().count("reopen-workspace") > previous)

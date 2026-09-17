@@ -1,6 +1,16 @@
 # Future updates
 
-No release date is committed for the remaining work. The public v1.0.3 release remains the source ZIP; Windows and Mac standalone packages are published as separate v1.1.0 prereleases. Mac hardware validation remains outstanding.
+No release date is committed for the remaining work. The stable v1.0.3 release remains the source ZIP. Browser-based standalones are separate v1.1.1 prereleases; Electron desktop work is in v1.2.0. Native Mac CI exercises launch and CPU workflows; consumer Gatekeeper and broader hardware validation remain separate checks.
+
+## Electron desktop
+
+- Shared web interface in a dedicated application window, with native menus and Save dialogs.
+- Bundled Python and automatic engine setup; existing standalone engines and sessions retained.
+- Close/reopen, duplicate-window prevention, active-work quit protection and owner-pipe crash cleanup.
+- Windows per-user installer and separate Apple Silicon/Intel Mac DMG/ZIP packaging.
+- Matching Windows/macOS documentation, including offline installation guides.
+
+See [Electron documentation](electron/README.md). Publisher signing/notarization, automatic updates and broader GPU validation remain future work.
 
 ## Implemented in the standalone previews
 

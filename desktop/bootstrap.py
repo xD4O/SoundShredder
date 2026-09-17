@@ -468,10 +468,13 @@ def main():
     parser.add_argument("--quit", action="store_true")
     parser.add_argument("--reopen-only", action="store_true")
     parser.add_argument("--hosted", action="store_true", help="Keep the native Mac host attached to the manager")
+    parser.add_argument("--exclusive", action="store_true", help="Require ownership of this manager for a desktop shell")
     args = parser.parse_args()
     home = args.home.resolve()
     lock, existing = claim_instance(home)
     if existing:
+        if args.exclusive:
+            raise RuntimeError("Another SoundShredder standalone is running. Close it from its setup page or menu-bar Quit control, then retry. Your engine and sessions are kept.")
         if args.quit:
             local_request(existing["base"] + "/api/stop", token=existing["token"], payload={})
             return
@@ -510,11 +513,11 @@ def main():
             manager.start(manager.device)
         if args.hosted:
             def host_closed():
-                import select
-                while True:
-                    readable, _, _ = select.select([sys.stdin.fileno()], [], [], 1)
-                    if readable and not os.read(sys.stdin.fileno(), 1024):
-                        break
+                # The Windows CRT cannot select stdin; use the same pipe observer
+                # as the workspace so a crashed desktop shell cannot orphan it.
+                sys.path.insert(0, str(ROOT))
+                from desktop.lifetime import wait_for_owner
+                wait_for_owner()
                 manager.cleanup()
                 server.shutdown()
             threading.Thread(target=host_closed, daemon=True).start()

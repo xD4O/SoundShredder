@@ -164,3 +164,26 @@ def test_local_server_startup_never_uses_network_name_resolution(tmp_path, monke
     manager = bootstrap.Manager(tmp_path)
     with bootstrap.LocalServer(("127.0.0.1", 0), bootstrap.handler_for(manager)) as server:
         assert server.server_name == "127.0.0.1" and server.server_port > 0
+
+
+def test_hosted_manager_exits_when_desktop_pipe_closes_and_can_relaunch(tmp_path):
+    script = Path(bootstrap.__file__).resolve()
+    python = getattr(sys, "_base_executable", sys.executable) if os.name == "nt" else sys.executable
+    command = [python, str(script), "--no-browser", "--hosted", "--exclusive", "--home", str(tmp_path)]
+    for _ in range(2):
+        process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        try:
+            current = wait_for(lambda: bootstrap.existing_instance(tmp_path))
+            assert current["saved"]["pid"] == process.pid
+            duplicate = subprocess.run(command, capture_output=True, timeout=20)
+            assert duplicate.returncode != 0 and b"Another SoundShredder standalone" in duplicate.stderr
+            assert bootstrap.existing_instance(tmp_path)["saved"]["pid"] == process.pid
+            process.stdin.close()
+            process.wait(timeout=20)
+            assert process.returncode == 0, process.stderr.read().decode()
+            assert not (tmp_path / "desktop.json").exists()
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait(timeout=10)

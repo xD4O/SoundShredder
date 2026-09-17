@@ -32,7 +32,7 @@ jobs:
       - name: Build native application
         run: python scripts/build_mac_standalone.py --arch '${{ matrix.arch }}'
       - name: Install, reopen, close and relaunch through Launch Services
-        run: python scripts/verify_mac_lifecycle.py 'artifacts/mac-standalone/SoundShredder-1.1.1-Mac-${{ matrix.label }}.zip'
+        run: python scripts/verify_mac_lifecycle.py artifacts/mac-standalone/SoundShredder-*-Mac-${{ matrix.label }}.zip
       - uses: actions/upload-artifact@v4
         if: always()
         with:
