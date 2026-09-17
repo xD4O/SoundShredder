@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, Menu, dialog, ipcMain, shell, session } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, shell, session, nativeTheme } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
@@ -11,6 +11,7 @@ const home = path.resolve(process.env.SOUNDSHREDDER_DESKTOP_HOME || (process.pla
   : path.join(process.env.LOCALAPPDATA || app.getPath('appData'), 'SoundShredder')));
 app.setPath('userData', path.join(home, 'electron'));
 app.setName('SoundShredder');
+nativeTheme.themeSource = 'dark';
 const root = app.isPackaged ? path.join(process.resourcesPath, 'backend')
   : path.resolve(__dirname, '../artifacts/electron/backend');
 const backend = new Backend(root, home);
@@ -168,7 +169,9 @@ backend.on('exit', ({ code }) => {
 });
 if (!app.requestSingleInstanceLock()) { permittedExit = true; app.quit(); }
 else {
-  app.on('second-instance', () => { focus(); if (!starting && backend.base) void showWorkspace().catch(error => fail(error.message)); });
+  // Reopening should focus the current screen, including diagnostics. Starting
+  // an asynchronous navigation here can overwrite a user's next menu action.
+  app.on('second-instance', focus);
   app.on('activate', focus);
   app.on('before-quit', event => { if (!permittedExit) { event.preventDefault(); void requestQuit(); } });
   app.whenReady().then(async () => {

@@ -31,11 +31,12 @@ function instance() {
 }
 async function state() { const i = instance(); return request(i.base + '/api/state', i.token); }
 const evidence = { platform: process.platform, architecture: process.arch, executable: executablePath, cycles: [] };
-let application;
+let application, nativePid;
 (async () => {
   for (let cycle = 0; cycle < 4; cycle++) {
     application = await electron.launch({ executablePath, args, env, timeout: 60000 });
     const page = await application.firstWindow();
+    nativePid = await application.evaluate(() => process.pid);
     await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.setAudioMuted(true));
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -60,6 +61,13 @@ let application;
     await new Promise((resolve, reject) => { duplicate.on('exit', code => code === 0 ? resolve() : reject(new Error('Duplicate launch failed'))); duplicate.on('error', reject); });
     assert.equal(instance().pid, pid);
     assert.equal(await application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().length), 1);
+    if (process.platform === 'darwin' && process.env.SS_TEST_EXECUTABLE) {
+      const bundle = path.resolve(executablePath, '../../..');
+      const opened = spawnSync('/usr/bin/open', ['-a', bundle], { env, timeout: 15000 });
+      assert.equal(opened.status, 0, opened.stderr?.toString());
+      assert.equal(instance().pid, pid);
+      evidence.mac_launch_services_reopen = true;
+    }
     await page.evaluate(() => { void window.soundshredderDesktop.openSetup(); });
     await page.locator('#diagnostics').click();
     await page.locator('#log').waitFor();
@@ -117,7 +125,6 @@ let application;
     if (cycle === 2) {
       // Playwright may launch through a Windows command shim. Kill the actual
       // Electron main process, not that shim, to exercise owner-pipe cleanup.
-      const nativePid = await application.evaluate(() => process.pid);
       process.kill(nativePid);
     } else if (cycle === 1) {
       await application.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(item => item.label === 'Quit SoundShredder').click()).catch(() => {});
@@ -138,7 +145,8 @@ let application;
   if (application) {
     try { await (await application.firstWindow()).screenshot({ path: path.join(output, 'failure.png'), fullPage: true }); } catch {}
     try { const i = instance(); await request(i.base + '/api/stop', i.token, {}); } catch {}
-    await application.close().catch(() => {});
+    try { process.kill(nativePid); } catch {}
+    await Promise.race([application.close().catch(() => {}), delay(5000)]);
   }
   process.exitCode = 1;
 });
