@@ -115,7 +115,10 @@ let application;
     // Exercise window Close and menu Quit, not just API shutdown.
     const closing = application.waitForEvent('close');
     if (cycle === 2) {
-      application.process().kill(); // Simulate desktop host failure; owned Python must stop.
+      // Playwright may launch through a Windows command shim. Kill the actual
+      // Electron main process, not that shim, to exercise owner-pipe cleanup.
+      const nativePid = await application.evaluate(() => process.pid);
+      process.kill(nativePid);
     } else if (cycle === 1) {
       await application.evaluate(({ Menu }) => Menu.getApplicationMenu().items[0].submenu.items.find(item => item.label === 'Quit SoundShredder').click()).catch(() => {});
     } else {
