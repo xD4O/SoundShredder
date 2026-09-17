@@ -83,7 +83,7 @@ class Backend extends EventEmitter {
   setupURL() { return this.base + '/#' + this.token; }
   api(route, payload) {
     if (!this.base) return Promise.reject(new Error('The audio engine is not ready.'));
-    return request(this.base + route, this.token, payload);
+    return request(this.base + route, this.token, payload, route === '/api/stop' ? 30000 : 5000);
   }
   async detach() {
     const child = this.child;

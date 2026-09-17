@@ -22,7 +22,7 @@ Python is bundled; audio dependencies/models are downloaded separately. Models u
 
 ## Storage, updates and uninstall
 
-The normal Electron app location is `%LOCALAPPDATA%\Programs\soundshredder-desktop` (or your chosen installer folder). Your shared profile is `%LOCALAPPDATA%\SoundShredder`: `data` contains sessions, `runtimes` holds engines, `electron` holds window/browser settings, and logs live beside them. Model caches remain in your user folder. Older standalone applications are separate installations; remove them only after checking the new version.
+The normal Electron app location is `%LOCALAPPDATA%\Programs\SoundShredder` (or your chosen installer folder). Your shared profile is `%LOCALAPPDATA%\SoundShredder`: `data` contains sessions, `runtimes` holds engines, `electron` holds window/browser settings, and logs live beside them. Model caches remain in your user folder. Older standalone launchers may remain in versioned subfolders such as `1.1.1`; the new Start menu shortcut opens Electron.
 
 **Help > Check for Electron updates** opens GitHub releases. Install the matching newer Windows Electron release after quitting. Updates are manual; no background update installation is enabled. The workspace's existing update checker checks stable source releases, which are a separate channel.
 
