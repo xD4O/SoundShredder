@@ -1,4 +1,6 @@
-# Standalone apps
+# Browser-based standalone apps (v1.1.1)
+
+For the newer app with its own native window, use the [Electron desktop documentation](../electron/README.md), [Windows Electron release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-windows-preview.1) or [macOS Electron release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1). This page describes the earlier browser-based launcher and its different quit controls.
 
 Separate [Windows](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.1-windows-preview.1) and [Mac](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.1-macos-preview.1) prereleases are available. Each build includes its own Python interpreter and opens the same SoundShredder web interface, with a matching dark/mint setup screen. Users do not install Python, edit PATH, open a terminal, or install packages themselves.
 

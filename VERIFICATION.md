@@ -1,4 +1,19 @@
-# Verification on this computer
+# Verification record
+
+## Community documentation refresh (v1.2.0, 2026-09-16)
+
+- Refreshed the illustrated HTML/PDF guide with 13 sections/pages, including Windows and Mac Electron installation, close/reopen behavior, manual desktop updates, profile storage and source-specific Mac certificate repair. Original browser screenshots are retained and identified as the shared interface.
+- Rendered and visually reviewed all 13 PDF pages, including the installation pages at readable size; the layout check found no footer overlap. The HTML loaded with 13 sections, valid internal navigation and no horizontal overflow at 1280 px or 390 px. The new versioned PDF is the public guide and is included by source packaging; the dated PDF remains an equivalent compatibility copy. Source packaging also includes the linked Electron reference guides. Historical source-release documents remain available separately.
+
+## Electron desktop 1.2.0 (2026-09-16)
+
+- Published separate Windows and macOS Electron previews with matching platform guides, offline HTML installation instructions and SHA-256 checksums. The same shared audio interface runs in a sandboxed desktop window with native menus and Save dialogs.
+- **173 Python tests** passed locally with two existing framework deprecation warnings; three Electron boundary tests and targeted Ruff checks passed. Renderer Node access is disabled; context isolation and sandboxing are enabled.
+- [Workflow 35167472250](https://github.com/xD4O/SoundShredder/actions/runs/35167472250) passed on **Windows x64, native Apple Silicon and native Intel Mac**. Each packaged app installed its private CPU engine, processed a generated one-second H.264/AAC MP4 through the actual model, played/toggled video preview, exported WAV, and preserved the completed session across four launch cycles.
+- Each platform checked duplicate launch handling, setup/workspace navigation, refusal to quit during active processing, normal window close, native-menu Quit, forced Electron-host termination, engine shutdown, and subsequent relaunch. Mac tests also reopened through Launch Services. Crash testing kills the actual Electron main process, including on Windows where the test launcher uses a command shim. Stale metadata after forced termination is recovered through the OS lock.
+- The Windows installer was installed and reinstalled locally; installed application files matched the local tested package and the Start menu shortcut pointed to Electron. The existing source application on port 7863 was preserved.
+- Release artifacts were downloaded from the successful CI run and checked against their SHA-256 digests and lifecycle evidence. Mac ZIPs contained the correct bundled Mac guide. After publication, every installer, ZIP, guide and checksum file was downloaded anonymously and verified again.
+- These checks establish packaging, processing and lifecycle behavior, not perceptual separation quality or GPU performance. They did not exercise Bubble FX inference on Mac, consumer browser-download Gatekeeper/SmartScreen flows, Developer ID signing/notarization, or Electron NVIDIA inference. Earlier entries below are historical and describe their own versions.
 
 ## Standalone relaunch and recovery (1.1.1, 2026-09-16)
 

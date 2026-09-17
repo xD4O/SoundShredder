@@ -1,8 +1,8 @@
 # Future updates
 
-No release date is committed for the remaining work. The stable v1.0.3 release remains the source ZIP. Browser-based standalones are separate v1.1.1 prereleases; Electron desktop work is in v1.2.0. Native Mac CI exercises launch and CPU workflows; consumer Gatekeeper and broader hardware validation remain separate checks.
+No release date is committed for the remaining work. The stable v1.0.3 release remains the source ZIP. Browser-based standalones are separate v1.1.1 prereleases; v1.2.0 Electron previews are now published for Windows, Apple Silicon and Intel Mac. Native CI passed real CPU separation, export, close/reopen and crash recovery; consumer Gatekeeper/SmartScreen and broader hardware validation remain separate checks.
 
-## Electron desktop
+## Published in the Electron desktop previews
 
 - Shared web interface in a dedicated application window, with native menus and Save dialogs.
 - Bundled Python and automatic engine setup; existing standalone engines and sessions retained.
@@ -10,7 +10,7 @@ No release date is committed for the remaining work. The stable v1.0.3 release r
 - Windows per-user installer and separate Apple Silicon/Intel Mac DMG/ZIP packaging.
 - Matching Windows/macOS documentation, including offline installation guides.
 
-See [Electron documentation](electron/README.md). Publisher signing/notarization, automatic updates and broader GPU validation remain future work.
+See the [Windows release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-windows-preview.1), [Mac release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1) and [Electron documentation](electron/README.md). Publisher signing/notarization, automatic updates and broader GPU validation remain future work.
 
 ## Implemented in the standalone previews
 
@@ -22,14 +22,14 @@ See [Electron documentation](electron/README.md). Publisher signing/notarization
 - Separate Apple Silicon and Intel `.app` ZIPs with bundled Python, CPU-only automatic setup, native architecture checks and macOS file locking.
 - Visible storage location/free space and package installs without retained pip downloads.
 
-See [standalone documentation](desktop/README.md). Public installer signing, broader clean-machine validation, Mac hardware testing/notarization, and automatic app updates remain outstanding.
+See [standalone documentation](desktop/README.md) for the earlier browser-based previews. Their verification history is separate from the newer Electron builds.
 
 ## Easier installation and updates
 
-Priority: Windows first, then separate Apple Silicon and Intel Mac packages.
+Next work across the published Windows and Mac previews:
 
-- Sign and validate the Windows installer on additional clean PCs before public distribution.
-- Validate Finder launch, Gatekeeper, full first-run setup and real inference on Apple Silicon and Intel Macs; then sign and notarize the bundles.
+- Sign and validate the Windows installer and NVIDIA setup on additional clean PCs before promoting it beyond preview.
+- Sign/notarize Mac bundles and validate browser-download Gatekeeper, Applications/Dock launch and Bubble FX on consumer Apple Silicon and Intel Macs. CPU layer separation and automated reopening already pass on native CI.
 - Improve first-run downloads with precise byte progress and cancellation rather than stage progress alone.
 - Expand single-instance protection to cover legacy source launchers as well as standalone launches.
 - Add guided app updates that install after active processing finishes.

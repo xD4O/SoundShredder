@@ -4,7 +4,11 @@ SoundShredder's shared HTML/CSS/JavaScript interface runs in a sandboxed Electro
 
 User guides: [Windows](docs/WINDOWS.md) · [macOS](docs/MACOS.md).
 
+Published downloads: [Windows Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-windows-preview.1) · [macOS Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1). The illustrated [community guide](../output/pdf/SoundShredder-Higgsfield-Community-Guide-v1.2.0.pdf) covers installation, presets, video, track exports and sessions.
+
 ## Build
+
+Build from a Git clone of the full repository. The separately packaged browser source ZIPs include these guides for reference but do not include the complete Electron build project.
 
 Use Node.js 24 and Python 3.12+ with pip on the target OS. Build Mac arm64 on Apple Silicon and Mac x64 on Intel. Electron 44 requires macOS 13+; legacy browser-based standalones support macOS 12.
 
@@ -28,6 +32,8 @@ Package Windows with `npm run build -- --win --x64`; package Mac with `npm run b
 - GitHub updates are manual. The Help menu links to Electron releases; the shared sidebar checker still follows stable source releases.
 
 ## Verification
+
+The [published builds passed on all three native platforms](https://github.com/xD4O/SoundShredder/actions/runs/35167472250). See the [versioned verification record](../VERIFICATION.md#electron-desktop-120-2026-09-16) for scope and remaining limitations.
 
 `npm run test:app` exercises a real desktop window, private CPU setup, generated one-second video/audio, video playback/toggling, separation, export, active-job quit protection, four launch cycles, duplicate launches and saved-session retention. One cycle simulates a desktop crash and verifies engine shutdown and subsequent relaunch. It uses only `artifacts/` profiles. Set `SS_TEST_EXECUTABLE` to test a packaged executable; otherwise it uses development Electron. `SS_TEST_HOME` can point to an existing QA profile under workspace artifacts to reuse its engine. It never uses the normal user profile.
 

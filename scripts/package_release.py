@@ -8,13 +8,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 GUIDE_FILES = [
     "output/html/SoundShredder-Higgsfield-Community-Guide.html",
-    "output/pdf/SoundShredder-Higgsfield-Community-Guide-2026-09-16.pdf",
+    "output/pdf/SoundShredder-Higgsfield-Community-Guide-v1.2.0.pdf",
 ]
 FILES = [
     "README.md",
     "ROADMAP.md",
     "VERIFICATION.md",
     "RELEASE_NOTES.md",
+    "electron/README.md",
+    "electron/docs/WINDOWS.md",
+    "electron/docs/MACOS.md",
     "app.py",
     "setup_runtime.py",
     "pyproject.toml",

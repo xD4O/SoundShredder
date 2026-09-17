@@ -41,6 +41,6 @@ Keep the full Terminal error, Python version, processing mode and the download h
 
 The fallback and launcher were tested with simulated missing-root conditions on Windows. Verified HTTPS requests to both model hosts passed there; the affected Mac still needs confirmation.
 
-## Standalone Mac preview
+## Electron and standalone Mac previews
 
-The standalone `.app` uses its own Python and CA bundle. A system Python 3.11 certificate repair may not affect it; do not place the source repair launcher inside the `.app`. Use **Setup details** to collect its diagnostics, then follow the [standalone Mac guide](../../desktop/MAC-README.md).
+Both `.app` versions use their own Python and CA bundle. A system Python 3.11 certificate repair does not repair that private runtime; do not place the source repair launcher inside the `.app`. In Electron, open **SoundShredder > Setup and diagnostics**, copy **Setup details**, and follow the [Electron Mac guide](../../electron/docs/MACOS.md). For the older browser-based standalone, use its setup screen and [standalone Mac guide](../../desktop/MAC-README.md). Preserve certificate verification and check managed-network/VPN settings if model downloads still fail.
