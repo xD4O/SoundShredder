@@ -1,200 +1,158 @@
+<div align="center">
+
+<img src="desktop/icon-256.png" alt="SoundShredder" width="76" height="76">
+
 # SoundShredder
 
-A local audio tool for cleaning up Seedance clips and other mixed soundtracks. Upload one file, separate **dialogue, music and sound effects**, then choose what stays. The Electron desktop preview includes Python and automatic engine setup; browser and command line source versions are also available.
+### Keep the shot. Clean the sound.
 
-See the [community guide](#community-guide) for illustrated usage and installation, or the [roadmap](ROADMAP.md) for remaining setup and update improvements.
+Remove unwanted dialogue, music and sound effects from your videos.<br>
+Preview the result with your footage. Download the mix or each isolated track.
 
-## Electron desktop previews (v1.2.0)
+**Local processing · Windows & macOS · CPU & NVIDIA GPU**
 
-The same dark/mint interface now runs in its own desktop window, with bundled Python, automatic engine setup, native menus and Save dialogs. Closing the window quits the app; finish setup or finish/cancel audio processing first, then close again. Reopening reuses saved sessions and engines. Duplicate launches focus the existing window. An earlier standalone must be quit before using Electron with its shared profile.
+<p>
+  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.0-electron-windows-preview.1/SoundShredder-Electron-1.2.0-Windows-x64-Setup.exe"><strong>Download for Windows</strong></a>
+  &nbsp; · &nbsp;
+  <a href="https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1"><strong>Download for Mac</strong></a>
+</p>
 
-- **[Windows Electron](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-windows-preview.1)** — Windows 10/11 x64 installer, CPU or NVIDIA. [Windows installation and troubleshooting](electron/docs/WINDOWS.md).
-- **[macOS Electron](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1)** — separate Apple Silicon (`arm64`) and Intel (`x64`) DMGs/ZIPs, **macOS 13+**, CPU processing. [macOS installation and troubleshooting](electron/docs/MACOS.md).
+[Install the desktop app](#install-the-desktop-app) · [Run in your browser](#run-the-web-app-locally) · [How it works](#from-clip-to-cleaned-audio) · [Guides](#guides-and-support)
 
-These are unsigned previews; macOS builds are not Developer ID signed/notarized. Initial engine/model downloads require internet. Updates are manual through **Help > Check for Electron updates**; the workspace sidebar still checks stable source releases. Each download includes only its matching installation guide. [Electron build instructions and verification](electron/README.md).
+Made by **cyr4x** for the **Higgsfield Community**.
 
-Packaged apps passed real CPU separation, video preview, WAV export, duplicate launches and four close/reopen cycles including crash recovery on Windows, Apple Silicon and Intel Mac. [Verification details](VERIFICATION.md#electron-desktop-120-2026-09-16). GPU processing and consumer Gatekeeper/SmartScreen behavior need broader testing.
+</div>
 
-## Community guide
+![Choose what stays: keep dialogue and effects while removing music](docs/images/mix-controls.png)
 
-The illustrated guide covers Electron installation on Windows and macOS, cleanup presets, aggressive multi-pass Water bubbles, isolated-track downloads, video preview, sessions, updates and Mac SSL troubleshooting.
+<p align="center"><sub>The shared desktop and browser interface. Remove music, keep the scene, then adjust each layer.</sub></p>
 
-- [Read or download the updated PDF](output/pdf/SoundShredder-Higgsfield-Community-Guide-v1.2.0.pdf).
-- [Download the self-contained HTML](https://raw.githubusercontent.com/xD4O/SoundShredder/main/output/html/SoundShredder-Higgsfield-Community-Guide.html) and open the saved file in a browser.
+## Your footage. Your soundtrack.
 
-The guide now covers v1.2.0 Electron previews and clearly labels the older source workflow. Assets attached to historical v1.0.3 releases keep their original documentation.
+Built for Seedance, Genjutsu and other generations where the shot works but the audio needs cleaning. Drop in an MP4, MOV, MP3 or WAV directly; SoundShredder extracts the audio for you.
 
-## Standalone Windows and Mac previews (v1.1.1)
+| Separate the layers | Target unwanted bubbles | See and hear the result |
+| :--- | :--- | :--- |
+| Keep or remove dialogue, music and effects. Remix without separating again. | Reduce bubble-like sounds with a selected time range and optional aggressive multi-pass. | Toggle the video monitor, audition individual tracks and export WAVs for your editor. |
 
-Standalone previews include Python and a setup screen styled like the main app. Required audio packages install automatically into a private runtime; no manual Python installation or terminal setup is needed. Initial engine/model downloads still require internet. Sessions live outside the application folder.
+Audio stays on your computer. Initial engine/model downloads need internet; cached processing works offline. No account or API key is required.
 
-- **[Windows standalone preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.1-windows-preview.1)** - EXE installer for Windows 10/11 x64; CPU or NVIDIA GPU. Allow 4 GiB/14 GiB free for setup, plus models and sessions. [Install and uninstall](desktop/WINDOWS-README.md).
-- **[Mac standalone preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.1.1-macos-preview.1)** - separate Apple Silicon and Intel app ZIPs for macOS 12+; CPU only. Allow 3 GiB free plus models/sessions. [Install and uninstall](desktop/MAC-README.md).
+## Install the desktop app
 
-Both are **prereleases without publisher signing**. Version 1.1.1 adds native Mac reopening/menu-bar controls and reliable close/relaunch behavior on both platforms. Apple Silicon and Intel CI tests cover setup and repeated launching; consumer Gatekeeper behavior and real Mac inference still need validation. These prereleases are separate from the stable v1.0.3 source downloads below. Setup shows storage location/free space and does not retain duplicate pip downloads. See [build instructions and limitations](desktop/README.md).
+**Recommended for most users.** The Electron app includes Python and installs its audio engine automatically. You get the same interface in a dedicated window, with native menus, Save dialogs and saved sessions.
 
-**Made by cyr4x · Made for Higgsfield Community.** [X](https://x.com/_cyr4x) · [Higgsfield](https://higgsfield.ai/@cyr4x) · [Instagram](https://www.instagram.com/__cyr4x__/) · [YouTube](https://www.youtube.com/@cyr4xfilms). The interface includes the Higgsfield mark and Space Grotesk typography, bundled locally with the font license; see `static/BRANDING.md` for asset sources.
+| Platform | Download | Requirements |
+| :--- | :--- | :--- |
+| **Windows** | [EXE installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.0-electron-windows-preview.1/SoundShredder-Electron-1.2.0-Windows-x64-Setup.exe) | Windows 10/11 x64 · CPU or compatible NVIDIA GPU |
+| **Mac · Apple Silicon** | [DMG installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.0-electron-macos-preview.1/SoundShredder-Electron-1.2.0-macOS-arm64.dmg) | macOS 13+ · M-series Mac · CPU |
+| **Mac · Intel** | [DMG installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.0-electron-macos-preview.1/SoundShredder-Electron-1.2.0-macOS-x64.dmg) | macOS 13+ · Intel Mac · CPU |
 
-## Stable source downloads (v1.0.3)
+### Windows EXE
 
-[Windows download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.3/SoundShredder.zip) · [Mac download](https://github.com/xD4O/SoundShredder/releases/download/v1.0.3/SoundShredder-Mac.zip) · [Release notes](https://github.com/xD4O/SoundShredder/releases/tag/v1.0.3)
+1. **Download the EXE** above. Quit an older SoundShredder standalone through its setup screen before installing.
+2. **Run the installer.** Choose the app folder and finish setup. No separate Python installation, PATH changes or administrator rights are needed.
+3. **Open SoundShredder** from Start or the desktop shortcut.
+4. **Choose CPU or NVIDIA GPU**, then select **Set up SoundShredder**. Keep internet connected for the initial downloads. The workspace opens when ready.
 
-The v1.0.3 source ZIPs include their original guides under `output/`. Use the [current community guide](#community-guide) for Electron instructions and updated Mac troubleshooting.
+Allow **4 GiB free for CPU** or **14 GiB for NVIDIA** setup, plus the app, models and saved media. NVIDIA needs a compatible GPU and current driver; a separate CUDA Toolkit is not required.
 
-Extract the entire ZIP before running the launcher. These are Python source packages with setup launchers, not standalone executables. Python must be installed separately; dependencies and model weights download on first use. Both ZIPs include installation instructions. Release assets also include `SHA256SUMS.txt` for checking download integrity.
+### macOS DMG
 
-## GitHub and updates
+1. **Download the matching DMG.** Check Apple menu → About This Mac: use Apple Silicon for M-series chips, or Intel for Intel processors.
+2. **Quit any older standalone.** Open the DMG, drag **SoundShredder** into **Applications**, then eject the disk image.
+3. **Open SoundShredder** from Applications and select **Set up SoundShredder**. The CPU engine downloads automatically. No Homebrew or separate Python is needed.
 
-The installed version, **GitHub project** link and **Check for updates** live together at the bottom of the left sidebar. On smaller screens, the same card appears at the bottom of the workspace. The project link opens [xD4O/SoundShredder](https://github.com/xD4O/SoundShredder). **Check for updates** compares your installed version with the latest published stable GitHub release. A newer release shows a **Get v…** link to its notes and Windows/Mac downloads. Checks happen only when clicked; no audio, filenames, session information, or credentials are sent. Recent successful results are cached for five minutes, and failed attempts for thirty seconds. Offline or rate-limited checks show a retry message and a Releases link; audio processing continues normally.
+Allow **3 GiB free for setup**, plus the app, models and saved media. Mac processing currently uses CPU; Apple Metal/MPS is not enabled. ZIP alternatives are available on the [Mac release page](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1).
 
-**Electron updates:** use **Help > Check for Electron updates** for the preview releases. Quit the app, run the newer Windows installer or replace the Mac app in Applications, then reopen. Its separate profile preserves sessions and compatible engines automatically. The sidebar checker follows the stable source channel and does not announce Electron prereleases.
+> [!IMPORTANT]
+> Desktop downloads are **unsigned previews**; Mac builds are not notarized. Windows/macOS may show a security prompt. Read the [Windows guide](electron/docs/WINDOWS.md) or [Mac guide](electron/docs/MACOS.md) for platform-specific installation and troubleshooting.
 
-**Source ZIP updates:** finish processing and close the launcher, download the matching ZIP, and extract it into a new writable folder. To keep saved sessions, copy the old folder's `data` directory into the new folder while the app is closed. Run the new launcher to set up its environment. Model caches in your home directory are reused. Keep the old folder until you have checked your sessions in the new version.
+**Close and return:** finish setup or finish/cancel processing, then close the window or choose **SoundShredder → Quit SoundShredder**. Reopen the same shortcut or app to return to your saved sessions. Opening it twice brings the existing window forward.
 
-## Source setup on Windows
+## Run the web app locally
 
-1. Install **Python 3.12** from [python.org](https://www.python.org/downloads/) with **Add Python to PATH** enabled.
-2. Double-click **Start SoundShredder.bat**. First launch installs dependencies in this folder's `.venv` and opens [the local app](http://127.0.0.1:7860).
-3. Drop in an audio file, choose a preset, and click **Separate audio**.
-4. Listen to each track and the cleaned mix. Adjust levels, click **Update mix**, then download a WAV or ZIP containing all tracks.
+Prefer the interface in your browser? Use the Python source version. It runs on **your computer at localhost**; there is no hosted website to sign into.
 
-Keep the launcher window open while using the app. Close it or press Ctrl+C to stop the server; active processing is cancelled on orderly shutdown.
+**[Download the web app source ZIP](https://github.com/xD4O/SoundShredder/archive/refs/heads/main.zip)** → extract the entire ZIP into a writable folder such as Documents. Keep the extracted files together and follow your platform below.
 
-**Remove music** is the default: it keeps dialogue and effects together. Other presets keep only dialogue, keep only effects, remove effects, or remove dialogue. Every layer-separation run saves all three stems; Bubble FX instead saves the cleaned and removed audio. Setting every slider to zero produces a silent file of the same duration.
+<a id="source-setup-on-windows"></a>
 
-## Source setup on Mac
+### Windows browser setup
 
-See the Bubble FX instructions below for targeted bubble cleanup. Both download packages include this preset.
+1. Install **Python 3.12** from [python.org](https://www.python.org/downloads/), with **Add Python to PATH** enabled.
+2. In the extracted SoundShredder folder, run **Setup CPU.bat** for CPU, or **Setup NVIDIA GPU.bat** for a compatible NVIDIA GPU. Wait for installation to finish.
+3. Double-click **Start SoundShredder.bat**. It opens the app in your browser, normally at **http://127.0.0.1:7860**.
 
-Download and extract **SoundShredder-Mac.zip**, then move the entire extracted folder to Documents or another writable location.
+Keep the launcher window open while using the web app. Close it or press **Ctrl+C** to stop the server; reopen the same Start file next time. Closing only the browser tab leaves the server running.
 
-1. Install **Python 3.11** with the [macOS universal2 installer](https://www.python.org/downloads/release/python-3119/).
-2. Double-click **Start SoundShredder.command**. First launch detects Apple Silicon or Intel, installs the matching dependencies, and opens the same browser interface.
-3. Upload a file and separate it using **Auto** or **CPU**. Keep the Terminal window open; press Control+C to stop.
+<a id="source-setup-on-mac"></a>
 
-Requires **macOS 12 or newer**. The Mac version uses **CPU**; Apple Metal/MPS acceleration is not implemented. Apple Silicon supports Python 3.10–3.13; Intel supports Python 3.10–3.11. Python 3.11 works for both architectures. Use native Python rather than Rosetta.
+### Mac browser setup
 
-If the page opens but processing fails with `CERTIFICATE_VERIFY_FAILED`, stop the app and run Python's certificate installer. For Python 3.11.9: `open "/Applications/Python 3.11/Install Certificates.command"`, then reopen the launcher. See [Python's official Mac setup guide](https://docs.python.org/3/using/mac.html). The updated launcher automatically uses certifi or pip's bundled CA roots only when Python's default store is empty; it keeps explicit certificate settings and TLS verification enabled. First processing may need HTTPS access to Zenodo (Bandit) or Hugging Face (Bubble FX), even though the interface itself is on localhost.
+1. Use **macOS 12+** and install **Python 3.11** with the [macOS universal2 installer](https://www.python.org/downloads/release/python-3119/). It works on Apple Silicon and Intel.
+2. Open **Start SoundShredder.command** in the extracted folder. The first run installs the CPU dependencies and opens the browser interface.
+3. Keep its Terminal window open. Press **Control+C** to stop; reopen the same launcher to return.
 
-See [Mac certificate troubleshooting](support/mac/README.md) for the complete steps and the included repair launcher ZIP for older source installations. The community HTML/PDF guide also has a dedicated Mac troubleshooting page.
+If Finder will not run the `.command` file, type `bash ` in Terminal, drag the launcher into that window, and press Return. For `CERTIFICATE_VERIFY_FAILED`, follow the [Mac source certificate repair guide](support/mac/README.md).
 
-Intel setup pins [PyTorch 2.2.2](https://pypi.org/project/torch/2.2.2/) and NumPy 1.26.4; Apple Silicon uses [PyTorch 2.8.0](https://pypi.org/project/torch/2.8.0/). Intel also needs Python 3.11 or older because the model's disabled compiler calls encounter [PyTorch 2.2's Python 3.12 guard](https://github.com/pytorch/pytorch/blob/v2.2.2/torch/__init__.py#L1638-L1640). The ZIP includes **START HERE - MAC.txt** with first-launch, permission, certificate, and recovery instructions. Python is installed separately; model weights download on first separation. No Homebrew or separate FFmpeg installation is needed.
+Both browser setups need internet for the first engine/model downloads. Run one server per session folder. For Linux or command-line use, see the [manual setup reference](docs/REFERENCE.md#manual-installation--other-operating-systems).
 
-If Finder will not open the launcher, open Terminal, type `bash `, drag **Start SoundShredder.command** into Terminal, and press Return.
+## From clip to cleaned audio
 
-## CPU and GPU
+1. **Drop your video or audio.** No separate audio extraction is needed.
+2. **Pick a preset.** Remove music, keep dialogue only, keep effects only, remove effects, remove dialogue, or target Bubble FX.
+3. **Process and compare.** Toggle **Show video preview** and switch between the original, cleaned mix and available tracks.
+4. **Download your result.** Save the cleaned WAV, individual tracks or a ZIP. Import the audio into your editor and mute the original soundtrack.
 
-In Electron, select the engine in **SoundShredder > Setup and diagnostics**. The `.bat` setup scripts below apply to the Windows source package.
+**Exports are audio, not a replacement MP4.** Inputs support up to **500 MB / 10 minutes / mono or stereo**. AI separation can affect wanted sounds too; audition the result before using it in your final edit.
 
-- **Auto:** NVIDIA CUDA if available; CPU otherwise.
-- **NVIDIA GPU:** faster, with an up-to-date NVIDIA driver. The provided installer uses PyTorch 2.8 with CUDA 12.8, including support for RTX 50-series cards. Its first download is about 3.2 GB. A separate CUDA Toolkit installation is not needed.
-- **CPU:** works without a GPU. It can take several minutes even for short clips. Use **Setup CPU.bat** to install a smaller CPU-only runtime.
-- **Setup NVIDIA GPU.bat** switches an existing CPU installation to CUDA. A CUDA installation can still process on CPU using the app selector.
-- **Use CPU if GPU memory runs out** retries a failed GPU run on CPU. Uncheck it to surface the GPU error instead. Unavailable explicitly selected GPUs give an error rather than silently changing devices.
-- AMD GPU acceleration and Apple Metal are not implemented; use CPU on those machines.
+### Stubborn bubbles, meet another pass
 
-## Bubble FX preset (experimental)
+Choose **Bubble FX → Water bubbles**, enable **Aggressive multi-pass**, and start with **2 passes**. Try 3 or 4 for stronger cleanup. Limit the range when possible, such as **7–11 seconds**, and listen to **Removed sounds** to check what was taken away.
 
-1. Upload your audio or video and choose **Bubble FX · BETA**.
-2. Choose **Water bubbles**, **Bubbling & popping**, **Liquid gurgle**, or **Cartoon boing**, matching the unwanted sound.
-3. Enable **Limit cleanup to a time range** and enter seconds (for example, **7** to **11**). Leave it unchecked to process the whole clip.
-4. Start at **85% reduction**, then click **Clean up bubbles**.
-5. Compare the original and cleaned previews. Listen to **Removed sounds**: if it contains effects you want, lower reduction or narrow the range. With a single pass, **Update mix** applies either change without running the model again.
+![Water bubbles cleanup with 85 percent reduction, two passes and a 7–11 second selection](docs/images/bubble-cleanup.png)
 
-For stubborn **Water bubbles**, enable **Aggressive multi-pass**. Start with **2 passes**; **3** and **4** are stronger options. Each pass runs the model again on the previous pass's cleaned audio and applies your reduction level inside the selected range. One pass remains the default. Extra passes take longer, especially on CPU, and may remove more wanted effects. The **Removed sounds** track contains the combined removal from all passes; compare it with the original before keeping the result.
+More passes take longer and may reduce similar effects. Bubble FX is experimental and currently uses preset sound descriptions; custom text prompting is not yet available.
 
-Changing the number of passes, the sound type, or the strength/range of a multi-pass cleanup needs fresh inference. Click **Clean up again** to reuse the saved original upload in a new session; the previous session and exports are retained. Reopening a session restores its pass count. Multi-pass works with Auto, NVIDIA GPU, and CPU (including Mac), using the existing model and dependencies. If a GPU runs out of memory and CPU fallback is enabled, the failed pass continues on CPU. Restart the updated app to enable the new controls.
+### Every layer, its own track
 
-This preset uses the pretrained [AudioSep sound separator](https://github.com/Audio-AGI/AudioSep), with four fixed text prompts. It estimates the selected sound and subtracts a shared stereo spectral mask from the original mix. It keeps music, dialogue, and other content in the original; it does not rebuild those parts from Bandit stems. AudioSep is a separate model, not a fine-tuned Bandit v2.
+Listen to **Dialogue**, **Music**, **Sound effects** and **Removed sounds** independently, with waveforms and individual WAV downloads. Keep playback positions linked to compare the same moment.
 
-**It cannot promise to remove only bubbles with no collateral effects.** Similar pops, liquid noises, or other overlapping effects can be caught too. This is an experimental preset, not a trained detector for a specific Seedance artifact. A selected time range limits damage: every decoded sample outside that range is copied exactly into the cleaned **32-bit float WAV**, with short fades contained inside the selection. Timing, sample rate, and stereo layout are preserved. No global normalization is applied. Float WAV can retain peaks above full scale; lower playback gain in your editor if necessary.
+![Four independent audio tracks with waveforms, playback controls and WAV downloads](docs/images/isolated-tracks.png)
 
-Bubble exports include **cleaned audio**, **removed sound**, and a report, rather than three dialogue/music/effects stems. First use downloads a SHA-256-verified **1.2 GB** model to `~/.cache/soundshredder/audiosep/`; later runs work offline. No account or API key is required. The preset uses the existing Python dependencies on Windows, Mac, and Linux, with NVIDIA CUDA or CPU. Mac uses CPU; Bubble FX inference on Mac is not yet validated by the Electron lifecycle checks.
+Normal separation prepares the tracks automatically. In a Bubble FX session, use **Prepare isolated tracks** to separate dialogue, music and effects from the original audio; the cleaned result stays intact.
 
-## Listen to each layer
+## Sessions and updates
 
-Completed sessions have a dedicated listening panel with **four separate track strips: Dialogue, Music, Sound effects, and Removed sounds**. Each has its own waveform, playback, seeking, volume/mute control, and WAV download. Playing a track pauses the others. Enable **Keep playback position when switching tracks** to compare the same moment; disable it to keep separate playback positions. Preview volume and mute do not alter your exported mix.
+| Task | Where to go |
+| :--- | :--- |
+| Start a new session | **Audio separator** in the left panel. Completed sessions remain saved. |
+| Reopen a result | Choose a filename under **Recent sessions**. |
+| Delete a session | Use its **×** or **Delete this session**. Save wanted downloads elsewhere first. |
+| Update Electron | **Help → Check for Electron updates**. Quit, install the newer EXE or replace the Mac app, then reopen. Sessions and compatible engines are retained. |
+| Update the browser version | Download a fresh source ZIP. With both apps stopped, copy the old `data` folder into the new folder and run its launcher. Keep the old folder until checked. |
 
-For normal layer separation, all four tracks are prepared automatically. **Removed sounds** contains the portions excluded by your dialogue/music/effects sliders at the last export (including partial reductions). It does not include the model's reconstruction residual or differences caused by output headroom. The layer-separation ZIP now includes this track. If all layers are kept at 100%, Removed sounds is silent.
+The sidebar **Check for updates** follows stable source releases; it does not announce Electron previews or every change on `main`. Desktop setup and diagnostics are under the **SoundShredder** application menu.
 
-For Bubble FX, Removed sounds is the estimated bubble sound taken out of your mix. Click **Prepare isolated tracks** once to also hear dialogue, music and effects from the **original audio, before bubble cleanup**. This optional Bandit pass uses your session's CPU/GPU choice and fallback setting; CPU can take longer, and first use may download Bandit's separate weights. Your existing cleaned mix, bubble settings and exports stay unchanged. Preparation can be cancelled or retried independently. The bubble ZIP still contains cleaned audio, removed audio and its report; download the additional tracks individually from their strips.
+<a id="community-guide"></a>
 
-Changing mix levels, bubble strength, or timing marks Removed sounds as the previous export until you click **Update mix**, or **Clean up again** for multi-pass changes. Older sessions can use **Prepare isolated tracks** to fill in missing tracks; existing layer stems are reused when available. Session downloads remain available while you listen. Restart the updated app if an older running server does not offer track preparation.
+## Guides and support
 
-First separation downloads the official Bandit v2 weights (~426 MB) into `~/.cache/bandit-infer`. Subsequent runs work offline. No uploaded audio is sent to a cloud service.
+- **[Illustrated community guide (PDF)](output/pdf/SoundShredder-Higgsfield-Community-Guide-v1.2.0.pdf)** · [Save the HTML guide](https://raw.githubusercontent.com/xD4O/SoundShredder/main/output/html/SoundShredder-Higgsfield-Community-Guide.html) and open it in a browser.
+- **[Windows desktop help](electron/docs/WINDOWS.md)** · **[Mac desktop help](electron/docs/MACOS.md)** · [Mac source SSL repair](support/mac/README.md).
+- [Detailed usage, CLI and model reference](docs/REFERENCE.md) · [Build Electron](electron/README.md) · [Tested behavior and limitations](VERIFICATION.md).
+- [Report an issue](https://github.com/xD4O/SoundShredder/issues) · [Roadmap](ROADMAP.md) · [Release history](RELEASE_NOTES.md).
 
-## Formats and files
+Layer separation uses [Bandit v2](https://github.com/kwatcharasupat/bandit-v2); targeted Bubble FX uses [AudioSep](https://github.com/Audio-AGI/AudioSep). Model weights download separately. See [model attribution and licenses](docs/REFERENCE.md#model-attribution) and [branding credits](static/BRANDING.md).
 
-WAV, MP3, FLAC, M4A, AAC, OGG, Opus, AIFF, WMA and common video containers are supported. Videos yield audio outputs; this tool does not replace the audio in the source video. FFmpeg is bundled through `imageio-ffmpeg`.
+---
 
-Limits: **500 MB, 10 minutes, mono or stereo, 8–192 kHz**. Surround input is rejected instead of silently downmixed. The decoded source's sample rate, frame count and channel layout are restored after inference. Compressed codecs can contain padding, so “source length” means the decoded audio length.
+<div align="center">
 
-Downloads are 24-bit PCM WAV for layer separation and 32-bit float WAV for Bubble FX. The local `data/<session-id>/` folder contains the uploaded copy, full-precision stems, exports, processing report, and a worker log. Original files are never overwritten. Sessions survive a restart; unfinished sessions are marked stopped. **Delete this session** removes its local uploaded copy and generated outputs. Files remain on disk until you delete them; each updated mix adds a new WAV/ZIP revision. Move downloads elsewhere before deleting a session.
+**Made by cyr4x · Made for the Higgsfield Community**
 
-The web server binds to `127.0.0.1` only and does not provide public hosting or authentication. Run one server per data directory. Change the location with `SOUNDSHREDDER_DATA` if needed.
+[X](https://x.com/_cyr4x) · [Higgsfield](https://higgsfield.ai/@cyr4x) · [Instagram](https://www.instagram.com/__cyr4x__/) · [YouTube](https://www.youtube.com/@cyr4xfilms)
 
-## What is improved around Bandit v2
+<sub>Community-created. Not an official Higgsfield product. Screenshots show details of the shared interface.</sub>
 
-This uses the existing pretrained weights; it does **not** claim to retrain or improve the underlying model's source recognition.
-
-- Bounded 20-second inference blocks, 2-second overlapping crossfades, and the model's native internal 8-second / 1-second overlap handler reduce memory growth and smooth block boundaries. Blocked inference may differ slightly from processing the entire clip in one call.
-- The optimized inference runner skips padded windows that cannot contribute to any exported sample, and accumulates predictions directly into the output. It retains upstream padding and window weighting. Deterministic padding/fold tests and a real-weight parity check guard this optimization; it changes compute scheduling, not the model's weights.
-- Explicit 48 kHz resampling for the model, followed by restoration of source rate and exact frame count.
-- Mono/stereo preservation and one shared output gain across all stems, leaving headroom for any mix with track levels from 0–100%. No independent normalization that unexpectedly boosts noise or changes relative levels.
-- Isolated cancellable processing, real inference progress, serialized GPU jobs, and optional CPU retry after GPU out-of-memory errors.
-- Full-precision stems let you remix repeatedly without rerunning the model or accumulating 24-bit quantization.
-- A report verifies source SHA-256, frames, sample rate, channels and output peak. Residual RMS and relative stem levels aid inspection; they do **not** measure audible separation quality. The residual is not added back, since it may contain the sound you removed.
-
-### Real limitations and possible next improvements
-
-The model can confuse breaths, singing, rhythmic impacts and background music. Effects includes ambience. Bandit cannot selectively remove one unwanted whoosh while preserving every other effect in the same stem. Bubble FX uses a separate model for targeted bubble reduction, with the limitations described above. Always audition important dialogue and quiet effects. Returning three tracks with matching lengths proves routing/timing, not perceptual quality.
-
-Bubble FX now provides timed regions and a second, text-conditioned model with fixed bubble prompts. Useful further work would be user-supplied reference sounds, arbitrary text queries, and listening-based comparisons. A genuinely better Bandit model would require a licensed, labelled test/training set of synthetic video audio with known dialogue/music/effects stems, followed by fine-tuning and blind listening tests. Evaluate bleed, missing speech, effects preservation, transient artifacts and multilingual speech independently before claiming improvement. Mixture consistency alone can restore the very noise you wanted removed.
-
-## Manual installation / other operating systems
-
-Use Python 3.10–3.13, or 3.10–3.11 on Intel Macs. Python 3.12 is recommended for Windows/Linux; Python 3.11 works on both Mac architectures. Platform-specific setup is provided for Windows, Linux and macOS; CUDA requires a supported NVIDIA environment. See `VERIFICATION.md` for actual test coverage.
-
-```shell
-python setup_runtime.py --device cpu
-# Windows:
-.venv\Scripts\python.exe app.py
-# macOS / Linux:
-.venv/bin/python app.py
-```
-
-For NVIDIA use `python setup_runtime.py --device cuda`. Optional flags: `app.py --no-browser --port 7860`.
-
-```shell
-python -m soundshredder.cli "clip.wav" --device auto --keep speech effects
-python -m soundshredder.cli "clip.wav" --device cpu --keep speech --output exports
-python -m soundshredder.cli "clip.mp4" --device cuda --keep effects --no-cpu-fallback
-python -m soundshredder.cli "clip.mp4" --bubble water --reduction 0.85 --start 7 --end 11 --device auto
-python -m soundshredder.cli "clip.mp4" --bubble water --passes 3 --reduction 0.85 --start 7 --end 11 --device cpu
-```
-
-Run CLI commands with the `.venv` Python or activate that environment first. Each run creates a unique session folder under the output directory, including its inputs and reports.
-
-## Development and verification
-
-```shell
-python -m pip install -r requirements-dev.txt
-python -m pytest -q
-python -m ruff check .
-```
-
-Tests use small deterministic fixtures for routing, resampling, mix levels, silence, API errors, file safety and the inference block crossfade. They do not substitute for model listening tests. Hardware smoke results, when present, are documented in `VERIFICATION.md`.
-
-## Model attribution
-
-- [AudioSep](https://github.com/Audio-AGI/AudioSep) by Xubo Liu and collaborators powers the experimental Bubble FX preset. Adapted inference code, fixed query vectors, the upstream MIT license, and provenance are in `soundshredder/_audiosep/`. The separately downloaded checkpoint is pinned and hash-verified; no model weights are included in the release ZIPs.
-
-- [Bandit v2 research implementation](https://github.com/kwatcharasupat/bandit-v2) by Karn Watcharasupat and collaborators; [paper](https://arxiv.org/abs/2407.07275).
-- [bandit-infer](https://github.com/openmirlab/bandit-infer) packages the inference graph and verifies the official checkpoint. This app pins its source revision for reproducibility.
-- Upstream code is Apache-2.0. The official v2 checkpoint is distributed under **CC BY-SA 4.0**, as documented by the adapter and its [Zenodo source](https://zenodo.org/records/12701995). The checkpoint is downloaded separately, not bundled here.
-
-## Preview your footage
-
-Video uploads now have a **Your footage, in sync** panel. Toggle **Show video preview** to show or hide it; your browser remembers the preference. Choose **Original**, **Cleaned mix**, **Dialogue**, **Music**, **Sound effects**, or **Removed sounds** in **Listen to** once that track is available. Play, pause, or scrub under the video; using any existing audio player also makes the footage follow that track. The footage stays muted so you hear only the chosen audio. Hiding it leaves audio playback available.
-
-Saved video sessions can reopen the original footage without uploading it again. Browser codec support varies; H.264 MP4 is the most compatible option. A clip that cannot preview can still be processed for audio. Audio-only uploads hide the video panel. Preview does not change your mix or export a video: downloads remain WAV/ZIP files. For containers with audio/video start offsets, check synchronization against the original in your editor.
+</div>

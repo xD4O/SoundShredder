@@ -34,7 +34,7 @@ WINDOWS_FILES = ["Start SoundShredder.bat", "Setup CPU.bat", "Setup NVIDIA GPU.b
 
 def build_release(root, destination, *, mac_only=False):
     sources = [root / name for name in FILES + ([] if mac_only else WINDOWS_FILES)]
-    for directory in ("soundshredder", "static", "tests", "scripts", "desktop", "support"):
+    for directory in ("soundshredder", "static", "tests", "scripts", "desktop", "support", "docs"):
         sources.extend(
             path for path in (root / directory).rglob("*") if path.is_file() and "__pycache__" not in path.parts
         )
