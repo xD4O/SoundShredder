@@ -69,3 +69,5 @@ jobs:
             artifacts/electron/dist/SHA256SUMS.txt
             artifacts/electron/verification/*
             artifacts/electron/QA profile with spaces/*.log
+            artifacts/electron/QA profile with spaces/data/*/worker.log
+            artifacts/electron/QA profile with spaces/data/*/progress.json

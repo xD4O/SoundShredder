@@ -19,7 +19,7 @@ async function waitFor(fn, timeout = 60000) {
   const deadline = Date.now() + timeout;
   let error;
   while (Date.now() < deadline) {
-    try { const value = await fn(); if (value) return value; } catch (e) { error = e; }
+    try { const value = await fn(); if (value) return value; } catch (e) { if (e.fatal) throw e; error = e; }
     await delay(400);
   }
   throw new Error('Timed out: ' + (error?.message || fn.toString()));
@@ -47,7 +47,7 @@ let application, nativePid;
     }
     const ready = await waitFor(async () => {
       const s = await state();
-      if (s.status === 'error') throw new Error(s.message);
+      if (s.status === 'error') throw Object.assign(new Error(s.message), { fatal: true });
       return s.status === 'ready' && s;
     }, 1200000);
     await page.waitForURL(url => url.origin === new URL(ready.url).origin, { timeout: 60000 });
@@ -103,7 +103,17 @@ let application, nativePid;
       assert.equal(instance().pid, pid);
       evidence.active_job_quit_protected = true;
       console.log('Running real CPU separation');
-      await page.locator('#results').waitFor({ state: 'visible', timeout: 1200000 });
+      let lastProgress = '';
+      await waitFor(async () => {
+        const jobs = await (await fetch(ready.url + '/api/jobs')).json();
+        const job = jobs.find(job => job.filename === 'Electron QA footage.mp4');
+        if (!job) return false;
+        const message = `${job.status}: ${job.message || ''}`;
+        if (message !== lastProgress) { console.log(message); lastProgress = message; }
+        if (['failed', 'cancelled'].includes(job.status)) throw Object.assign(new Error(message), { fatal: true });
+        return job.status === 'complete';
+      }, 1200000);
+      await page.locator('#results').waitFor({ state: 'visible', timeout: 30000 });
       evidence.session = new URL(page.url()).searchParams.get('session');
       assert.match(evidence.session, /^[a-f0-9]{32}$/);
       await page.locator('#listening-panel').waitFor({ state: 'visible' });
@@ -138,7 +148,10 @@ let application, nativePid;
       // metadata. The next launch must recover that stale file via the OS lock.
       await waitFor(() => { try { process.kill(pid, 0); return false; } catch { return true; } });
     } else await waitFor(() => !fs.existsSync(path.join(home, 'desktop.json')));
-    await assert.rejects(fetch(ready.url + '/api/system'));
+    await waitFor(async () => {
+      try { await fetch(ready.url + '/api/system', { signal: AbortSignal.timeout(2000) }); return false; }
+      catch { return true; }
+    });
     evidence.cycles.push({ cycle: cycle + 1, manager_pid: pid, duplicate_launch: true, sessions_retained: true, close: cycle === 2 ? 'host-crash' : cycle === 1 ? 'native-menu' : 'window', engine_stopped: true });
     console.log('Verified close/reopen cycle ' + (cycle + 1));
   }
@@ -152,5 +165,5 @@ let application, nativePid;
     try { process.kill(nativePid); } catch {}
     await Promise.race([application.close().catch(() => {}), delay(5000)]);
   }
-  process.exitCode = 1;
+  process.exit(1);
 });
