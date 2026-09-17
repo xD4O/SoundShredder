@@ -133,7 +133,11 @@ let application, nativePid;
     }
     await closing;
     application = null;
-    await waitFor(() => !fs.existsSync(path.join(home, 'desktop.json')));
+    if (cycle === 2) {
+      // Windows may terminate the whole process job before Python can unlink
+      // metadata. The next launch must recover that stale file via the OS lock.
+      await waitFor(() => { try { process.kill(pid, 0); return false; } catch { return true; } });
+    } else await waitFor(() => !fs.existsSync(path.join(home, 'desktop.json')));
     await assert.rejects(fetch(ready.url + '/api/system'));
     evidence.cycles.push({ cycle: cycle + 1, manager_pid: pid, duplicate_launch: true, sessions_retained: true, close: cycle === 2 ? 'host-crash' : cycle === 1 ? 'native-menu' : 'window', engine_stopped: true });
     console.log('Verified close/reopen cycle ' + (cycle + 1));
