@@ -32,7 +32,13 @@ mac:
   category: public.app-category.music
   target: [dmg, zip]
   minimumSystemVersion: '13.0'
-  identity: null
+  # Ad-hoc signing seals the bundle for testing; it does not establish Apple trust.
+  identity: '-'
+  hardenedRuntime: true
+  entitlements: entitlements.mac.plist
+  entitlementsInherit: entitlements.mac.plist
+  notarize: false
+  strictVerify: true
   artifactName: SoundShredder-Electron-${version}-macOS-${arch}.${ext}
 dmg:
   title: SoundShredder

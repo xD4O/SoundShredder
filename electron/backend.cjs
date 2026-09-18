@@ -48,11 +48,12 @@ class Backend extends EventEmitter {
     const script = path.join(this.root, 'desktop/bootstrap.py');
     const code = `import sys,runpy; sys.path.insert(0,${JSON.stringify(this.root)}); sys.argv[0]=${JSON.stringify(script)}; runpy.run_path(sys.argv[0],run_name='__main__')`;
     const log = fs.openSync(path.join(this.home, 'electron-engine.log'), 'a');
-    const env = { ...process.env, PYTHONUTF8: '1', PYTHONNOUSERSITE: '1', SOUNDSHREDDER_DESKTOP_HOME: this.home };
+    const env = { ...process.env, PYTHONUTF8: '1', PYTHONNOUSERSITE: '1', PYTHONDONTWRITEBYTECODE: '1', SOUNDSHREDDER_DESKTOP_HOME: this.home };
     delete env.PYTHONHOME; delete env.PYTHONPATH;
     let child;
     try {
-      child = this.child = spawn(python, [...(process.platform === 'darwin' ? ['-I'] : []), '-c', code,
+      // -I ignores PYTHON* variables, so -B is required to keep the signed app immutable.
+      child = this.child = spawn(python, [...(process.platform === 'darwin' ? ['-I'] : []), '-B', '-c', code,
         '--home', this.home, '--hosted', '--exclusive', '--no-browser'],
       { cwd: this.root, env, windowsHide: true, stdio: ['pipe', log, log] });
     } finally { fs.closeSync(log); }

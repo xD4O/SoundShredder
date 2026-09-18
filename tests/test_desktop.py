@@ -162,7 +162,7 @@ def test_mac_setup_uses_native_wheels_no_shared_cache_and_reuses_engine(tmp_path
     manager.setup()
     assert len(calls) == 3 and len(launches) == 1
     for command in calls[:2]:
-        assert command[1:4] == ["-I", "-m", "pip"]
+        assert command[1:5] == ["-B", "-I", "-m", "pip"]
         assert "--no-cache-dir" in command and "--only-binary=:all:" in command
         assert "--isolated" in command and f"torch=={torch}" in command
         assert "https://pypi.org/simple" in command
@@ -172,7 +172,7 @@ def test_mac_setup_uses_native_wheels_no_shared_cache_and_reuses_engine(tmp_path
     monkeypatch.setattr("desktop.bootstrap.shutil.disk_usage", lambda _: SimpleNamespace(free=500 * 1024**2))
     manager.setup()
     assert len(calls) == 1 and len(launches) == 2
-    assert calls[0][2] == "-c"
+    assert calls[0][1:4] == ["-B", "-I", "-c"]
 
 
 def test_mac_low_space_does_not_download_packages(tmp_path, monkeypatch):

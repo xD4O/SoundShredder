@@ -181,10 +181,12 @@ class Manager:
         return runtime / ("bin/python3.11" if self.mac else "python.exe")
 
     def python_command(self, python):
-        return [str(python), *(["-I"] if self.mac else [])]
+        # Imports must not add __pycache__ files to a signed, installed app bundle.
+        return [str(python), "-B", *(["-I"] if self.mac else [])]
 
     def environment(self, python=None):
-        env = {**os.environ, "PYTHONUTF8": "1", "PYTHONNOUSERSITE": "1", "PIP_NO_CACHE_DIR": "1"}
+        env = {**os.environ, "PYTHONUTF8": "1", "PYTHONNOUSERSITE": "1", "PIP_NO_CACHE_DIR": "1",
+               "PYTHONDONTWRITEBYTECODE": "1"}
         if self.mac and python and not (env.get("SSL_CERT_FILE") or env.get("SSL_CERT_DIR")):
             cert = Path(python).parent.parent / "lib/python3.11/site-packages/pip/_vendor/certifi/cacert.pem"
             if cert.exists():
