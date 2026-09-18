@@ -12,7 +12,7 @@ Preview the result with your footage. Download the mix or each isolated track.
 **Local processing · Windows & macOS · CPU & NVIDIA GPU**
 
 <p>
-  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.0-electron-windows-preview.1/SoundShredder-Electron-1.2.0-Windows-x64-Setup.exe"><strong>Download for Windows</strong></a>
+  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.0-electron-windows-preview.2/SoundShredder-Electron-1.2.0-Windows-x64-Setup.exe"><strong>Download for Windows</strong></a>
   &nbsp; · &nbsp;
   <a href="#mac-browser-setup"><strong>Mac setup</strong></a>
 </p>
@@ -46,7 +46,7 @@ Audio stays on your computer. Initial engine/model downloads need internet; cach
 
 | Platform | Download | Requirements |
 | :--- | :--- | :--- |
-| **Windows** | [EXE installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.0-electron-windows-preview.1/SoundShredder-Electron-1.2.0-Windows-x64-Setup.exe) | Windows 10/11 x64 · CPU or compatible NVIDIA GPU |
+| **Windows** | [EXE installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.0-electron-windows-preview.2/SoundShredder-Electron-1.2.0-Windows-x64-Setup.exe) | Windows 10/11 x64 · CPU or compatible NVIDIA GPU |
 | **Mac · Apple Silicon** | [Desktop preview — launch issue](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1) | macOS 13+ · M-series Mac · CPU |
 | **Mac · Intel** | [Desktop preview — launch issue](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1) | macOS 13+ · Intel Mac · CPU |
 
