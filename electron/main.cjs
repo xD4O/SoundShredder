@@ -84,6 +84,18 @@ async function requestQuit() {
 function handleExternal(url) {
   if (external(url)) shell.openExternal(url).catch(() => {});
 }
+async function showWindowsUninstall() {
+  const answer = await dialog.showMessageBox(win, { type: 'info', title: 'Uninstall SoundShredder',
+    message: 'Remove SoundShredder using Windows Settings',
+    detail: 'Finish or cancel processing, then quit SoundShredder. In Windows Settings, search for SoundShredder and choose Uninstall.\n\nSaved sessions, downloaded engines, model caches and exported audio are kept. You can also use Uninstall SoundShredder in the Start menu.',
+    buttons: ['Open Windows Settings', 'Cancel'], defaultId: 0, cancelId: 1 });
+  if (answer.response === 0) {
+    // A fixed native menu action; custom protocols remain blocked in web content.
+    try { await shell.openExternal('ms-settings:appsfeatures'); }
+    catch { await dialog.showMessageBox(win, { type: 'info', message: 'Open Windows Settings manually',
+      detail: 'Go to Apps > Installed apps (Apps & features on Windows 10), search for SoundShredder, and choose Uninstall.', buttons: ['OK'] }); }
+  }
+}
 function createWindow() {
   let bounds = {};
   try { bounds = JSON.parse(fs.readFileSync(path.join(home, 'electron-window.json'), 'utf8')); } catch {}
@@ -121,6 +133,8 @@ function menu() {
     { type: 'separator' },
     { label: 'Open downloads folder', click: () => void shell.openPath(app.getPath('downloads')) },
     { label: 'Open logs folder', click: () => void shell.openPath(home) },
+    ...(process.platform === 'win32' && app.isPackaged
+      ? [{ label: 'Uninstall SoundShredder…', click: () => void showWindowsUninstall() }] : []),
     { type: 'separator' },
     { label: 'Quit SoundShredder', accelerator: 'CmdOrCtrl+Q', click: () => void requestQuit() }
   ];

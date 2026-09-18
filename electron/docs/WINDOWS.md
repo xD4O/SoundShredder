@@ -6,7 +6,7 @@ Made by cyr4x. Made for the Higgsfield Community.
 
 1. Use Windows 10/11 **64-bit (x64)**. Download `SoundShredder-Electron-1.2.0-Windows-x64-Setup.exe` from the Windows Electron release.
 2. Quit any earlier standalone using its setup page's **Close SoundShredder** control. Keep its engine/data folders to reuse your setup and sessions.
-3. Run the installer. It installs for your user, lets you choose the app folder, and creates Start menu and desktop shortcuts. No administrator rights, separate Python, terminal commands or browser are required.
+3. Run the installer. It installs for your user, lets you choose the app folder, and creates Start menu and desktop shortcuts, including **Uninstall SoundShredder** in Start. No administrator rights, separate Python, terminal commands or browser are required.
 4. Open **SoundShredder**. Setup appears inside its own dark/mint application window. Choose **CPU** or **NVIDIA GPU**, then **Set up SoundShredder**. Existing compatible engines are reused.
 5. First setup needs internet and at least **4 GiB free for CPU** or **14 GiB for NVIDIA**, plus room for this app, models and sessions. The engine downloads automatically; NVIDIA requires a compatible GPU/driver. No separate CUDA Toolkit is required.
 6. The workspace opens automatically when ready. Drop an audio/video file, select a preset, process, audition tracks, and save your mix or isolated tracks with the download buttons. Downloads show a native Save dialog.
@@ -26,7 +26,15 @@ The normal Electron app location is `%LOCALAPPDATA%\Programs\SoundShredder` (or 
 
 **Help > Check for Electron updates** opens GitHub releases. Install the matching newer Windows Electron release after quitting. Updates are manual; no background update installation is enabled. The workspace's existing update checker checks stable source releases, which are a separate channel.
 
-Uninstall **SoundShredder** through Windows Settings > Apps. Sessions, shared engines and model caches are retained. To remove those too, first back up wanted audio, close every SoundShredder copy, then remove `%LOCALAPPDATA%\SoundShredder` yourself. Do not delete shared model caches if another audio application needs them.
+### Uninstall the Windows app
+
+1. Finish or cancel processing, then close every SoundShredder window.
+2. Open Start, search for **Uninstall SoundShredder**, and run it. Follow the uninstall wizard. Alternatively, open **Windows Settings > Apps > Installed apps** (**Apps & features** on Windows 10), find SoundShredder, and choose **Uninstall**.
+3. The app and its shortcuts are removed. **Saved sessions, downloaded engines, model caches and exported audio remain**, so reinstalling can reuse them.
+
+The app's **SoundShredder > Uninstall SoundShredder…** menu also opens the Windows Settings uninstall screen. Older Electron installers already have a Windows Settings uninstaller; the explicit Start menu entry is included from Windows preview 2 onward.
+
+For complete profile removal, first back up wanted audio and close every SoundShredder copy. Open `%LOCALAPPDATA%\SoundShredder` in File Explorer and remove that specific folder only if you no longer need any of its sessions or downloaded engines. This also affects older standalone versions that share the profile. Do not delete shared model caches if another audio application needs them. Exported files outside this folder remain where you saved them.
 
 ## Troubleshooting
 

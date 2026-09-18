@@ -2,7 +2,7 @@ name: Electron desktop builds and lifecycle
 on:
   push:
     branches: [main, 'codex/electron-desktop']
-    paths: ['electron/**', 'desktop/bootstrap.py', 'desktop/setup.html', 'desktop/lifetime.py', 'scripts/prepare_electron.py', 'scripts/electron_artifacts.py', 'scripts/verify_mac_distribution.py', 'tests/test_mac_distribution.py', 'soundshredder/**', '.github/workflows/electron-desktop.yml']
+    paths: ['electron/**', 'desktop/bootstrap.py', 'desktop/setup.html', 'desktop/lifetime.py', 'scripts/prepare_electron.py', 'scripts/electron_artifacts.py', 'scripts/verify_mac_distribution.py', 'scripts/test_windows_installer.ps1', 'tests/test_mac_distribution.py', 'soundshredder/**', '.github/workflows/electron-desktop.yml']
   workflow_dispatch:
     inputs:
       mac_signing:
@@ -91,6 +91,10 @@ jobs:
       - name: Verify installed app remains sealed after processing and relaunch
         if: matrix.platform == 'mac'
         run: python scripts/verify_mac_distribution.py --after-lifecycle ${{ inputs.mac_signing == 'developer-id' && '--require-notarized' || '' }}
+      - name: Test Windows install, reinstall, uninstall and retained sessions
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: ./scripts/test_windows_installer.ps1
       - name: Collect matching platform guide and checksums
         run: python scripts/electron_artifacts.py collect
       - uses: actions/upload-artifact@v4

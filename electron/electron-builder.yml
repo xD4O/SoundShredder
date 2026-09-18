@@ -19,6 +19,7 @@ win:
   target: [nsis]
   artifactName: SoundShredder-Electron-${version}-Windows-${arch}-Setup.${ext}
 nsis:
+  include: installer.nsh
   oneClick: false
   perMachine: false
   allowElevation: false

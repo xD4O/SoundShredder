@@ -59,6 +59,8 @@ Audio stays on your computer. Initial engine/model downloads need internet; cach
 
 Allow **4 GiB free for CPU** or **14 GiB for NVIDIA** setup, plus the app, models and saved media. NVIDIA needs a compatible GPU and current driver; a separate CUDA Toolkit is not required.
 
+**Uninstall:** quit the app, then choose **Uninstall SoundShredder** in Start or remove it through **Windows Settings → Apps**. Saved sessions and engines are kept. See the [Windows uninstall guide](electron/docs/WINDOWS.md#uninstall-the-windows-app) for full removal.
+
 ### macOS DMG
 
 1. **Read the Mac launch notice above.** If testing the desktop preview, download the matching DMG from the [Mac release page](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1). Check Apple menu → About This Mac: use Apple Silicon for M-series chips, or Intel for Intel processors.
