@@ -29,3 +29,13 @@ test('electron-builder merges the release overrides over the ad-hoc defaults', a
   assert.equal(config.mac.entitlements, 'entitlements.mac.plist');
   assert.deepEqual(config.mac.target, ['dmg', 'zip']);
 });
+
+test('wrong certificate types and mismatched teams fail before build downloads', () => {
+  for (const name of ['Apple Development: Fixture (TEAM123456)', 'Developer ID Installer: Fixture (TEAM123456)', 'Fixture (TEAM123456)', 'Developer ID Application: Fixture']) {
+    assert.throws(() => releaseConfig({ ...credentials, CSC_NAME: name }), /full Developer ID Application/);
+  }
+  assert.throws(() => releaseConfig({ ...credentials, APPLE_TEAM_ID: 'enrollment-id' }), /not an enrollment ID/);
+  assert.throws(() => releaseConfig({ ...credentials, APPLE_TEAM_ID: 'OTHER12345' }), /different teams/);
+  assert.throws(() => releaseConfig({ ...credentials, APPLE_TEAM_ID: ' TEAM123456 ' }), /without surrounding spaces/);
+  assert.equal(releaseConfig({ ...credentials, CSC_NAME: ` ${credentials.CSC_NAME} ` }).mac.identity, 'Fixture (TEAM123456)');
+});

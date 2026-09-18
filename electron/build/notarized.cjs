@@ -5,8 +5,13 @@ function releaseConfig(env) {
   const required = ['CSC_LINK', 'CSC_KEY_PASSWORD', 'CSC_NAME', 'APPLE_ID', 'APPLE_APP_SPECIFIC_PASSWORD', 'APPLE_TEAM_ID'];
   const missing = required.filter(name => !env[name]?.trim());
   if (missing.length) throw new Error('Missing signing credentials: ' + missing.join(', ') + '. See electron/docs/MAC-SIGNING.md.');
-  const identity = env.CSC_NAME.trim().replace(/^Developer ID Application:\s*/, '');
-  if (['-', 'null'].includes(identity) || !identity) throw new Error('A Developer ID Application identity is required; ad-hoc signing is not a release identity.');
+  const name = env.CSC_NAME.trim();
+  const match = /^Developer ID Application:\s*(.+) \(([A-Z0-9]{10})\)$/.exec(name);
+  if (!match) throw new Error('CSC_NAME must be the full Developer ID Application certificate name, including its Team ID; ad-hoc and Apple Development identities cannot sign this release.');
+  const team = env.APPLE_TEAM_ID;
+  if (!/^[A-Z0-9]{10}$/.test(team)) throw new Error('APPLE_TEAM_ID must be the 10-character Team ID in Apple Developer membership details, without surrounding spaces, not an enrollment ID.');
+  if (match[2] !== team) throw new Error('The Developer ID Application certificate and APPLE_TEAM_ID belong to different teams. Check the selected membership before building.');
+  const identity = name.replace(/^Developer ID Application:\s*/, '');
   return {
     extends: path.resolve(__dirname, '../electron-builder.yml'),
     forceCodeSigning: true,

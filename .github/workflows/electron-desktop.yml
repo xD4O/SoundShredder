@@ -6,11 +6,11 @@ on:
   workflow_dispatch:
     inputs:
       platform:
-        description: 'Build and test all desktop platforms or only Windows'
+        description: 'Build and test all desktop platforms, Windows only, or both Mac architectures'
         required: true
         type: choice
         default: all
-        options: [all, windows]
+        options: [all, windows, mac]
       mac_signing:
         description: 'Mac test signing or Developer ID plus notarization (requires configured secrets)'
         required: true
@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.platform == 'windows' && '[{"runner":"windows-latest","platform":"win","arch":"x64"}]' || '[{"runner":"windows-latest","platform":"win","arch":"x64"},{"runner":"macos-15","platform":"mac","arch":"arm64"},{"runner":"macos-15-intel","platform":"mac","arch":"x64"}]') }}
+        include: ${{ fromJSON(inputs.platform == 'windows' && '[{"runner":"windows-latest","platform":"win","arch":"x64"}]' || inputs.platform == 'mac' && '[{"runner":"macos-15","platform":"mac","arch":"arm64"},{"runner":"macos-15-intel","platform":"mac","arch":"x64"}]' || '[{"runner":"windows-latest","platform":"win","arch":"x64"},{"runner":"macos-15","platform":"mac","arch":"arm64"},{"runner":"macos-15-intel","platform":"mac","arch":"x64"}]') }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 45
     steps:
