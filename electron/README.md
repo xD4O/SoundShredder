@@ -4,7 +4,7 @@ SoundShredder's shared HTML/CSS/JavaScript interface runs in a sandboxed Electro
 
 User guides: [Windows](docs/WINDOWS.md) · [macOS](docs/MACOS.md).
 
-Published downloads: [Windows Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-windows-preview.1) · [macOS Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1). The illustrated [community guide](../output/pdf/SoundShredder-Higgsfield-Community-Guide-v1.2.0.pdf) covers installation, presets, video, track exports and sessions.
+Published downloads: [Windows Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.1-electron-windows-preview.1) · [macOS Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1). The illustrated [community guide](../output/pdf/SoundShredder-Higgsfield-Community-Guide-v1.2.0.pdf) covers installation, presets, video, track exports and sessions.
 
 ## Build
 

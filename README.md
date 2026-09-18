@@ -12,7 +12,7 @@ Preview the result with your footage. Download the mix or each isolated track.
 **Local processing · Windows & macOS · CPU & NVIDIA GPU**
 
 <p>
-  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.0-electron-windows-preview.2/SoundShredder-Electron-1.2.0-Windows-x64-Setup.exe"><strong>Download for Windows</strong></a>
+  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.1-electron-windows-preview.1/SoundShredder-Electron-1.2.1-Windows-x64-Setup.exe"><strong>Download for Windows</strong></a>
   &nbsp; · &nbsp;
   <a href="#mac-browser-setup"><strong>Mac setup</strong></a>
 </p>
@@ -46,7 +46,7 @@ Audio stays on your computer. Initial engine/model downloads need internet; cach
 
 | Platform | Download | Requirements |
 | :--- | :--- | :--- |
-| **Windows** | [EXE installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.0-electron-windows-preview.2/SoundShredder-Electron-1.2.0-Windows-x64-Setup.exe) | Windows 10/11 x64 · CPU or compatible NVIDIA GPU |
+| **Windows** | [EXE installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.1-electron-windows-preview.1/SoundShredder-Electron-1.2.1-Windows-x64-Setup.exe) | Windows 10/11 x64 · CPU or compatible NVIDIA GPU |
 | **Mac · Apple Silicon** | [Desktop preview — launch issue](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1) | macOS 13+ · M-series Mac · CPU |
 | **Mac · Intel** | [Desktop preview — launch issue](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1) | macOS 13+ · Intel Mac · CPU |
 
@@ -58,6 +58,8 @@ Audio stays on your computer. Initial engine/model downloads need internet; cach
 4. **Choose CPU or NVIDIA GPU**, then select **Set up SoundShredder**. Keep internet connected for the initial downloads. The workspace opens when ready.
 
 Allow **4 GiB free for CPU** or **14 GiB for NVIDIA** setup, plus the app, models and saved media. NVIDIA needs a compatible GPU and current driver; a separate CUDA Toolkit is not required.
+
+**First setup:** watch live download progress, open Setup details, or use **Cancel setup**. Closing during setup offers **Cancel setup and quit**. Reopen and retry to repair an interrupted engine; saved sessions are kept. See the [setup recovery guide](electron/docs/WINDOWS.md#follow-or-cancel-first-setup).
 
 **Uninstall:** quit the app, then choose **Uninstall SoundShredder** in Start or remove it through **Windows Settings → Apps**. Saved sessions and engines are kept. See the [Windows uninstall guide](electron/docs/WINDOWS.md#uninstall-the-windows-app) for full removal.
 
@@ -72,7 +74,7 @@ Allow **3 GiB free for setup**, plus the app, models and saved media. Mac proces
 > [!IMPORTANT]
 > Desktop downloads are **unsigned previews**; Mac builds are not notarized. Windows/macOS may show a security prompt. Read the [Windows guide](electron/docs/WINDOWS.md) or [Mac guide](electron/docs/MACOS.md) for platform-specific installation and troubleshooting.
 
-**Close and return:** finish setup or finish/cancel processing, then close the window or choose **SoundShredder → Quit SoundShredder**. Reopen the same shortcut or app to return to your saved sessions. Opening it twice brings the existing window forward.
+**Close and return:** finish or cancel setup/processing, then close the window or choose **SoundShredder → Quit SoundShredder**. Reopen the same shortcut or app to return to your saved sessions. Opening it twice brings the existing window forward.
 
 ## Run the web app locally
 
