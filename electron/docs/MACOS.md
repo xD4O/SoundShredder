@@ -35,7 +35,7 @@ Source changes now enable **ad-hoc signing** for test builds, keep Python from w
 
 Models download on first feature use: about 426 MB for layer separation and 1.2 GB for Bubble FX. Processing works offline once the needed files are cached. Audio is processed locally.
 
-## Setup progress and recovery (1.2.1 candidate)
+## Setup progress and recovery (1.2.2 candidate)
 
 These improvements are in source and test builds; the existing 1.2.0 Mac download is unchanged while signed distribution is being prepared.
 
@@ -44,6 +44,14 @@ Setup shows the current package, downloaded bytes, average speed and elapsed tim
 Use **Cancel setup** to stop, or close the window and choose **Cancel setup and quit**. Reopen the app and select **Set up SoundShredder** to repair an interrupted engine. Sessions stay saved; some packages may download again. A completed compatible engine is reused on normal launches.
 
 Network requests have timeouts and limited retries. Installer commands stop after ten minutes without output or one hour overall, with an explanation and retry option. A lost local connection shows **Reconnecting**. If it does not recover, close and reopen, check internet/free space, then retry. Computer sleep, network conditions and slow storage can still affect setup time.
+
+## Choose a storage drive (1.2.2 candidate)
+
+This feature is in source and test builds; it is not in the existing public Mac preview. The app itself belongs in **Applications**. In setup, **Choose folder…** selects where engines, model downloads, sessions and temporary setup files live. You can also use **SoundShredder > Choose storage folder…** after finishing or canceling active work.
+
+Choose a writable local or attached drive. SoundShredder creates a `SoundShredder` folder there, or reuses that folder if you select it directly. The choice is remembered across launches. **Existing files stay where they are:** switching to an empty folder starts a separate setup, and selecting the old SoundShredder folder returns to its sessions. There is no automatic file migration.
+
+Keep the selected drive connected. If it is unavailable, reconnect it and use **Retry opening**, or choose another folder on the recovery screen. The app does not silently create a replacement profile on the internal drive. Small app preferences remain in `~/Library/Application Support/SoundShredder`.
 
 ## Quit and reopen
 
@@ -56,9 +64,9 @@ Network requests have timeouts and limited retries. Installer commands stop afte
 
 **Help > Check for Electron updates** opens GitHub releases. Quit, download the matching Mac architecture, and replace the app in Applications. Updates are manual; no automatic app replacement is enabled. The workspace's existing update checker checks stable source releases, a separate channel.
 
-The shared profile is `~/Library/Application Support/SoundShredder`: `data` contains sessions, `runtimes` contains the CPU engine, `electron` contains window/browser settings, and diagnostic logs live beside them. Models use existing user caches. Replacing the app preserves this profile.
+The shared profile is `~/Library/Application Support/SoundShredder`: `data` contains sessions, `runtimes` contains the CPU engine, `electron` contains window/browser settings, and diagnostic logs live beside them. Models use existing user caches until you opt into a chosen storage folder. In the 1.2.2 candidate, a chosen folder holds engines, models, sessions, temporary setup files and logs; small app preferences stay in the default profile. Replacing the app preserves both locations.
 
-To uninstall, quit and move SoundShredder.app to Trash. Sessions, engines and models remain. For a complete removal, back up wanted audio and remove the shared profile yourself after all copies are closed. Keep any model caches needed by other apps.
+To uninstall, quit and move SoundShredder.app to Trash. Sessions, engines and models remain. For a complete removal, back up wanted audio and note any chosen storage location and remove only that SoundShredder folder and the shared profile yourself after all copies are closed. Keep any model caches needed by other apps.
 
 ## Troubleshooting
 

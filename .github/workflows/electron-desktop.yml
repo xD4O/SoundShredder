@@ -91,6 +91,9 @@ jobs:
       - name: Test real CPU separation, export, close and relaunch
         working-directory: electron
         run: npm run test:app
+      - name: Test folder selection, retained profiles and disconnected-drive recovery
+        working-directory: electron
+        run: npm run test:storage-ui
       - name: Verify installed app remains sealed after processing and relaunch
         if: matrix.platform == 'mac'
         run: python scripts/verify_mac_distribution.py --after-lifecycle ${{ inputs.mac_signing == 'developer-id' && '--require-notarized' || '' }}
@@ -110,3 +113,6 @@ jobs:
             artifacts/electron/QA profile with spaces/*.log
             artifacts/electron/QA profile with spaces/data/*/worker.log
             artifacts/electron/QA profile with spaces/data/*/progress.json
+            artifacts/electron/Chosen engine storage/SoundShredder/*.log
+            artifacts/electron/Chosen engine storage/SoundShredder/data/*/worker.log
+            artifacts/electron/Chosen engine storage/SoundShredder/data/*/progress.json

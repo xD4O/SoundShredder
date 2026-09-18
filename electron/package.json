@@ -1,7 +1,7 @@
 {
   "name": "soundshredder-desktop",
   "productName": "SoundShredder",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Local audio cleanup for the Higgsfield community",
   "author": "cyr4x",
   "license": "UNLICENSED",
@@ -12,6 +12,7 @@
     "test": "node --test tests/*.test.cjs",
     "test:app": "node tests/lifecycle.cjs",
     "test:setup-ui": "node tests/setup-ui.cjs",
+    "test:storage-ui": "node tests/storage-ui.cjs",
     "build": "electron-builder --publish never"
   },
   "devDependencies": {

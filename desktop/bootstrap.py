@@ -233,6 +233,7 @@ class Manager:
             return dict(name="SoundShredder Desktop", pid=os.getpid(), status="closing" if self.stopping else self.status, message=self.message, progress=self.progress,
                         url=self.url, device=self.device, nvidia=self.nvidia,
                         platform=self.system, machine=self.machine, home=str(self.home),
+                        models_home=os.environ.get("SOUNDSHREDDER_MODEL_HOME"),
                         free_gib=self.free_gib, activity=self.activity, download=self.download,
                         elapsed_seconds=int(now - self.setup_started) if self.setup_started else 0,
                         quiet_seconds=int(now - self.last_activity),

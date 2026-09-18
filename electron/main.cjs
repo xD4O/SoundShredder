@@ -5,35 +5,44 @@ const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
 const { Backend } = require('./backend.cjs');
 const { sameOrigin, external, loopback } = require('./security.cjs');
+const { readSelection, saveSelection, prepareLocation, contains } = require('./storage.cjs');
 
-const home = path.resolve(process.env.SOUNDSHREDDER_DESKTOP_HOME || (process.platform === 'darwin'
+const controlHome = path.resolve(process.env.SOUNDSHREDDER_DESKTOP_HOME || (process.platform === 'darwin'
   ? path.join(app.getPath('appData'), 'SoundShredder')
   : path.join(process.env.LOCALAPPDATA || app.getPath('appData'), 'SoundShredder')));
-app.setPath('userData', path.join(home, 'electron'));
+// Keep the Chromium profile and single-instance lock stable across data drives.
+app.setPath('userData', path.join(controlHome, 'electron'));
+let home = controlHome;
 app.setName('SoundShredder');
 nativeTheme.themeSource = 'dark';
 const root = app.isPackaged ? path.join(process.resourcesPath, 'backend')
   : path.resolve(__dirname, '../artifacts/electron/backend');
 const backend = new Backend(root, home);
 const welcomeURL = pathToFileURL(path.join(__dirname, 'welcome.html')).href;
-let win, workspace = null, mode = 'workspace', starting = null, quitting = false, permittedExit = false, timer;
+let win, workspace = null, mode = 'workspace', starting = null, changingStorage = false, pendingQuit = false, quitting = false, permittedExit = false, timer;
+let welcomeStatus = 'Opening your sound workspace…';
 
 function trusted(url) { return sameOrigin(url, backend.base) || sameOrigin(url, workspace); }
 function alive() { return win && !win.isDestroyed(); }
 function focus() { if (alive()) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } }
 function fail(message) {
+  welcomeStatus = message;
   if (!alive()) return;
   win.loadURL(welcomeURL).then(() => win.webContents.send('desktop:status', message)).catch(() => {});
 }
 async function showSetup() {
+  if (changingStorage) return;
   mode = 'setup';
   if (backend.base && alive()) await win.loadURL(backend.setupURL());
   focus();
 }
 async function showWorkspace() {
+  if (changingStorage) return;
   mode = 'workspace';
   if (!backend.base) return start();
+  const base = backend.base;
   const state = await backend.api('/api/reopen', {});
+  if (changingStorage || quitting || backend.base !== base) return;
   if (state.status === 'ready' && loopback(state.url)) {
     workspace = new URL(state.url).origin;
     if (alive() && !sameOrigin(win.webContents.getURL(), workspace)) await win.loadURL(workspace);
@@ -41,19 +50,28 @@ async function showWorkspace() {
   focus();
 }
 async function start() {
+  if (changingStorage) return;
   if (starting) return starting;
+  welcomeStatus = 'Opening your sound workspace…';
   starting = (async () => {
     try {
+      const selected = await readSelection(controlHome);
+      home = backend.home = selected.home;
+      backend.managedStorage = selected.managedStorage;
       await backend.start();
       if (!alive() || quitting) return;
       await win.loadURL(backend.setupURL());
       mode = 'workspace';
     } catch (error) { fail(error.message); }
-    finally { starting = null; }
+    finally {
+      starting = null;
+      if (pendingQuit) { pendingQuit = false; void requestQuit(); }
+    }
   })();
   return starting;
 }
 async function requestQuit() {
+  if (changingStorage || starting) { pendingQuit = true; return false; }
   if (quitting) return false;
   quitting = true;
   try {
@@ -91,6 +109,60 @@ async function requestQuit() {
     return false;
   }
 }
+async function chooseStorage() {
+  if (changingStorage || starting || quitting) throw Error('Wait for the current operation to finish, then choose a folder.');
+  changingStorage = true;
+  const previous = { home, managedStorage: backend.managedStorage };
+  let stoppedOld = false, committed = false;
+  try {
+    if (backend.base && backend.child?.exitCode === null && !backend.child.signalCode) {
+      const state = await backend.api('/api/state');
+      if (['installing', 'starting', 'cancelling'].includes(state.status)) throw Error('Finish or cancel setup before changing its storage folder.');
+    }
+    const result = await dialog.showOpenDialog(win, { title: 'Choose a location for SoundShredder files',
+      message: 'Engines, models and sessions go in a SoundShredder folder here. Existing files stay in their current location.',
+      buttonLabel: 'Use this location', defaultPath: path.dirname(home), properties: ['openDirectory', 'createDirectory'] });
+    if (result.canceled || !result.filePaths[0]) return { canceled: true };
+    const appFolder = app.isPackaged
+      ? (process.platform === 'darwin' ? path.resolve(path.dirname(process.execPath), '../..') : path.dirname(process.execPath))
+      : app.getAppPath();
+    const selected = await prepareLocation(result.filePaths[0], { currentHome: home, protectedPaths: [appFolder, root] });
+    if (backend.managedStorage && contains(home, selected.home) && contains(selected.home, home)) return { home };
+    if (backend.base && backend.child?.exitCode === null && !backend.child.signalCode) {
+      // This endpoint rechecks active audio work before stopping the old engine.
+      await backend.api('/api/stop', {});
+    }
+    stoppedOld = true;
+    await backend.detach();
+    workspace = null;
+    backend.home = selected.home;
+    backend.managedStorage = true;
+    await backend.start(); // Exclusive ownership must succeed before saving the choice.
+    await saveSelection(controlHome, selected.home);
+    committed = true;
+    home = selected.home;
+    mode = 'workspace';
+    if (alive()) await win.loadURL(backend.setupURL());
+    return { home, freeGiB: selected.freeGiB };
+  } catch (error) {
+    if (stoppedOld && !committed) {
+      try {
+        await backend.detach();
+        home = backend.home = previous.home;
+        backend.managedStorage = previous.managedStorage;
+        await backend.start();
+        if (alive()) await win.loadURL(backend.setupURL());
+      } catch { fail('Storage could not be opened. Reconnect its drive, choose another folder, or select Retry opening. Existing files are kept.'); }
+    }
+    if (committed) fail('Your storage folder was saved, but its workspace could not open. Select Retry opening.');
+    if (alive()) await dialog.showMessageBox(win, { type: 'error', title: committed ? 'Storage selected; workspace could not open' : 'Storage location was not changed',
+      message: error.message, detail: 'Existing sessions and downloaded engines have not been moved or deleted.', buttons: ['OK'] });
+    return { error: error.message };
+  } finally {
+    changingStorage = false;
+    if (pendingQuit) { pendingQuit = false; void requestQuit(); }
+  }
+}
 function handleExternal(url) {
   if (external(url)) shell.openExternal(url).catch(() => {});
 }
@@ -108,7 +180,7 @@ async function showWindowsUninstall() {
 }
 function createWindow() {
   let bounds = {};
-  try { bounds = JSON.parse(fs.readFileSync(path.join(home, 'electron-window.json'), 'utf8')); } catch {}
+  try { bounds = JSON.parse(fs.readFileSync(path.join(controlHome, 'electron-window.json'), 'utf8')); } catch {}
   win = new BrowserWindow({ width: Math.max(1000, Math.min(1800, Number(bounds.width) || 1380)),
     height: Math.max(700, Math.min(1200, Number(bounds.height) || 900)), minWidth: 900, minHeight: 650,
     title: 'SoundShredder', backgroundColor: '#080c13', show: false,
@@ -120,7 +192,7 @@ function createWindow() {
     if (permittedExit) return;
     event.preventDefault();
     const size = win.getNormalBounds();
-    try { fs.writeFileSync(path.join(home, 'electron-window.json'), JSON.stringify({width: size.width, height: size.height, maximized: win.isMaximized()})); } catch {}
+    try { fs.writeFileSync(path.join(controlHome, 'electron-window.json'), JSON.stringify({width: size.width, height: size.height, maximized: win.isMaximized()})); } catch {}
     void requestQuit();
   });
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -140,6 +212,7 @@ function menu() {
   const actions = [
     { label: 'Workspace', accelerator: 'CmdOrCtrl+1', click: () => void showWorkspace().catch(error => fail(error.message)) },
     { label: 'Setup and diagnostics', accelerator: 'CmdOrCtrl+,', click: () => void showSetup() },
+    { label: 'Choose storage folder…', click: () => void chooseStorage().catch(error => fail(error.message)) },
     { type: 'separator' },
     { label: 'Open downloads folder', click: () => void shell.openPath(app.getPath('downloads')) },
     { label: 'Open logs folder', click: () => void shell.openPath(home) },
@@ -177,7 +250,7 @@ function secureSession() {
     callback({ responseHeaders: headers });
   });
 }
-for (const [name, handler] of Object.entries({ workspace: showWorkspace, setup: showSetup,
+for (const [name, handler] of Object.entries({ status: () => welcomeStatus, workspace: showWorkspace, setup: showSetup, storage: chooseStorage,
   retry: async () => { if (backend.base && backend.child?.exitCode === null && !backend.child.signalCode) await showWorkspace(); else await start(); }, quit: requestQuit })) {
   ipcMain.handle('desktop:' + name, (event) => {
     if (!alive() || event.sender !== win.webContents || event.senderFrame !== win.webContents.mainFrame ||
@@ -187,7 +260,7 @@ for (const [name, handler] of Object.entries({ workspace: showWorkspace, setup: 
 }
 backend.on('exit', ({ code }) => {
   workspace = null;
-  if (starting || quitting) return;
+  if (starting || changingStorage || quitting) return;
   if (code === 0) { permittedExit = true; app.quit(); }
   else fail('The audio engine stopped. Select Retry opening to restart it. Your saved sessions are retained.');
 });
@@ -202,10 +275,12 @@ else {
     secureSession(); createWindow(); menu(); await start();
     let polling = false;
     timer = setInterval(async () => {
-      if (polling || quitting || starting || !backend.base || !alive() || backend.child?.exitCode !== null || backend.child?.signalCode) return;
+      if (polling || quitting || starting || changingStorage || !backend.base || !alive() || backend.child?.exitCode !== null || backend.child?.signalCode) return;
       polling = true;
+      const base = backend.base;
       try {
         const state = await backend.api('/api/state');
+        if (changingStorage || starting || quitting || backend.base !== base) return;
         if (state.status === 'ready' && loopback(state.url)) {
           workspace = new URL(state.url).origin;
           if (mode === 'workspace' && !sameOrigin(win.webContents.getURL(), workspace)) await win.loadURL(workspace);

@@ -1,5 +1,14 @@
 # SoundShredder releases
 
+## v1.2.2 - Choose your storage folder
+
+- Native **Choose folder…** in setup and **SoundShredder > Choose storage folder…** let desktop users put engines, model caches, sessions and temporary setup downloads on a selected local or attached drive. Windows still offers a separate application-folder choice in its installer.
+- The selected location persists across launches. Existing files stay untouched; choosing an old location returns to its engine and sessions. Uninstalling retains saved data.
+- Unavailable drives show recovery controls instead of silently switching to the system drive. Folder checks run asynchronously, and failed switches restore the previous profile.
+- Fixed a startup error message that could be lost while the welcome screen loaded and a close request that could be ignored while switching folders.
+- Windows and Mac guides distinguish the app folder from storage. Mac changes remain a test candidate pending Developer ID signing and notarization.
+
+
 ## v1.2.0 - Electron desktop previews
 
 The original SoundShredder interface now opens in its own desktop window. Python is bundled; first use automatically downloads the audio engine and required models. Video preview, cleanup presets, aggressive Water bubbles and isolated-track downloads are retained.

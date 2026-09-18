@@ -5,7 +5,20 @@ const http = require('node:http');
 const { spawn } = require('node:child_process');
 const { EventEmitter } = require('node:events');
 const { loopback } = require('./security.cjs');
+const { existingDirectory } = require('./storage.cjs');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function storageDeadline(work, timeout = 10000) {
+  let timer;
+  try { return await Promise.race([work, new Promise((_, reject) => {
+    timer = setTimeout(() => reject(Error('The storage drive is not responding. Reconnect it or choose another storage folder.')), timeout);
+  })]); } finally { clearTimeout(timer); }
+}
+function storageEnvironment(home) {
+  const models = path.join(home, 'models'), temporary = path.join(home, 'temp');
+  return { SOUNDSHREDDER_MODEL_HOME: models, BANDIT_INFER_WEIGHTS: path.join(models, 'bandit-infer'),
+    TORCH_HOME: path.join(models, 'torch'), HF_HOME: path.join(models, 'huggingface'),
+    XDG_CACHE_HOME: path.join(home, 'cache'), TMP: temporary, TEMP: temporary, TMPDIR: temporary };
+}
 
 function request(url, token, payload, timeout = 5000) {
   if (!loopback(url)) return Promise.reject(new Error('Invalid local engine address.'));
@@ -38,38 +51,49 @@ function request(url, token, payload, timeout = 5000) {
 }
 
 class Backend extends EventEmitter {
-  constructor(root, home) {
-    super(); this.root = root; this.home = home; this.child = null; this.base = null; this.token = null;
+  constructor(root, home, managedStorage = false) {
+    super(); this.root = root; this.home = home; this.managedStorage = managedStorage;
+    this.child = null; this.base = null; this.token = null;
   }
   async start() {
     if (this.child && this.child.exitCode === null && !this.child.signalCode) throw new Error('The previous engine is still closing. Try again in a moment.');
     this.base = this.token = null;
-    fs.mkdirSync(this.home, { recursive: true });
+    await storageDeadline((async () => {
+      if (this.managedStorage) {
+        await existingDirectory(this.home); // Never recreate an offline drive's path on another disk.
+        await fs.promises.mkdir(path.join(this.home, 'temp'), { recursive: true });
+      } else await fs.promises.mkdir(this.home, { recursive: true });
+    })());
     const python = path.join(this.root, 'python', process.platform === 'darwin' ? 'bin/python3.11' : 'python.exe');
     if (!fs.existsSync(python)) throw new Error('The bundled Python runtime is missing. Reinstall SoundShredder; saved sessions will be retained.');
     const script = path.join(this.root, 'desktop/bootstrap.py');
     const code = `import sys,runpy; sys.path.insert(0,${JSON.stringify(this.root)}); sys.argv[0]=${JSON.stringify(script)}; runpy.run_path(sys.argv[0],run_name='__main__')`;
-    const log = fs.openSync(path.join(this.home, 'electron-engine.log'), 'a');
-    const env = { ...process.env, PYTHONUTF8: '1', PYTHONNOUSERSITE: '1', PYTHONDONTWRITEBYTECODE: '1', SOUNDSHREDDER_DESKTOP_HOME: this.home };
+    const openingLog = fs.promises.open(path.join(this.home, 'electron-engine.log'), 'a');
+    let log;
+    try { log = await storageDeadline(openingLog); }
+    catch (error) { void openingLog.then(handle => handle.close()).catch(() => {}); throw error; }
+    const env = { ...process.env, ...(this.managedStorage ? storageEnvironment(this.home) : {}),
+      PYTHONUTF8: '1', PYTHONNOUSERSITE: '1', PYTHONDONTWRITEBYTECODE: '1', SOUNDSHREDDER_DESKTOP_HOME: this.home };
     delete env.PYTHONHOME; delete env.PYTHONPATH;
-    let child;
+    let child, spawnError;
     try {
       // -I ignores PYTHON* variables, so -B is required to keep the signed app immutable.
       child = this.child = spawn(python, [...(process.platform === 'darwin' ? ['-I'] : []), '-B', '-c', code,
         '--home', this.home, '--hosted', '--exclusive', '--no-browser'],
-      { cwd: this.root, env, windowsHide: true, stdio: ['pipe', log, log] });
-    } finally { fs.closeSync(log); }
-    let spawnError;
-    child.on('error', error => { spawnError = error; });
-    child.stdin.on('error', () => {});
-    child.on('exit', (code, signal) => this.emit('exit', { code, signal }));
+      { cwd: this.root, env, windowsHide: true, stdio: ['pipe', log.fd, log.fd] });
+      // Register before yielding to asynchronous file-handle cleanup: spawn can
+      // report an error immediately (for example an unavailable executable).
+      child.on('error', error => { spawnError = error; });
+      child.stdin.on('error', () => {});
+      child.on('exit', (code, signal) => this.emit('exit', { code, signal }));
+    } finally { await log.close(); }
     const deadline = Date.now() + 25000;
     while (Date.now() < deadline) {
       if (spawnError || child.exitCode !== null || child.signalCode) {
         throw new Error('SoundShredder could not start. Close any older standalone first, then retry. Details: ' + path.join(this.home, 'electron-engine.log'));
       }
       try {
-        const saved = JSON.parse(fs.readFileSync(path.join(this.home, 'desktop.json'), 'utf8'));
+        const saved = JSON.parse(await storageDeadline(fs.promises.readFile(path.join(this.home, 'desktop.json'), 'utf8'), 2000));
         const u = loopback(saved.url);
         if (saved.pid === child.pid && u && u.pathname === '/' && !u.search && u.hash.length > 1) {
           const state = await request(u.origin + '/api/state', u.hash.slice(1));
@@ -93,7 +117,11 @@ class Backend extends EventEmitter {
     if (!child || child.exitCode !== null || child.signalCode) return;
     child.stdin.end(); // Owner-pipe EOF cleans up Python and its audio workers.
     for (let i = 0; i < 150 && child.exitCode === null && !child.signalCode; i++) await delay(100);
-    if (child.exitCode === null && !child.signalCode) child.kill();
+    if (child.exitCode === null && !child.signalCode) {
+      child.kill();
+      for (let i = 0; i < 50 && child.exitCode === null && !child.signalCode; i++) await delay(100);
+      if (child.exitCode === null && !child.signalCode) throw Error('The previous engine is still stopping. Wait a moment, then retry.');
+    }
   }
 }
-module.exports = { Backend, request };
+module.exports = { Backend, request, storageEnvironment };

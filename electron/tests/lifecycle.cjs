@@ -6,13 +6,15 @@ const path = require('node:path');
 const { spawn, spawnSync } = require('node:child_process');
 const { request } = require('../backend.cjs');
 const root = path.resolve(__dirname, '../..');
-const home = path.resolve(process.env.SS_TEST_HOME || path.join(root, 'artifacts/electron/QA profile with spaces'));
-assert.ok(home.startsWith(path.join(root, 'artifacts') + path.sep), 'Tests must use a workspace artifact profile');
+const controlHome = path.resolve(process.env.SS_TEST_HOME || path.join(root, 'artifacts/electron/QA profile with spaces'));
+const preference = path.join(controlHome, 'desktop-storage.json');
+let home = fs.existsSync(preference) ? JSON.parse(fs.readFileSync(preference)).home : controlHome;
+for (const folder of [controlHome, home]) assert.ok(folder.startsWith(path.join(root, 'artifacts') + path.sep), 'Tests must use a workspace artifact profile');
 const output = path.join(root, 'artifacts/electron/verification');
 fs.mkdirSync(output, { recursive: true });
 const executablePath = process.env.SS_TEST_EXECUTABLE || require('electron');
 const args = process.env.SS_TEST_EXECUTABLE ? [] : [path.join(root, 'electron')];
-const env = { ...process.env, SOUNDSHREDDER_DESKTOP_HOME: home };
+const env = { ...process.env, SOUNDSHREDDER_DESKTOP_HOME: controlHome };
 delete env.ELECTRON_RUN_AS_NODE;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function waitFor(fn, timeout = 60000) {
@@ -30,7 +32,8 @@ function instance() {
   return { ...metadata, base: u.origin, token: u.hash.slice(1) };
 }
 async function state() { const i = instance(); return request(i.base + '/api/state', i.token); }
-const evidence = { platform: process.platform, architecture: process.arch, executable: executablePath, cycles: [] };
+const evidence = { platform: process.platform, architecture: process.arch, executable: executablePath,
+  custom_storage: home !== controlHome, cycles: [] };
 let application, nativePid;
 async function verifySetupCancellation() {
   if (fs.existsSync(path.join(home, 'settings.json'))) return;
@@ -39,6 +42,17 @@ async function verifySetupCancellation() {
   nativePid = await application.evaluate(() => process.pid);
   const initial = await waitFor(state);
   assert.equal(initial.status, 'idle', 'A fresh QA profile must offer setup');
+  const chosen = path.join(root, 'artifacts/electron/Chosen engine storage');
+  fs.mkdirSync(chosen, { recursive: true });
+  await application.evaluate(({ dialog }, folder) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [folder] });
+  }, chosen);
+  await page.locator('#choose-storage').click();
+  await waitFor(() => fs.existsSync(preference));
+  home = JSON.parse(fs.readFileSync(preference)).home;
+  assert.equal(home, fs.realpathSync(path.join(chosen, 'SoundShredder')));
+  await waitFor(async () => (await state()).models_home === path.join(home, 'models'));
+  evidence.custom_storage = true;
   const waitInstalling = () => waitFor(async () => {
     const s = await state();
     if (s.status === 'error') throw Object.assign(new Error(s.message), { fatal: true });
@@ -172,6 +186,16 @@ async function verifySetupCancellation() {
       await waitFor(() => fs.existsSync(downloadPath) && fs.statSync(downloadPath).size > 44);
       await page.screenshot({ path: path.join(output, 'workspace.png'), fullPage: true });
       evidence.actual_cpu_separation_and_download = true;
+      if (evidence.custom_storage) {
+        const modelCache = path.join(home, 'models/bandit-infer');
+        assert.ok(fs.readdirSync(modelCache, { recursive: true }).some(file => {
+          const stat = fs.statSync(path.join(modelCache, file));
+          return stat.isFile() && stat.size > 400_000_000;
+        }), 'The real separation checkpoint must download to the chosen drive');
+        assert.ok(fs.existsSync(path.join(home, 'data', evidence.session)));
+        assert.ok(fs.existsSync(path.join(home, 'temp')));
+        evidence.engine_models_sessions_in_chosen_folder = true;
+      }
     } else {
       const jobs = await page.evaluate(async () => (await fetch('/api/jobs')).json());
       assert.ok(jobs.some(job => job.id === evidence.session), 'The saved session must survive quitting');

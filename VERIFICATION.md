@@ -1,5 +1,12 @@
 # Verification record
 
+## Selectable desktop storage (1.2.2, 2026-09-18)
+
+- Local checks passed: 51 selected Python tests, 12 Electron boundary/storage/signing tests, Ruff, and setup-page fault tests. Bubble checkpoint and temporary-download routing use a small controlled fixture; the legacy source cache remains compatible.
+- Real Electron folder tests passed with private QA profiles: picker cancellation, app-folder rejection, remembered paths containing spaces, duplicate launches, rollback when another process owns the target, missing-drive recovery and switching back with saved audio intact. The default profile remains untouched by switching. Desktop and 390 px screenshots were visually reviewed without overflow or renderer errors.
+- Regression work fixed a lost startup-error message while the welcome page loaded, a close request ignored during folder changes, and stale status polling that could navigate back to the previous workspace. Startup/drive checks run asynchronously with deadlines; selected drives never silently fall back to the system profile.
+- Packaged native-platform checks are pending. Tests now select a custom folder before fresh CPU setup and verify the real checkpoint, engine and session paths there. No file migration, GPU-path validation or Apple notarization is claimed by these local checks.
+
 ## Responsive setup (1.2.1, 2026-09-18)
 
 - Added package/download activity, elapsed time, explicit cancellation, native cancel-and-quit, independent diagnostics fetching and bounded control requests. Interrupted engine copies/installs are repaired on explicit retry; ordinary launches reuse compatible engines. Saved audio is not part of runtime repair.

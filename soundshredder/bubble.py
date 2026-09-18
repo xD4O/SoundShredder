@@ -47,7 +47,8 @@ def validate_settings(kind="water", strength=0.85, start=0.0, end=None, passes=1
 
 def checkpoint(progress):
     configure_macos_certificates()
-    folder = Path.home() / ".cache/soundshredder/audiosep"
+    model_home = os.environ.get("SOUNDSHREDDER_MODEL_HOME")
+    folder = Path(model_home) / "audiosep" if model_home else Path.home() / ".cache/soundshredder/audiosep"
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / "audiosep_base_4M_steps.ckpt"
     if path.is_file() and sha256(path) == MODEL_SHA:
