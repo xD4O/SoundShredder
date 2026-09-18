@@ -37,7 +37,7 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: electron/package-lock.json
-      - name: Check notarized release credentials before downloading build inputs
+      - name: Verify Apple notarization login before downloading build inputs
         if: matrix.platform == 'mac' && inputs.mac_signing == 'developer-id'
         working-directory: electron
         env:
@@ -47,7 +47,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: node build/notarized.cjs --check
+        run: node build/check-notarization.cjs
       - name: Python lifecycle regressions
         run: |
           python -m pip install pytest

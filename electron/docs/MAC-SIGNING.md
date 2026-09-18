@@ -51,11 +51,19 @@ Paste directly into the `MAC_CSC_LINK` GitHub secret. Clear the clipboard afterw
 
 ## 4. Run the notarized build
 
+First run **Actions > Check Mac notarization access > Run workflow** on `main`. This uses Apple's read-only `notarytool history` command to verify the account and app-specific password without building or submitting an application. It does not print the credentials or submission history. The check stops after 60 seconds if Apple does not respond.
+
 Open **Actions > Electron desktop builds and lifecycle > Run workflow** on `main`. Set **platform** to **mac** and **mac_signing** to **developer-id**. This builds both Apple Silicon and Intel versions without rebuilding Windows. The default `adhoc` mode is only for tests and does not make a trusted public Mac release.
 
-The Developer ID path fails before downloads when credential fields are missing, the certificate name is not a Developer ID Application identity, or its Team ID does not match. Presence checks cannot verify the export password, private key, membership status or Apple authorization; those are checked during the signed build. It requires code signing, submits the app to Apple's notary service through electron-builder, and staples the app ticket before packaging. It verifies the actual DMG and ZIP contents, runs real CPU processing and relaunch tests on the DMG-installed copy, then rechecks bundle integrity. Both Mac jobs must pass Gatekeeper assessment and stapled-ticket validation; a valid ad-hoc signature alone cannot pass this release gate.
+The Developer ID path repeats that login check before build downloads. It also rejects missing credential fields, the wrong certificate type or a mismatched Team ID. Certificate import and signing validate the export password and private key later in the build. Apple ID and app-specific password values have surrounding whitespace removed to tolerate a trailing newline from copying; the certificate export password is preserved exactly. The build requires code signing, submits the app to Apple's notary service through electron-builder, and staples the app ticket before packaging. It verifies the actual DMG and ZIP contents, runs real CPU processing and relaunch tests on the DMG-installed copy, then rechecks bundle integrity. Both Mac jobs must pass Gatekeeper assessment and stapled-ticket validation; a valid ad-hoc signature alone cannot pass this release gate.
 
 Apple's service can take time. If it rejects the app, review the job/notarization output, fix the reported issue and rebuild. Do not publish by skipping a failed signing or notarization check. Windows keeps its existing independent packaging behavior.
+
+### Apple rejects the login with HTTP 401
+
+All six secret names can be present while a saved value is incorrect. Check that the Apple account used to generate the app-specific password is the same email saved as `APPLE_ID`. If unsure, sign into that account at [Apple Account](https://account.apple.com/), generate a new app-specific password for SoundShredder, and update only `APPLE_APP_SPECIFIC_PASSWORD` in GitHub. Use the generated password, not its label or the normal Apple account password. Keep it out of chat and logs. Changing the normal Apple account password revokes existing app-specific passwords; see [Apple's instructions](https://support.apple.com/en-us/102654).
+
+An authentication rejection is not evidence that the Developer ID certificate needs replacing. Re-run **Check Mac notarization access** after correcting the secret, then build again. HTTP 403 instead means the account's team access or required developer agreements need checking. GitHub lists saved names under **Repository secrets**, below the separate **Environment secrets** section; saved values cannot be read back from that list.
 
 ## 5. Check the customer installation before publishing
 
