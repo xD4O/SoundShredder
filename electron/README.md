@@ -4,7 +4,7 @@ SoundShredder's shared HTML/CSS/JavaScript interface runs in a sandboxed Electro
 
 User guides: [Windows](docs/WINDOWS.md) · [macOS](docs/MACOS.md).
 
-Published downloads: [Windows Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-windows-preview.1) · [signed macOS Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1). The illustrated [community guide](../output/pdf/SoundShredder-Higgsfield-Community-Guide-v1.2.0.pdf) covers installation, presets, video, track exports and sessions; use the platform guides above for current release details.
+Current downloads: [Latest release — Windows and Mac](https://github.com/xD4O/SoundShredder/releases/latest). Original platform releases: [Windows Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-windows-preview.1) · [signed macOS Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1). The illustrated [community guide](../output/pdf/SoundShredder-Higgsfield-Community-Guide-v1.2.0.pdf) covers installation, presets, video, track exports and sessions; use the platform guides above for current release details.
 
 ## Build
 
@@ -31,7 +31,7 @@ Package Windows with `npm run build -- --win --x64`; package Mac with `npm run b
 - Cancel stops the owned installer process. Incomplete copy/install markers trigger repair of only the private engine folder on explicit retry. Interrupted setup does not automatically restart at launch. Sessions and models remain separate, and completed compatible engines are reused.
 - Python and the renderer communicate over authenticated setup APIs and loopback-only workspace APIs. The renderer has no Node access; sandbox/context isolation remain enabled. Privileged IPC accepts only the main window's trusted top-level frame and fixed actions. Navigation and external links are restricted.
 - Existing sessions/runtimes keep their current location until the user chooses another. The native folder picker checks write access, rejects overlap with application files, and starts the new manager exclusively before committing the preference. Failed switches restore the old manager. Existing files are never moved or deleted. Chosen-folder downloads, model caches, sessions and temporary setup files stay together; the small Chromium profile and single-instance lock remain at the original control location. Offline drives open a recovery screen instead of silently creating another profile. Uninstalling retains both locations.
-- GitHub updates are manual. The Help menu links to Electron releases; the shared sidebar checker still follows stable source releases.
+- GitHub updates are manual. The Help menu links to Electron releases; the shared sidebar checker follows the latest numbered release, including 1.2.2, and ignores prereleases.
 
 ## Verification
 
@@ -49,4 +49,4 @@ The current [signed Mac builds passed on both native architectures](https://gith
 
 `npm run test:app` exercises a real desktop window, private CPU setup, generated one-second video/audio, video playback/toggling, separation, export, active-job quit protection, four launch cycles, duplicate launches and saved-session retention. One cycle simulates a desktop crash and verifies engine shutdown and subsequent relaunch. It uses only `artifacts/` profiles. Set `SS_TEST_EXECUTABLE` to test a packaged executable; otherwise it uses development Electron. `SS_TEST_HOME` can point to an existing QA profile under workspace artifacts to reuse its engine. It never uses the normal user profile.
 
-The `electron-desktop.yml` workflow builds on Windows, native Apple Silicon and native Intel runners, then tests the packaged apps. Artifacts include platform instructions, checksums and verification screenshots/logs. Signed Mac jobs additionally require notarization and Gatekeeper acceptance before and after lifecycle testing. Broader consumer hardware, Windows signing/SmartScreen and GPU validation remain separate work; releases remain previews.
+The `electron-desktop.yml` workflow builds on Windows, native Apple Silicon and native Intel runners, then tests the packaged apps. Artifacts include platform instructions, checksums and verification screenshots/logs. Signed Mac jobs additionally require notarization and Gatekeeper acceptance before and after lifecycle testing. Broader consumer hardware, Windows signing/SmartScreen and GPU validation remain separate work, as disclosed in the current release notes.

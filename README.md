@@ -12,14 +12,14 @@ Preview the result with your footage. Download the mix or each isolated track.
 **Local processing · Windows & macOS · CPU & NVIDIA GPU**
 
 <p>
-  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-windows-preview.1/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe"><strong>Download for Windows</strong></a>
+  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe"><strong>Download for Windows</strong></a>
   &nbsp; · &nbsp;
-  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-arm64.dmg"><strong>Mac · Apple Silicon</strong></a>
+  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-macOS-arm64.dmg"><strong>Mac · Apple Silicon</strong></a>
   &nbsp; · &nbsp;
-  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-x64.dmg"><strong>Mac · Intel</strong></a>
+  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-macOS-x64.dmg"><strong>Mac · Intel</strong></a>
 </p>
 
-[Install the desktop app](#install-the-desktop-app) · [Run in your browser](#run-the-web-app-locally) · [How it works](#from-clip-to-cleaned-audio) · [Guides](#guides-and-support)
+[Latest release: 1.2.2](https://github.com/xD4O/SoundShredder/releases/latest) · [Install the desktop app](#install-the-desktop-app) · [Run in your browser](#run-the-web-app-locally) · [How it works](#from-clip-to-cleaned-audio) · [Guides](#guides-and-support)
 
 Made by **cyr4x** for the **Higgsfield Community**.
 
@@ -48,9 +48,9 @@ Audio stays on your computer. Initial engine/model downloads need internet; cach
 
 | Platform | Download | Requirements |
 | :--- | :--- | :--- |
-| **Windows** | [EXE installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-windows-preview.1/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe) | Windows 10/11 x64 · CPU or compatible NVIDIA GPU |
-| **Mac · Apple Silicon** | [DMG installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-arm64.dmg) | macOS 13+ · M-series Mac · CPU |
-| **Mac · Intel** | [DMG installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-x64.dmg) | macOS 13+ · Intel Mac · CPU |
+| **Windows** | [EXE installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe) | Windows 10/11 x64 · CPU or compatible NVIDIA GPU |
+| **Mac · Apple Silicon** | [DMG installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-macOS-arm64.dmg) | macOS 13+ · M-series Mac · CPU |
+| **Mac · Intel** | [DMG installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-macOS-x64.dmg) | macOS 13+ · Intel Mac · CPU |
 
 ### Windows EXE
 
@@ -76,7 +76,7 @@ Allow **4 GiB free for CPU** or **14 GiB for NVIDIA** setup, plus the app, model
 Allow **3 GiB free for setup**, plus the app, models and saved media. Mac processing currently uses CPU; Apple Metal/MPS is not enabled. ZIP alternatives, Mac instructions and checksums are on the [Mac release page](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1).
 
 > [!IMPORTANT]
-> Desktop downloads remain **previews**. The Windows installer is unsigned and may show SmartScreen. The current Mac builds are signed and notarized; macOS may still ask for the usual confirmation when opening an app downloaded from the internet. Read the [Windows guide](electron/docs/WINDOWS.md) or [Mac guide](electron/docs/MACOS.md) for installation and troubleshooting.
+> The Windows installer is unsigned and may show SmartScreen. The current Mac builds are signed and notarized; macOS may still ask for the usual confirmation when opening an app downloaded from the internet. Read the [Windows guide](electron/docs/WINDOWS.md) or [Mac guide](electron/docs/MACOS.md) for installation and troubleshooting.
 
 **Close and return:** finish or cancel setup/processing, then close the window or choose **SoundShredder → Quit SoundShredder**. Reopen the same shortcut or app to return to your saved sessions. Opening it twice brings the existing window forward.
 
@@ -143,7 +143,7 @@ Normal separation prepares the tracks automatically. In a Bubble FX session, use
 | Update Electron | **Help → Check for Electron updates**. Quit, install the newer EXE or replace the Mac app, then reopen. Sessions and compatible engines are retained. |
 | Update the browser version | Download a fresh source ZIP. With both apps stopped, copy the old `data` folder into the new folder and run its launcher. Keep the old folder until checked. |
 
-The sidebar **Check for updates** follows stable source releases; it does not announce Electron previews or every change on `main`. Desktop setup and diagnostics are under the **SoundShredder** application menu.
+The sidebar **Check for updates** follows the latest numbered release, currently **1.2.2**, for desktop and source users. It does not announce prereleases or every change on `main`. Updates are downloaded and installed manually. Desktop setup and diagnostics are under the **SoundShredder** application menu.
 
 <a id="community-guide"></a>
 

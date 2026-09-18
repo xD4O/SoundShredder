@@ -2,7 +2,7 @@
 
 Made by cyr4x. Made for the Higgsfield Community.
 
-> **For the 1.2.2 Mac Electron preview.** Use the release notes to check the exact downloads and completed verification. The older 1.2.0 preview remains unsigned and unnotarized and has a known Finder launch issue; a newer release does not change those older files.
+> **For the 1.2.2 Mac Electron release.** Use the release notes to check the exact downloads and completed verification. The older 1.2.0 preview remains unsigned and unnotarized and has a known Finder launch issue; a newer release does not change those older files.
 
 SoundShredder opens the familiar dark/mint workspace in its own Mac application window. Python is bundled. The audio engine and models download when needed; you do not need Homebrew, a separate Python installation, or an Apple developer account to use it.
 
@@ -12,8 +12,8 @@ Use **macOS 13 Ventura or newer**. Open **Apple menu > About This Mac** to check
 
 | Your Mac | Download |
 | --- | --- |
-| Apple Silicon — M1, M2, M3, M4 or newer M-series | [SoundShredder-Electron-1.2.2-macOS-arm64.dmg](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-arm64.dmg) |
-| Intel processor | [SoundShredder-Electron-1.2.2-macOS-x64.dmg](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-x64.dmg) |
+| Apple Silicon — M1, M2, M3, M4 or newer M-series | [SoundShredder-Electron-1.2.2-macOS-arm64.dmg](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-macOS-arm64.dmg) |
+| Intel processor | [SoundShredder-Electron-1.2.2-macOS-x64.dmg](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-macOS-x64.dmg) |
 
 Matching ZIP files are alternatives to the DMGs. Use the native build for your chip. This release processes audio on the **CPU**; Apple Metal/MPS and NVIDIA acceleration are not enabled. Processing speed depends on your Mac, clip length and chosen cleanup settings.
 
@@ -62,7 +62,7 @@ Use the left panel to return to saved sessions or start a new one. Closing/remov
 
 ## Updates, storage and uninstall
 
-**Help > Check for Electron updates** opens GitHub releases. Quit the app, download the matching newer Mac build and replace the app in Applications. Updates are manual; no automatic app replacement is enabled. The workspace sidebar's update checker checks stable source releases, which are a separate channel.
+**Help > Check for Electron updates** opens GitHub releases. Quit the app, download the matching newer Mac build and replace the app in Applications. Updates are manual; no automatic app replacement is enabled. The workspace sidebar's update checker checks the latest numbered release, including 1.2.2. It ignores prereleases and does not install updates.
 
 Without a folder choice, engines and sessions remain in `~/Library/Application Support/SoundShredder`, and models use the existing user caches. After choosing a folder, that folder holds `data` (sessions), `runtimes` (engines), `models`, `cache`, `temp` and diagnostic logs. Small preferences and the `electron` browser profile remain in the default Application Support folder. Replacing the app preserves these separate locations.
 

@@ -1,4 +1,4 @@
-# SoundShredder 1.2.2 — Windows Electron preview
+# SoundShredder 1.2.2 — Windows Electron guide
 
 Made by cyr4x. Made for the Higgsfield Community.
 
@@ -40,7 +40,7 @@ Network requests have timeouts and limited retries. An installer command with no
 
 The normal Electron app location is `%LOCALAPPDATA%\Programs\SoundShredder` (or your chosen installer folder). Without a folder choice, engines and sessions keep using `%LOCALAPPDATA%\SoundShredder`, and models use existing user caches. After choosing a folder, it holds `data` (sessions), `runtimes` (engines), `models`, `cache`, `temp` and logs. Small app preferences and the `electron` browser profile remain in `%LOCALAPPDATA%\SoundShredder` so the app remembers your choice. Older standalone launchers may remain in versioned subfolders such as `1.1.1`; the new Start menu shortcut opens Electron.
 
-**Help > Check for Electron updates** opens GitHub releases. Install the matching newer Windows Electron release after quitting. Updates are manual; no background update installation is enabled. The workspace's existing update checker checks stable source releases, which are a separate channel.
+**Help > Check for Electron updates** opens GitHub releases. Install the matching newer Windows Electron release after quitting. Updates are manual; no background update installation is enabled. The workspace's update checker checks the latest numbered release, including 1.2.2. It ignores prereleases and does not install updates.
 
 ### Uninstall the Windows app
 

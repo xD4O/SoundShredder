@@ -1,8 +1,8 @@
 # Future updates
 
-No release date is committed for the remaining work. The stable v1.0.3 release remains the source ZIP. The recommended desktop downloads are the v1.2.2 Electron previews for Windows, Apple Silicon and Intel Mac. Both Mac builds are Developer ID signed and Apple-notarized; native CI passed Gatekeeper, real CPU separation, export, close/reopen and crash recovery. A user confirmed the Finder installation test worked on their Mac. Broader hardware and Windows signing/SmartScreen validation remain separate work.
+No release date is committed for the remaining work. The latest release is v1.2.2, with Windows, Apple Silicon and Intel Mac installers together and source available separately. Earlier platform previews remain available for their verification history. Both Mac builds are Developer ID signed and Apple-notarized; native CI passed Gatekeeper, real CPU separation, export, close/reopen and crash recovery. A user confirmed the Finder installation test worked on their Mac. Broader hardware and Windows signing/SmartScreen validation remain separate work.
 
-## Published in the Electron desktop previews
+## Published in the Electron desktop app
 
 - Shared web interface in a dedicated application window, with native menus and Save dialogs.
 - Bundled Python and automatic engine setup; existing standalone engines and sessions retained.
@@ -28,12 +28,12 @@ See [standalone documentation](desktop/README.md) for the earlier browser-based 
 
 ## Easier installation and updates
 
-Next work across the published Windows and Mac previews:
+Next work across the Windows and Mac apps:
 
-- Sign and validate the Windows installer and NVIDIA setup on additional clean PCs before promoting it beyond preview.
+- Sign and validate the Windows installer and NVIDIA setup on additional clean PCs to extend validation beyond the verified CPU workflow.
 - Expand consumer Mac testing across macOS versions, chip types, Applications/Dock launch and Bubble FX. Signing, notarization, Gatekeeper and CPU layer-separation/reopening checks already pass on both native architectures.
 - Expand single-instance protection to cover legacy source launchers as well as standalone launches.
 - Add guided app updates that install after active processing finishes.
 - Preserve the existing local-processing workflow and familiar interface.
 
-The Windows preview includes the first setup screen and diagnostics; keep improving recovery and usability with feedback from clean-machine testing.
+The Windows app includes the first setup screen and diagnostics; keep improving recovery and usability with feedback from clean-machine testing.

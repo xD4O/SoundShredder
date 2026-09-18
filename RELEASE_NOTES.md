@@ -1,5 +1,11 @@
 # SoundShredder releases
 
+## v1.2.2 - Current Windows and Mac downloads
+
+- [Latest release](https://github.com/xD4O/SoundShredder/releases/latest) now points to 1.2.2 with the Windows EXE, signed/notarized Apple Silicon and Intel Mac packages, platform guides and checksums together.
+- Installer bytes match the previously verified platform releases; existing 1.2.2 users do not need to reinstall.
+- The sidebar checker now recognizes 1.2.2 as the latest published version. Updates remain manual. Previous entries below describe their original release channels.
+
 ## v1.2.2 - Signed macOS Electron preview
 
 - [Apple Silicon and Intel downloads](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1) are now Developer ID signed and Apple-notarized, with verified Gatekeeper acceptance and stapled tickets.
