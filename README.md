@@ -12,7 +12,7 @@ Preview the result with your footage. Download the mix or each isolated track.
 **Local processing · Windows & macOS · CPU & NVIDIA GPU**
 
 <p>
-  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.1-electron-windows-preview.1/SoundShredder-Electron-1.2.1-Windows-x64-Setup.exe"><strong>Download for Windows</strong></a>
+  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-windows-preview.1/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe"><strong>Download for Windows</strong></a>
   &nbsp; · &nbsp;
   <a href="#mac-browser-setup"><strong>Mac setup</strong></a>
 </p>
@@ -46,7 +46,7 @@ Audio stays on your computer. Initial engine/model downloads need internet; cach
 
 | Platform | Download | Requirements |
 | :--- | :--- | :--- |
-| **Windows** | [EXE installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.1-electron-windows-preview.1/SoundShredder-Electron-1.2.1-Windows-x64-Setup.exe) | Windows 10/11 x64 · CPU or compatible NVIDIA GPU |
+| **Windows** | [EXE installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-windows-preview.1/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe) | Windows 10/11 x64 · CPU or compatible NVIDIA GPU |
 | **Mac · Apple Silicon** | [Desktop preview — launch issue](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1) | macOS 13+ · M-series Mac · CPU |
 | **Mac · Intel** | [Desktop preview — launch issue](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1) | macOS 13+ · Intel Mac · CPU |
 
@@ -54,10 +54,12 @@ Audio stays on your computer. Initial engine/model downloads need internet; cach
 
 1. **Download the EXE** above. Quit an older SoundShredder standalone through its setup screen before installing.
 2. **Run the installer.** Choose the app folder and finish setup. No separate Python installation, PATH changes or administrator rights are needed.
-3. **Open SoundShredder** from Start or the desktop shortcut.
+3. **Open SoundShredder** from Start or the desktop shortcut. Use **Choose folder…** to pick a drive for engines, models and sessions, or keep the current location.
 4. **Choose CPU or NVIDIA GPU**, then select **Set up SoundShredder**. Keep internet connected for the initial downloads. The workspace opens when ready.
 
 Allow **4 GiB free for CPU** or **14 GiB for NVIDIA** setup, plus the app, models and saved media. NVIDIA needs a compatible GPU and current driver; a separate CUDA Toolkit is not required.
+
+**Choose your storage:** use **SoundShredder → Choose storage folder…** to change the location later. Your choice survives updates and reopening. Existing files stay in their original folder; select that folder again to return to its saved work. Keep external drives connected. [Storage guide](electron/docs/WINDOWS.md#choose-where-your-files-live).
 
 **First setup:** watch live download progress, open Setup details, or use **Cancel setup**. Closing during setup offers **Cancel setup and quit**. Reopen and retry to repair an interrupted engine; saved sessions are kept. See the [setup recovery guide](electron/docs/WINDOWS.md#follow-or-cancel-first-setup).
 
