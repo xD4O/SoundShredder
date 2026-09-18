@@ -33,16 +33,12 @@ async function state() { const i = instance(); return request(i.base + '/api/sta
 const evidence = { platform: process.platform, architecture: process.arch, executable: executablePath, cycles: [] };
 let application, nativePid;
 async function verifySetupCancellation() {
+  if (fs.existsSync(path.join(home, 'settings.json'))) return;
   application = await electron.launch({ executablePath, args, env, timeout: 60000 });
   let page = await application.firstWindow();
   nativePid = await application.evaluate(() => process.pid);
   const initial = await waitFor(state);
-  if (initial.status !== 'idle' || fs.existsSync(path.join(home, 'settings.json'))) {
-    // Reused local QA profiles deliberately skip a fresh dependency download.
-    await application.close(); application = null;
-    await waitFor(() => !fs.existsSync(path.join(home, 'desktop.json')));
-    return;
-  }
+  assert.equal(initial.status, 'idle', 'A fresh QA profile must offer setup');
   const waitInstalling = () => waitFor(async () => {
     const s = await state();
     if (s.status === 'error') throw Object.assign(new Error(s.message), { fatal: true });

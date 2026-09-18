@@ -646,7 +646,16 @@ def handler_for(manager):
                         manager.cancel_setup()
                     elif self.path == "/api/stop":
                         manager.stop(cancel_setup=payload.get("cancel_setup") is True)
-                        threading.Thread(target=self.server.shutdown, daemon=True).start()
+                        # Flush the acknowledgement before shutdown can let the
+                        # owning process exit and abandon this daemon handler.
+                        try:
+                            self.send(200, {"ok": True})
+                            self.wfile.flush()
+                        except ConnectionError:
+                            pass  # The requester may already have closed its UI.
+                        finally:
+                            threading.Thread(target=self.server.shutdown, daemon=True).start()
+                        return
                     else:
                         return self.send(404, {"error": "Not found."})
                 self.send(200, {"ok": True})

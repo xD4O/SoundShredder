@@ -102,6 +102,34 @@ def test_cancel_and_quit_waits_for_owned_installer_to_exit(manager, server, monk
     assert manager.state()["status"] == "closing"
 
 
+def test_shutdown_acknowledges_client_before_server_can_exit(manager):
+    shutdown_entered = threading.Event()
+    base = bootstrap.handler_for(manager)
+    class SlowResponse(base):
+        def send(self, status, content, content_type="application/json"):
+            if self.path == "/api/stop" and status == 200:
+                time.sleep(.05)  # Give a prematurely started shutdown time to race.
+                assert not shutdown_entered.is_set()
+            super().send(status, content, content_type)
+    httpd = bootstrap.LocalServer(("127.0.0.1", 0), SlowResponse)
+    shutdown = httpd.shutdown
+    def observed_shutdown():
+        shutdown_entered.set()
+        shutdown()
+    httpd.shutdown = observed_shutdown
+    thread = threading.Thread(target=httpd.serve_forever)
+    thread.start()
+    try:
+        result = bootstrap.local_request(f"http://127.0.0.1:{httpd.server_port}/api/stop",
+                                         token=manager.token, payload={}, timeout=2)
+        assert result == {"ok": True}
+        assert shutdown_entered.wait(2)
+    finally:
+        shutdown()
+        httpd.server_close()
+        thread.join(timeout=5)
+
+
 @pytest.mark.parametrize("active", [False, True])
 def test_silent_or_chatty_stalled_command_is_killed_with_a_clear_error(manager, active):
     code = "import time\nwhile True:\n print('still working', flush=True)\n time.sleep(.04)" if active else "import time; time.sleep(30)"
