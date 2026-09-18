@@ -1,5 +1,11 @@
 # Verification record
 
+## Windows uninstall access (2026-09-18)
+
+- Added a Start menu uninstall shortcut and a Windows-only native menu action that opens Windows Settings. The normal NSIS uninstaller remains responsible for application/shortcut removal; the profile and model caches remain outside its removal scope. The wizard and Windows guide explain retention and optional manual profile removal.
+- The Windows package built locally and all five Electron boundary/signing tests passed. A separate packaged-app check exercised cancelling the uninstall information dialog, opening the fixed Windows Settings URI, and displaying manual instructions when launching Settings fails. It used an isolated test profile and did not uninstall the user's app.
+- The initial CI packages passed real CPU processing/export and four close/reopen cycles. The new installer harness needed corrections for an absent uninstall registry key and profile folders created by other tests. It now adds unique retention markers under session, engine and Electron settings folders without overwriting existing data. Installer checks run before audio tests, and subsequent processing/relaunch checks use the final installed copy. Windows-only verification is available for manual runs.
+
 ## Mac distribution repair (2026-09-18)
 
 - The published Mac Electron preview explicitly disabled app signing (`identity: null`). Users reported Finder rejecting the downloaded app as damaged. The alert alone does not prove a corrupt transfer; prior runner launch tests did not establish Gatekeeper acceptance for browser downloads.

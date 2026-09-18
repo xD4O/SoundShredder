@@ -79,6 +79,10 @@ jobs:
         run: node build/notarized.cjs
       - name: Locate packaged application
         run: python scripts/electron_artifacts.py executable
+      - name: Test Windows install, reinstall, uninstall and retained sessions
+        if: matrix.platform == 'win'
+        shell: pwsh
+        run: ./scripts/test_windows_installer.ps1
       - name: Verify DMG and ZIP signatures and install a copy for lifecycle testing
         if: matrix.platform == 'mac'
         run: python scripts/verify_mac_distribution.py ${{ inputs.mac_signing == 'developer-id' && '--require-notarized' || '' }}
@@ -88,10 +92,6 @@ jobs:
       - name: Verify installed app remains sealed after processing and relaunch
         if: matrix.platform == 'mac'
         run: python scripts/verify_mac_distribution.py --after-lifecycle ${{ inputs.mac_signing == 'developer-id' && '--require-notarized' || '' }}
-      - name: Test Windows install, reinstall, uninstall and retained sessions
-        if: matrix.platform == 'win'
-        shell: pwsh
-        run: ./scripts/test_windows_installer.ps1
       - name: Collect matching platform guide and checksums
         run: python scripts/electron_artifacts.py collect
       - uses: actions/upload-artifact@v4

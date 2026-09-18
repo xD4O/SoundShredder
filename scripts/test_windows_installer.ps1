@@ -19,17 +19,28 @@ if (!$testRoot.StartsWith($tempRoot, [StringComparison]::OrdinalIgnoreCase) -or 
 }
 $installPath = Join-Path $testRoot 'App with spaces'
 $profilePath = Join-Path $env:LOCALAPPDATA 'SoundShredder'
-if (Test-Path -LiteralPath $profilePath) { throw 'Refusing to alter an existing user profile.' }
+if ((Test-Path -LiteralPath $profilePath) -and !(Test-Path -LiteralPath $profilePath -PathType Container)) {
+    throw 'The profile path is not a directory.'
+}
 $startMenu = [Environment]::GetFolderPath('Programs')
 $uninstallLink = Join-Path $startMenu 'Uninstall SoundShredder.lnk'
 if (Test-Path -LiteralPath $uninstallLink) { throw 'Unexpected existing uninstall shortcut.' }
-$null = New-Item -ItemType Directory -Path $testRoot, $profilePath
-$marker = Join-Path $profilePath 'installer-test-session.txt'
 $sentinel = [guid]::NewGuid().ToString()
-Set-Content -LiteralPath $marker -Value $sentinel -NoNewline
+$null = New-Item -ItemType Directory -Path $testRoot
+$markers = @('data', 'runtimes', 'electron') | ForEach-Object {
+    # Other regression checks can already have created this profile. Add only
+    # unique test files and never clear or overwrite its existing content.
+    $folder = Join-Path $profilePath "$_\installer-qa-$sentinel"
+    $null = New-Item -ItemType Directory -Path $folder -Force
+    $marker = Join-Path $folder 'retained.txt'
+    Set-Content -LiteralPath $marker -Value $sentinel -NoNewline
+    $marker
+}
 
 function Assert-ProfilePreserved {
-    if ((Get-Content -LiteralPath $marker -Raw) -ne $sentinel) { throw 'Installer changed saved profile data.' }
+    foreach ($marker in $markers) {
+        if ((Get-Content -LiteralPath $marker -Raw) -ne $sentinel) { throw 'Installer changed saved profile data.' }
+    }
 }
 function Run-Installer {
     # NSIS /D must be last and takes the entire remaining path, including spaces.
@@ -69,6 +80,8 @@ Write-Output 'Uninstall removed application/registration/shortcut and preserved 
 
 Run-Installer
 Write-Output 'Installation after uninstall succeeded with saved profile data intact.'
+# Subsequent processing and relaunch checks must exercise this installed copy.
+Add-Content -LiteralPath $env:GITHUB_ENV -Value "SS_TEST_EXECUTABLE=$(Join-Path $installPath 'SoundShredder.exe')" -Encoding utf8
 $report = Join-Path $repo 'artifacts/electron/verification/windows-installer.json'
 $null = New-Item -ItemType Directory -Force -Path (Split-Path -Parent $report)
 @{ fresh_install = $true; reinstall = $true; uninstall_shortcut = $true; windows_settings_registration = $true;
