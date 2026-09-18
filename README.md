@@ -14,7 +14,7 @@ Preview the result with your footage. Download the mix or each isolated track.
 <p>
   <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-windows-preview.1/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe"><strong>Download for Windows</strong></a>
   &nbsp; · &nbsp;
-  <a href="#mac-browser-setup"><strong>Mac setup</strong></a>
+  <a href="https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1"><strong>Download for Mac</strong></a>
 </p>
 
 [Install the desktop app](#install-the-desktop-app) · [Run in your browser](#run-the-web-app-locally) · [How it works](#from-clip-to-cleaned-audio) · [Guides](#guides-and-support)
@@ -39,16 +39,16 @@ Audio stays on your computer. Initial engine/model downloads need internet; cach
 
 ## Install the desktop app
 
-**Recommended on Windows.** The Electron app includes Python and installs its audio engine automatically. You get the same interface in a dedicated window, with native menus, Save dialogs and saved sessions.
+**Recommended for Windows and Mac.** The Electron app includes Python and installs its audio engine automatically. You get the same interface in a dedicated window, with native menus, Save dialogs and saved sessions.
 
-> [!WARNING]
-> **Mac desktop downloads have a known Finder/Gatekeeper launch issue.** Users report “SoundShredder is damaged and can't be opened.” The published preview is not Developer ID signed or notarized. Use the [Mac browser setup](#mac-browser-setup) for now, or read the [Mac launch troubleshooting](electron/docs/MACOS.md#finder-says-damaged-or-cannot-be-opened) before trying the desktop preview. Changing from DMG to ZIP does not provide Apple trust.
+> [!TIP]
+> **The Mac 1.2.2 downloads are Developer ID signed and Apple-notarized.** Use the current downloads below to replace an older Mac preview. Both architectures passed Gatekeeper and installed-app processing/relaunch checks; a user also confirmed the Finder installation test worked on their Mac.
 
 | Platform | Download | Requirements |
 | :--- | :--- | :--- |
 | **Windows** | [EXE installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-windows-preview.1/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe) | Windows 10/11 x64 · CPU or compatible NVIDIA GPU |
-| **Mac · Apple Silicon** | [Desktop preview — launch issue](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1) | macOS 13+ · M-series Mac · CPU |
-| **Mac · Intel** | [Desktop preview — launch issue](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1) | macOS 13+ · Intel Mac · CPU |
+| **Mac · Apple Silicon** | [DMG installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-arm64.dmg) | macOS 13+ · M-series Mac · CPU |
+| **Mac · Intel** | [DMG installer](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-x64.dmg) | macOS 13+ · Intel Mac · CPU |
 
 ### Windows EXE
 
@@ -67,14 +67,14 @@ Allow **4 GiB free for CPU** or **14 GiB for NVIDIA** setup, plus the app, model
 
 ### macOS DMG
 
-1. **Read the Mac launch notice above.** If testing the desktop preview, download the matching DMG from the [Mac release page](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1). Check Apple menu → About This Mac: use Apple Silicon for M-series chips, or Intel for Intel processors.
+1. **Download the matching DMG** above. Check Apple menu → About This Mac: use Apple Silicon for M-series chips, or Intel for Intel processors.
 2. **Quit any older standalone.** Open the DMG, drag **SoundShredder** into **Applications**, then eject the disk image.
-3. **Open SoundShredder** from Applications and select **Set up SoundShredder**. The CPU engine downloads automatically. No Homebrew or separate Python is needed.
+3. **Open SoundShredder** from Applications. Optionally use **Choose folder…** for engines, models and sessions, then select **Set up SoundShredder**. The CPU engine downloads automatically. No Homebrew or separate Python is needed.
 
-Allow **3 GiB free for setup**, plus the app, models and saved media. Mac processing currently uses CPU; Apple Metal/MPS is not enabled. ZIP alternatives are available on the [Mac release page](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1).
+Allow **3 GiB free for setup**, plus the app, models and saved media. Mac processing currently uses CPU; Apple Metal/MPS is not enabled. ZIP alternatives, Mac instructions and checksums are on the [Mac release page](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1).
 
 > [!IMPORTANT]
-> Desktop downloads are **unsigned previews**; Mac builds are not notarized. Windows/macOS may show a security prompt. Read the [Windows guide](electron/docs/WINDOWS.md) or [Mac guide](electron/docs/MACOS.md) for platform-specific installation and troubleshooting.
+> Desktop downloads remain **previews**. The Windows installer is unsigned and may show SmartScreen. The current Mac builds are signed and notarized; macOS may still ask for the usual confirmation when opening an app downloaded from the internet. Read the [Windows guide](electron/docs/WINDOWS.md) or [Mac guide](electron/docs/MACOS.md) for installation and troubleshooting.
 
 **Close and return:** finish or cancel setup/processing, then close the window or choose **SoundShredder → Quit SoundShredder**. Reopen the same shortcut or app to return to your saved sessions. Opening it twice brings the existing window forward.
 

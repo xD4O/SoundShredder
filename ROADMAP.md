@@ -1,6 +1,6 @@
 # Future updates
 
-No release date is committed for the remaining work. The stable v1.0.3 release remains the source ZIP. Browser-based standalones are separate v1.1.1 prereleases; v1.2.0 Electron previews are now published for Windows, Apple Silicon and Intel Mac. Native CI passed real CPU separation, export, close/reopen and crash recovery; consumer Gatekeeper/SmartScreen and broader hardware validation remain separate checks.
+No release date is committed for the remaining work. The stable v1.0.3 release remains the source ZIP. The recommended desktop downloads are the v1.2.2 Electron previews for Windows, Apple Silicon and Intel Mac. Both Mac builds are Developer ID signed and Apple-notarized; native CI passed Gatekeeper, real CPU separation, export, close/reopen and crash recovery. A user confirmed the Finder installation test worked on their Mac. Broader hardware and Windows signing/SmartScreen validation remain separate work.
 
 ## Published in the Electron desktop previews
 
@@ -9,8 +9,10 @@ No release date is committed for the remaining work. The stable v1.0.3 release r
 - Close/reopen, duplicate-window prevention, active-work quit protection and owner-pipe crash cleanup.
 - Windows per-user installer and separate Apple Silicon/Intel Mac DMG/ZIP packaging.
 - Matching Windows/macOS documentation, including offline installation guides.
+- Remembered engine/model/session storage choices, download progress, setup cancellation and disconnected-drive recovery.
+- Developer ID signing and Apple notarization for both Mac architectures.
 
-See the [Windows release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-windows-preview.1), [Mac release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1) and [Electron documentation](electron/README.md). Publisher signing/notarization, automatic updates and broader GPU validation remain future work.
+See the [Windows release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-windows-preview.1), [Mac release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1) and [Electron documentation](electron/README.md). Windows publisher signing, automatic updates and broader GPU validation remain future work.
 
 ## Implemented in the standalone previews
 
@@ -29,8 +31,7 @@ See [standalone documentation](desktop/README.md) for the earlier browser-based 
 Next work across the published Windows and Mac previews:
 
 - Sign and validate the Windows installer and NVIDIA setup on additional clean PCs before promoting it beyond preview.
-- Sign/notarize Mac bundles and validate browser-download Gatekeeper, Applications/Dock launch and Bubble FX on consumer Apple Silicon and Intel Macs. CPU layer separation and automated reopening already pass on native CI.
-- Improve first-run downloads with precise byte progress and cancellation rather than stage progress alone.
+- Expand consumer Mac testing across macOS versions, chip types, Applications/Dock launch and Bubble FX. Signing, notarization, Gatekeeper and CPU layer-separation/reopening checks already pass on both native architectures.
 - Expand single-instance protection to cover legacy source launchers as well as standalone launches.
 - Add guided app updates that install after active processing finishes.
 - Preserve the existing local-processing workflow and familiar interface.

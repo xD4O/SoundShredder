@@ -1,12 +1,18 @@
 # SoundShredder releases
 
+## v1.2.2 - Signed macOS Electron preview
+
+- [Apple Silicon and Intel downloads](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1) are now Developer ID signed and Apple-notarized, with verified Gatekeeper acceptance and stapled tickets.
+- Both native builds passed real CPU processing, export, video preview, setup recovery, storage selection and close/reopen/crash tests. A user confirmed the final Finder installation test worked on their Mac; the chip type was not recorded.
+- Includes matching Mac installation instructions and checksums. Replace the older unsigned Mac preview with these new files. [Verification and limits](VERIFICATION.md#signed-and-notarized-mac-electron-release-122).
+
 ## v1.2.2 - Choose your storage folder
 
 - Native **Choose folder…** in setup and **SoundShredder > Choose storage folder…** let desktop users put engines, model caches, sessions and temporary setup downloads on a selected local or attached drive. Windows still offers a separate application-folder choice in its installer.
 - The selected location persists across launches. Existing files stay untouched; choosing an old location returns to its engine and sessions. Uninstalling retains saved data.
 - Unavailable drives show recovery controls instead of silently switching to the system drive. Folder checks run asynchronously, and failed switches restore the previous profile.
 - Fixed a startup error message that could be lost while the welcome screen loaded and a close request that could be ignored while switching folders.
-- Windows and Mac guides distinguish the app folder from storage. Mac changes remain a test candidate pending Developer ID signing and notarization.
+- Windows and Mac guides distinguish the app folder from storage. These changes are included in the signed Mac 1.2.2 release above.
 
 
 ## v1.2.0 - Electron desktop previews

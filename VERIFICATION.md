@@ -1,5 +1,13 @@
 # Verification record
 
+## Signed and notarized Mac Electron release (1.2.2)
+
+- [Workflow 35354510031](https://github.com/xD4O/SoundShredder/actions/runs/35354510031) passed on native Apple Silicon and Intel for source revision `2c017845b781d709cdb7bc49d5110cf9419ae224`. Both DMG and ZIP app copies passed Developer ID signature verification, all 24 native-file integrity checks, Gatekeeper assessment and stapled notarization-ticket validation. `notarized_distribution_ready` is `true` for both archives and the installed app after lifecycle testing.
+- Each DMG-installed app passed real CPU engine setup, model download, separation/WAV export, video preview/toggle, active-job quit protection, duplicate launch and four close/reopen/crash cycles with sessions retained. Setup cancellation/retry and folder selection, persistence, rollback and disconnected-drive recovery also passed without renderer errors.
+- Downloaded CI artifacts matched GitHub's SHA-256 digests. The bundled Markdown/HTML Mac guide and attached Mac guide match the tested source. The four unchanged signed archives, matching guide and combined checksums comprise the [Mac release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1).
+- After receiving those exact draft downloads and the requested install/Finder/process/quit/reopen test, the user reported that it works on their Mac. Chip type and macOS version were not recorded; this does not establish consumer testing on both architectures. Broader hardware performance, Mac Bubble FX inference and GPU processing remain outside this release's validation.
+- The earlier unsigned/unnotarized results below are historical snapshots of their named builds. They do not describe the signed 1.2.2 release.
+
 ## Selectable desktop storage (1.2.2, 2026-09-18)
 
 - Local checks passed: 51 selected Python tests plus 49 bubble/update regressions, 12 Electron boundary/storage/signing tests, Ruff, and setup-page fault tests. Bubble checkpoint and temporary-download routing use a small controlled fixture; the legacy source cache remains compatible.
