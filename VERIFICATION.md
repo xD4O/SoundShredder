@@ -1,5 +1,13 @@
 # Verification record
 
+## Mac distribution repair (2026-09-18)
+
+- The published Mac Electron preview explicitly disabled app signing (`identity: null`). Users reported Finder rejecting the downloaded app as damaged. The alert alone does not prove a corrupt transfer; prior runner launch tests did not establish Gatekeeper acceptance for browser downloads.
+- Source revision `8d494b35f77b343e2ed9970d07909aaf51c02dd9` enables explicit ad-hoc signing with hardened runtime and Electron's required JIT/library-validation entitlements. Python launchers disable bytecode writes so imports cannot add cache files to the sealed app. Ad-hoc signing does not identify an Apple-trusted publisher.
+- [Workflow 35306363621](https://github.com/xD4O/SoundShredder/actions/runs/35306363621) passed on Windows x64, native Apple Silicon and native Intel Mac. Both Mac jobs verified the DMG container, extracted the actual DMG and ZIP, passed strict app signature checks and verified all 24 native files in each extracted app, including the bundled Python runtime. The lifecycle tests ran a copy installed from the DMG into a test folder containing spaces.
+- Both Mac copies completed private CPU setup, real model processing/export, video preview, duplicate launch, four close/reopen cycles, forced-host-crash recovery and saved-session retention. Strict signature verification passed again afterward. The Windows processing/lifecycle regression also passed. The selected Python suite passed 38 tests; five local Electron tests subsequently passed, including missing-credential rejection and actual electron-builder configuration merging for the Developer ID path.
+- **Apple trust remains pending:** both Mac reports explicitly record `notarized_distribution_ready: false`. No signing credentials were used, no quarantine attributes were removed and Gatekeeper was not disabled. A separate manual `developer-id` workflow path now requires signing/notarization credentials and both Gatekeeper acceptance and stapled-ticket validation. It has not yet been exercised with Apple credentials or a consumer browser/Finder download. Existing release DMGs/ZIPs remain unchanged; the README and Mac release now disclose the launch issue and link the browser fallback.
+
 ## Community documentation refresh (v1.2.0, 2026-09-16)
 
 - Refreshed the illustrated HTML/PDF guide with 13 sections/pages, including Windows and Mac Electron installation, close/reopen behavior, manual desktop updates, profile storage and source-specific Mac certificate repair. Original browser screenshots are retained and identified as the shared interface.
