@@ -26,7 +26,9 @@ jobs:
       matrix:
         include: ${{ fromJSON(inputs.platform == 'windows' && '[{"runner":"windows-latest","platform":"win","arch":"x64"}]' || inputs.platform == 'mac' && '[{"runner":"macos-15","platform":"mac","arch":"arm64"},{"runner":"macos-15-intel","platform":"mac","arch":"x64"}]' || '[{"runner":"windows-latest","platform":"win","arch":"x64"},{"runner":"macos-15","platform":"mac","arch":"arm64"},{"runner":"macos-15-intel","platform":"mac","arch":"x64"}]') }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 45
+    # Apple's review may consume most of the old 45-minute job budget. Leave
+    # a separate window for the installed-app processing and relaunch checks.
+    timeout-minutes: ${{ matrix.platform == 'mac' && inputs.mac_signing == 'developer-id' && 120 || 45 }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -70,6 +72,7 @@ jobs:
         run: npm run build -- --${{ matrix.platform }} --${{ matrix.arch }}
       - name: Sign and notarize Mac application with Developer ID
         if: matrix.platform == 'mac' && inputs.mac_signing == 'developer-id'
+        timeout-minutes: 90
         working-directory: electron
         env:
           CSC_LINK: ${{ secrets.MAC_CSC_LINK }}

@@ -57,7 +57,7 @@ Open **Actions > Electron desktop builds and lifecycle > Run workflow** on `main
 
 The Developer ID path repeats that login check before build downloads. It also rejects missing credential fields, the wrong certificate type or a mismatched Team ID. Certificate import and signing validate the export password and private key later in the build. Apple ID and app-specific password values have surrounding whitespace removed to tolerate a trailing newline from copying; the certificate export password is preserved exactly. The build requires code signing, submits the app to Apple's notary service through electron-builder, and staples the app ticket before packaging. It verifies the actual DMG and ZIP contents, runs real CPU processing and relaunch tests on the DMG-installed copy, then rechecks bundle integrity. Both Mac jobs must pass Gatekeeper assessment and stapled-ticket validation; a valid ad-hoc signature alone cannot pass this release gate.
 
-Apple's service can take time. If it rejects the app, review the job/notarization output, fix the reported issue and rebuild. Do not publish by skipping a failed signing or notarization check. Windows keeps its existing independent packaging behavior.
+Apple's service can take time. Signed Mac jobs allow up to 120 minutes, with signing/notarization limited to 90 minutes so the installed-app tests have their own remaining window. A timeout is not an Apple rejection: check which step stopped before retrying. If Apple rejects the app, review the job/notarization output, fix the reported issue and rebuild. Do not publish by skipping a failed signing or notarization check. Windows keeps its existing independent packaging behavior.
 
 ### Apple rejects the login with HTTP 401
 
