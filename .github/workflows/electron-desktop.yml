@@ -4,6 +4,13 @@ on:
     branches: [main, 'codex/electron-desktop']
     paths: ['electron/**', 'desktop/bootstrap.py', 'desktop/setup.html', 'desktop/lifetime.py', 'scripts/prepare_electron.py', 'scripts/electron_artifacts.py', 'scripts/verify_mac_distribution.py', 'tests/test_mac_distribution.py', 'soundshredder/**', '.github/workflows/electron-desktop.yml']
   workflow_dispatch:
+    inputs:
+      mac_signing:
+        description: 'Mac test signing or Developer ID plus notarization (requires configured secrets)'
+        required: true
+        type: choice
+        default: adhoc
+        options: [adhoc, developer-id]
 permissions:
   contents: read
 jobs:
@@ -33,6 +40,17 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: electron/package-lock.json
+      - name: Check notarized release credentials before downloading build inputs
+        if: matrix.platform == 'mac' && inputs.mac_signing == 'developer-id'
+        working-directory: electron
+        env:
+          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          CSC_NAME: ${{ secrets.MAC_CSC_NAME }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: node build/notarized.cjs --check
       - name: Python lifecycle regressions
         run: |
           python -m pip install pytest
@@ -46,21 +64,33 @@ jobs:
         working-directory: electron
         run: npm test
       - name: Package desktop application
+        if: matrix.platform != 'mac' || inputs.mac_signing != 'developer-id'
         working-directory: electron
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         run: npm run build -- --${{ matrix.platform }} --${{ matrix.arch }}
+      - name: Sign and notarize Mac application with Developer ID
+        if: matrix.platform == 'mac' && inputs.mac_signing == 'developer-id'
+        working-directory: electron
+        env:
+          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          CSC_NAME: ${{ secrets.MAC_CSC_NAME }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: node build/notarized.cjs
       - name: Locate packaged application
         run: python scripts/electron_artifacts.py executable
       - name: Verify DMG and ZIP signatures and install a copy for lifecycle testing
         if: matrix.platform == 'mac'
-        run: python scripts/verify_mac_distribution.py
+        run: python scripts/verify_mac_distribution.py ${{ inputs.mac_signing == 'developer-id' && '--require-notarized' || '' }}
       - name: Test real CPU separation, export, close and relaunch
         working-directory: electron
         run: npm run test:app
       - name: Verify installed app remains sealed after processing and relaunch
         if: matrix.platform == 'mac'
-        run: python scripts/verify_mac_distribution.py --after-lifecycle
+        run: python scripts/verify_mac_distribution.py --after-lifecycle ${{ inputs.mac_signing == 'developer-id' && '--require-notarized' || '' }}
       - name: Collect matching platform guide and checksums
         run: python scripts/electron_artifacts.py collect
       - uses: actions/upload-artifact@v4
