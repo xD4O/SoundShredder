@@ -1,79 +1,103 @@
-# SoundShredder — macOS Electron guide
+# SoundShredder 1.2.2 — macOS Electron guide
 
 Made by cyr4x. Made for the Higgsfield Community.
 
-> **Known issue — updated September 18, 2026:** the published Electron Mac preview can be blocked by Finder with “SoundShredder is damaged and can't be opened.” It has no Developer ID signature or Apple notarization. Use the [local browser version](https://github.com/xD4O/SoundShredder#mac-browser-setup) while normal Mac distribution is being resolved. A ZIP of the same app does not solve its trust status.
+> **For the 1.2.2 Mac Electron preview.** Use the release notes to check the exact downloads and completed verification. The older 1.2.0 preview remains unsigned and unnotarized and has a known Finder launch issue; a newer release does not change those older files.
+
+SoundShredder opens the familiar dark/mint workspace in its own Mac application window. Python is bundled. The audio engine and models download when needed; you do not need Homebrew, a separate Python installation, or an Apple developer account to use it.
+
+## Choose your download
+
+Use **macOS 13 Ventura or newer**. Open **Apple menu > About This Mac** to check your computer.
+
+| Your Mac | Download |
+| --- | --- |
+| Apple Silicon — M1, M2, M3, M4 or newer M-series | `SoundShredder-Electron-1.2.2-macOS-arm64.dmg` |
+| Intel processor | `SoundShredder-Electron-1.2.2-macOS-x64.dmg` |
+
+Matching ZIP files are alternatives to the DMGs. Use the native build for your chip. This release processes audio on the **CPU**; Apple Metal/MPS and NVIDIA acceleration are not enabled. Processing speed depends on your Mac, clip length and chosen cleanup settings.
+
+## Install and open
+
+1. Download from the [official SoundShredder releases](https://github.com/xD4O/SoundShredder/releases). Check the release tag and architecture before opening the file. `SHA256SUMS.txt` is provided for checking download integrity.
+2. Quit any previous SoundShredder app. For the older browser-based standalone, use its setup page's **Close SoundShredder** control or its menu-bar Quit control. Keep your engine and session folders.
+3. Open the matching DMG. Drag **SoundShredder** to **Applications**, replace the previous app if prompted, then eject the disk image. For a ZIP, extract it and move **SoundShredder.app** into Applications.
+4. Open **SoundShredder** from Applications or Finder. macOS may ask you to confirm opening an app downloaded from the internet. If it says the app is damaged or cannot be opened, use the troubleshooting below; do not assume setup completed.
+5. In setup, choose **Choose folder…** if you want engines, models and sessions on another drive. Otherwise, keep the existing location. Select **Set up SoundShredder** to install the CPU engine. A compatible completed engine is reused.
+6. Keep internet connected and allow at least **3 GiB free for engine setup**, plus space for the app, models and your media. Model downloads are approximately **426 MB** for layer separation and **1.2 GB** for Bubble FX. These are additional to the setup allowance.
+7. The workspace opens when the engine is ready. Drop audio or video into it, choose a preset, process, listen and export. Your audio is processed locally; cached engines and models can process files offline.
+
+## Choose where your files live
+
+The app belongs in **Applications**. The setup screen's **Choose folder…** button controls the larger **engines, model downloads, sessions and temporary setup files**. You can change this later through **SoundShredder > Choose storage folder…** after finishing or canceling active setup and audio work.
+
+Choose a writable local or attached drive with enough free space. SoundShredder creates a `SoundShredder` folder inside the selected location, or reuses that folder when you select it directly. For example, choosing `/Volumes/Media/Audio tools` uses `/Volumes/Media/Audio tools/SoundShredder`.
+
+The location is remembered when you quit, reopen or update. **Existing files are not moved or deleted.** An empty location starts a separate engine/session setup and may require new downloads. Select your original SoundShredder folder again to return to its saved sessions. Automatic file migration is not included.
+
+Keep the chosen drive connected. If it is unavailable, reconnect it and use **Retry opening**, or choose another folder from the recovery screen. SoundShredder does not silently replace the missing profile with a new one on your internal drive. Small app preferences remain in `~/Library/Application Support/SoundShredder` so the app remembers your choice.
+
+## Follow, cancel or retry setup
+
+Setup shows the current package, downloaded bytes, average download speed and elapsed time. The main progress bar tracks **setup stages**; a separate bar tracks the current download. Installing or checking downloaded packages can take time without either bar moving. **Setup details** opens live diagnostics.
+
+Use **Cancel setup** to stop. Closing the window while setup runs offers **Continue setup** or **Cancel setup and quit**. Reopen and select **Set up SoundShredder** to repair an interrupted engine. Sessions stay saved; some packages may download again. Compatible completed engines are reused on normal launches.
+
+Network requests have timeouts and limited retries. An installer command stops after ten minutes without output or one hour overall and provides an explanation and retry path. A lost local connection shows **Reconnecting**. If it does not recover, close and reopen the app, check internet access and free space, then retry. Network conditions, computer sleep and slow storage can still delay completion.
+
+## Clean up, compare and export
+
+Drop a supported audio or video file, including MP3 or MP4, into the workspace. Choose a preset to reduce unwanted dialogue, music or sound effects. The **Water bubbles** preset targets unwanted bubble sounds; optional aggressive multi-pass cleanup can catch more of them, but may also remove wanted sounds. Start with fewer passes and compare the **Original**, **Cleaned** and **Removed sounds** previews.
+
+The optional video player helps compare the sound against your footage; hide or show it as needed. The listening tracks provide separate dialogue, music, sound-effects and removed-sound previews. In bubble sessions, prepare the additional tracks when offered. Download the cleaned mix or isolated tracks through the native Save dialog. These exports are audio files; the player does not render a replacement video.
+
+Use the left panel to return to saved sessions or start a new one. Closing/removing a session there removes that session; **quitting the app preserves sessions**. Export wanted audio before deleting a session.
+
+## Quit and reopen
+
+- Close the application window or choose **SoundShredder > Quit SoundShredder** (`Cmd+Q`) to stop the local engine. During setup, you can cancel and quit. Finish or cancel active audio processing in the workspace before quitting.
+- Open SoundShredder again from **Applications** or the Dock. Saved sessions and compatible engines are reused. Opening an already-running copy brings its window forward instead of starting another engine.
+- **SoundShredder > Workspace** (`Cmd+1`) returns to your sessions. **Setup and diagnostics** (`Cmd+,`) opens engine settings, storage information and diagnostics.
+- **Retry opening** can restart a stopped engine. An interrupted audio job may need to be rerun from its saved session.
+
+## Updates, storage and uninstall
+
+**Help > Check for Electron updates** opens GitHub releases. Quit the app, download the matching newer Mac build and replace the app in Applications. Updates are manual; no automatic app replacement is enabled. The workspace sidebar's update checker checks stable source releases, which are a separate channel.
+
+Without a folder choice, engines and sessions remain in `~/Library/Application Support/SoundShredder`, and models use the existing user caches. After choosing a folder, that folder holds `data` (sessions), `runtimes` (engines), `models`, `cache`, `temp` and diagnostic logs. Small preferences and the `electron` browser profile remain in the default Application Support folder. Replacing the app preserves these separate locations.
+
+To uninstall:
+
+1. Finish or cancel active work and quit every SoundShredder copy.
+2. Move **SoundShredder.app** from Applications to Trash. Remove its Dock shortcut if wanted.
+3. Your sessions, downloaded engines, model caches and exported audio remain for later reuse.
+
+For complete data removal, first note the storage location shown in **Setup and diagnostics** and back up wanted audio. Remove only that specific SoundShredder storage folder and `~/Library/Application Support/SoundShredder` after all copies are closed. This also affects older standalones sharing the same profile. Keep shared model caches used by other audio apps. Files exported elsewhere stay where you saved them.
 
 ## Finder says damaged or cannot be opened
 
-This is an installation/launch failure, not a successful install. The published build explicitly skipped app signing. Automated launch tests on a build runner did not exercise a browser download through Gatekeeper. The message alone does not establish whether your copy is corrupted, has an invalid signature, or was rejected by local policy.
+The **older `v1.2.0-electron-macos-preview.1` download** skipped signing and notarization and has a known Finder launch issue. Its DMG and ZIP contain the same app; changing archive formats does not repair its trust status. A newer release does not alter those old downloads.
 
-1. Download only from the [official Mac release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.0-electron-macos-preview.1). Choose **arm64** for M-series Macs or **x64** for Intel; use macOS 13 or newer. If the **disk image itself** will not mount, download it again and check its SHA-256 against the release's `SHA256SUMS.txt`.
-2. If the image opens, quit SoundShredder, drag the app into Applications and eject the image before trying to open it. Replacing the app does not remove your separate engine or sessions.
-3. For an **unidentified developer / cannot check for malicious software** warning on a copy you trust, Apple offers **System Settings > Privacy & Security > Open Anyway** after the first launch attempt, when available. This is a user-approved exception, not notarization. See [Apple's instructions](https://support.apple.com/en-us/102445).
-4. If the message says **damaged**, or no override is offered, use the browser version. Do not keep reinstalling the same preview, disable Gatekeeper globally, or run a generic “Mac cleaner.” Do not treat a checksum match as proof of Apple approval.
+For version 1.2.2, check the [Mac release notes](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1) for the verified signing/notarization status and exact tested files. Personal-Mac browser-download/Finder validation remains unverified unless the release notes explicitly report it.
 
-Optional read-only checks for a support report (Terminal; no administrator access needed):
+If the disk image itself will not mount, download it again and compare its SHA-256 with the release's checksum file. If the image mounts but the app is blocked, confirm the version and chip type, quit old copies, copy the app into Applications and eject the image before retrying. Report the exact warning if the problem persists. Do not disable Gatekeeper or remove quarantine as an installation step.
+
+Optional read-only support checks in Terminal:
 
 ```sh
 codesign --verify --deep --strict --verbose=4 "/Applications/SoundShredder.app"
 spctl --assess --type execute --verbose=4 "/Applications/SoundShredder.app"
 ```
 
-Include the exact alert, macOS version, chip type, release filename and command output. A successful `codesign` check establishes bundle integrity; Gatekeeper can still reject an app without a trusted developer signature and notarization. Avoid sharing private paths or audio.
+A successful signature check establishes bundle integrity; it does not alone prove notarization. See [Apple's explanation of Mac app warnings](https://support.apple.com/en-us/102445). The [local Mac browser version](https://github.com/xD4O/SoundShredder#mac-browser-setup) remains available if you cannot launch the desktop app.
 
-Source changes now enable **ad-hoc signing** for test builds, keep Python from writing cache files inside the installed bundle, and add DMG/ZIP integrity checks before and after the real processing/relaunch tests. These changes do **not** notarize the existing download. A normal public Mac release still needs a Developer ID Application certificate, Apple notarization, a stapled ticket and testing on a Mac with standard Gatekeeper settings.
+## Other troubleshooting
 
-## Install and open
+- **Wrong architecture:** check About This Mac and use arm64 for Apple Silicon or x64 for Intel; macOS 13 or newer is required.
+- **Older standalone already running:** quit it through its own setup page/menu-bar control, then use **Retry opening** in Electron.
+- **Storage unavailable:** reconnect the chosen drive and retry, or select another folder on the recovery screen. Select the original folder to return to saved work.
+- **Setup failed or stopped:** check internet access and free space, open Setup details and retry. Keep the app open and the drive connected while setup runs.
+- **SSL / CERTIFICATE_VERIFY_FAILED:** the Electron app uses its bundled Python and CA roots. Repairing a separate system Python installation does not repair that bundled runtime. Check VPN/proxy settings; a managed network may require its administrator's trusted CA configuration. Keep certificate verification enabled. If you are running the browser/source version instead, follow that version's Mac setup and certificate troubleshooting.
+- **Logs for support:** use **SoundShredder > Open logs folder** or copy **Setup details**. Include the release filename, macOS version, chip type and exact error. Review private paths before sharing logs; do not send private audio unnecessarily.
 
-1. Use **macOS 13 Ventura or newer**. Check Apple menu > About This Mac: download **arm64** for Apple Silicon (M-series) or **x64** for Intel. Do not use the Windows installer.
-2. Quit the previous standalone through its menu-bar Quit control or setup page's **Close SoundShredder**. Keep `~/Library/Application Support/SoundShredder` to reuse sessions and the CPU engine.
-3. Open the matching `SoundShredder-Electron-<version>-macOS-<architecture>.dmg`. Drag **SoundShredder** into **Applications**, replace the old app when prompted, then eject the disk image. Alternatively, extract the matching ZIP and move its app into Applications.
-4. Try opening SoundShredder from Applications. If Finder blocks it, follow the launch troubleshooting above; setup cannot start until macOS allows the app to run. Once opened, its original dark/mint interface runs in its own window, with a Dock icon and application menus. Python is bundled; no Homebrew or separate Python installation is needed.
-5. On first use, choose **Set up SoundShredder**. The **CPU engine** downloads automatically. Keep internet connected and at least **3 GiB free**, plus room for the app, models and sessions. Apple Metal/MPS and NVIDIA acceleration are not enabled in this Mac preview.
-6. The workspace opens when ready. Drop audio/video into it, select a preset, listen to the tracks alongside your footage, and download your mix or isolated tracks through a native Save dialog.
-
-Models download on first feature use: about 426 MB for layer separation and 1.2 GB for Bubble FX. Processing works offline once the needed files are cached. Audio is processed locally.
-
-## Setup progress and recovery (1.2.2 candidate)
-
-These improvements are in source and test builds; the existing 1.2.0 Mac download is unchanged while signed distribution is being prepared.
-
-Setup shows the current package, downloaded bytes, average speed and elapsed time. The main bar shows **setup stages**, with a separate bar for the current download. Installing and checking packages can take time without moving either bar. **Setup details** remains available during installation.
-
-Use **Cancel setup** to stop, or close the window and choose **Cancel setup and quit**. Reopen the app and select **Set up SoundShredder** to repair an interrupted engine. Sessions stay saved; some packages may download again. A completed compatible engine is reused on normal launches.
-
-Network requests have timeouts and limited retries. Installer commands stop after ten minutes without output or one hour overall, with an explanation and retry option. A lost local connection shows **Reconnecting**. If it does not recover, close and reopen, check internet/free space, then retry. Computer sleep, network conditions and slow storage can still affect setup time.
-
-## Choose a storage drive (1.2.2 candidate)
-
-This feature is in source and test builds; it is not in the existing public Mac preview. The app itself belongs in **Applications**. In setup, **Choose folder…** selects where engines, model downloads, sessions and temporary setup files live. You can also use **SoundShredder > Choose storage folder…** after finishing or canceling active work.
-
-Choose a writable local or attached drive. SoundShredder creates a `SoundShredder` folder there, or reuses that folder if you select it directly. The choice is remembered across launches. **Existing files stay where they are:** switching to an empty folder starts a separate setup, and selecting the old SoundShredder folder returns to its sessions. There is no automatic file migration.
-
-Keep the selected drive connected. If it is unavailable, reconnect it and use **Retry opening**, or choose another folder on the recovery screen. The app does not silently create a replacement profile on the internal drive. Small app preferences remain in `~/Library/Application Support/SoundShredder`.
-
-## Quit and reopen
-
-- Close the window or choose **SoundShredder > Quit SoundShredder** (`Cmd+Q`) to stop the local engine. If setup or audio processing is active, finish/cancel it before quitting; the app explains what is still running.
-- Open SoundShredder again from Applications or the Dock whenever you return. Saved sessions and compatible engines are reused. Opening a running copy brings its window forward.
-- **SoundShredder > Workspace** (`Cmd+1`) and **Setup and diagnostics** (`Cmd+,`) switch between the workspace and setup.
-- Sessions remain in the left panel. Closing a session there removes that session; quitting the app preserves sessions.
-
-## Updates, storage and uninstall
-
-**Help > Check for Electron updates** opens GitHub releases. Quit, download the matching Mac architecture, and replace the app in Applications. Updates are manual; no automatic app replacement is enabled. The workspace's existing update checker checks stable source releases, a separate channel.
-
-The shared profile is `~/Library/Application Support/SoundShredder`: `data` contains sessions, `runtimes` contains the CPU engine, `electron` contains window/browser settings, and diagnostic logs live beside them. Models use existing user caches until you opt into a chosen storage folder. In the 1.2.2 candidate, a chosen folder holds engines, models, sessions, temporary setup files and logs; small app preferences stay in the default profile. Replacing the app preserves both locations.
-
-To uninstall, quit and move SoundShredder.app to Trash. Sessions, engines and models remain. For a complete removal, back up wanted audio and note any chosen storage location and remove only that SoundShredder folder and the shared profile yourself after all copies are closed. Keep any model caches needed by other apps.
-
-## Troubleshooting
-
-- **Older standalone already running:** quit its menu-bar app or close its setup screen's engine, then use Retry opening in Electron.
-- **Engine stopped:** Retry opening restarts it; interrupted jobs can be rerun from the saved session.
-- **Wrong architecture:** return to the release and choose arm64 for Apple Silicon or x64 for Intel.
-- **SSL / CERTIFICATE_VERIFY_FAILED:** the app has its own Python and CA bundle. Repairing system Python does not fix the bundled runtime. Check VPN/proxy settings; a managed network may need its trusted CA configured by the administrator. Keep certificate verification enabled. Include the full error and Setup details when reporting it.
-- **Diagnostic logs:** open SoundShredder > Open logs folder, or copy Setup details. Review local paths before sharing.
-
-This preview has **no Developer ID signing or notarization**. See the launch issue at the top of this guide and the release notes for what was actually tested on each architecture. The browser version remains available while a notarized desktop release is pending.
+Community-created; not an official Higgsfield product.
