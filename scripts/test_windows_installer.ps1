@@ -8,6 +8,7 @@ $packages = @(Get-ChildItem -LiteralPath (Join-Path $repo 'artifacts/electron/di
 if ($packages.Count -ne 1) { throw 'Expected exactly one Windows installer.' }
 $uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
 function Get-SoundShredderEntry {
+    if (!(Test-Path -LiteralPath $uninstallKey)) { return @() }
     @(Get-ItemProperty "$uninstallKey\*" | Where-Object { $_.DisplayName -like 'SoundShredder*' })
 }
 if ((Get-SoundShredderEntry).Count) { throw 'Refusing to replace an existing registered installation.' }
