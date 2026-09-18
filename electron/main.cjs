@@ -58,8 +58,18 @@ async function requestQuit() {
   quitting = true;
   try {
     if (backend.base && backend.child?.exitCode === null && !backend.child.signalCode) {
-      // The manager refuses to stop during setup or an active audio job.
-      await backend.api('/api/stop', {});
+      const state = await backend.api('/api/state');
+      let cancelSetup = state.status === 'cancelling';
+      if (['installing', 'starting'].includes(state.status)) {
+        const answer = await dialog.showMessageBox(win, { type: 'question', title: 'Setup is still running',
+          message: 'Cancel setup and quit SoundShredder?',
+          detail: 'Saved sessions are kept. Next time you open the app, you can retry setup to repair any interrupted downloads.',
+          buttons: ['Continue setup', 'Cancel setup and quit'], defaultId: 0, cancelId: 0 });
+        if (answer.response !== 1) { quitting = false; return false; }
+        cancelSetup = true;
+      }
+      // Cancellation is explicit. Active audio jobs still protect their work.
+      await backend.api('/api/stop', { cancel_setup: cancelSetup });
     }
     await backend.detach();
     clearInterval(timer);
@@ -76,7 +86,7 @@ async function requestQuit() {
         await backend.detach(); permittedExit = true; app.quit(); return true;
       }
     } else if (alive()) await dialog.showMessageBox(win, { type: 'info', title: 'SoundShredder is still working',
-      message: error.message, detail: 'Finish setup, or finish/cancel processing in the workspace, then quit again. Your sessions stay saved.', buttons: ['Keep SoundShredder open'] });
+      message: error.message, detail: 'Cancel setup from its screen, or finish/cancel processing in the workspace, then quit again. Your sessions stay saved.', buttons: ['Keep SoundShredder open'] });
     quitting = false;
     return false;
   }

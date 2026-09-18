@@ -2,7 +2,7 @@ name: Electron desktop builds and lifecycle
 on:
   push:
     branches: [main, 'codex/electron-desktop']
-    paths: ['electron/**', 'desktop/bootstrap.py', 'desktop/setup.html', 'desktop/lifetime.py', 'scripts/prepare_electron.py', 'scripts/electron_artifacts.py', 'scripts/verify_mac_distribution.py', 'scripts/test_windows_installer.ps1', 'tests/test_mac_distribution.py', 'soundshredder/**', '.github/workflows/electron-desktop.yml']
+    paths: ['electron/**', 'desktop/bootstrap.py', 'desktop/setup.html', 'desktop/lifetime.py', 'scripts/prepare_electron.py', 'scripts/electron_artifacts.py', 'scripts/verify_mac_distribution.py', 'scripts/test_windows_installer.ps1', 'tests/test_mac_distribution.py', 'tests/test_setup_responsiveness.py', 'soundshredder/**', '.github/workflows/electron-desktop.yml']
   workflow_dispatch:
     inputs:
       platform:
@@ -51,7 +51,7 @@ jobs:
       - name: Python lifecycle regressions
         run: |
           python -m pip install pytest
-          python -m pytest tests/test_desktop.py tests/test_desktop_lifecycle.py tests/test_mac_standalone.py tests/test_mac_distribution.py -q
+          python -m pytest tests/test_desktop.py tests/test_desktop_lifecycle.py tests/test_setup_responsiveness.py tests/test_mac_standalone.py tests/test_mac_distribution.py -q
       - name: Stage private runtime and shared interface
         run: python scripts/prepare_electron.py
       - name: Install desktop build tools
@@ -59,7 +59,9 @@ jobs:
         run: npm ci --no-fund
       - name: Desktop boundary tests
         working-directory: electron
-        run: npm test
+        run: |
+          npm test
+          npm run test:setup-ui
       - name: Package desktop application
         if: matrix.platform != 'mac' || inputs.mac_signing != 'developer-id'
         working-directory: electron

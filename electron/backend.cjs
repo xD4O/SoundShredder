@@ -29,7 +29,9 @@ function request(url, token, payload, timeout = 5000) {
       });
       res.on('error', reject);
     });
-    req.setTimeout(timeout, () => req.destroy(new Error('The audio engine is not responding.')));
+    // A trickle of bytes must not keep a control request alive indefinitely.
+    const deadline = setTimeout(() => req.destroy(new Error('The audio engine is not responding.')), timeout);
+    req.once('close', () => clearTimeout(deadline));
     req.on('error', reject);
     req.end(data);
   });

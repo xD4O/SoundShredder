@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import secrets
 import shutil
 import socket
@@ -41,6 +42,10 @@ def default_home(system=None):
 
 HOME = Path(os.environ.get("SOUNDSHREDDER_DESKTOP_HOME", str(default_home())))
 FLAGS = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+
+
+class SetupCancelled(Exception):
+    """An explicit request to stop setup, without removing saved sessions."""
 
 
 def read_json(path, default=None):
@@ -102,7 +107,7 @@ def existing_instance(home):
         base = urllib.parse.urlunsplit((parts.scheme, parts.netloc, "", "", ""))
         state = local_request(base + "/api/state", token=parts.fragment, timeout=.8)
         # v1.1.0 also returns home/status; accept its authenticated setup endpoint.
-        if not state.get("home") or Path(state["home"]).resolve() != home or state.get("status") not in {"idle", "installing", "starting", "ready", "error"}:
+        if not state.get("home") or Path(state["home"]).resolve() != home or state.get("status") not in {"idle", "installing", "starting", "cancelling", "ready", "error"}:
             return None
         return dict(base=base, token=parts.fragment, saved=saved, state=state)
     except (OSError, ValueError, TypeError):
@@ -173,6 +178,33 @@ class Manager:
             self.device = "cpu"
         self.nvidia = not self.mac and bool(shutil.which("nvidia-smi"))
         self.log = self.home / "setup.log"
+        self.cancel_event = threading.Event()
+        self.finished = threading.Event()
+        self.finished.set()
+        self.worker = None
+        self.setup_started = None
+        self.last_activity = time.monotonic()
+        self.activity = ""
+        self.download = None
+        self.download_started = None
+        self.interrupted = self.home / "setup-interrupted.json"
+        if self.interrupted.exists():
+            self.message = "Previous setup did not finish. Select Set up to repair it. Your sessions are kept."
+        self.refresh_storage()
+
+    def refresh_storage(self):
+        # State polling must not wait for a disk probe while holding its lock.
+        try:
+            free = shutil.disk_usage(self.home).free
+        except OSError:
+            free = None
+        with self.guard:
+            self.free_gib = round(free / 1024**3, 1) if free is not None else None
+        return free
+
+    def check_cancelled(self):
+        if self.cancel_event.is_set() or self.stopping:
+            raise SetupCancelled()
 
     def required_space(self, device):
         return 3 if self.mac else (14 if device == "cuda" else 4)
@@ -197,15 +229,23 @@ class Manager:
         with self.guard:
             if self.status == "ready" and self.process and self.process.poll() is not None:
                 self.status, self.message, self.url = "error", "The app stopped. Retry to reopen it. See diagnostics for details.", None
+            now = time.monotonic()
             return dict(name="SoundShredder Desktop", pid=os.getpid(), status="closing" if self.stopping else self.status, message=self.message, progress=self.progress,
                         url=self.url, device=self.device, nvidia=self.nvidia,
                         platform=self.system, machine=self.machine, home=str(self.home),
-                        free_gib=round(shutil.disk_usage(self.home).free / 1024**3, 1),
+                        free_gib=self.free_gib, activity=self.activity, download=self.download,
+                        elapsed_seconds=int(now - self.setup_started) if self.setup_started else 0,
+                        quiet_seconds=int(now - self.last_activity),
+                        can_cancel=self.status in {"installing", "starting"},
                         required_gib={device: self.required_space(device) for device in ("cpu", "cuda")})
 
     def update(self, status, message, progress):
         with self.guard:
+            if self.cancel_event.is_set() and status in {"installing", "starting", "ready"}:
+                raise SetupCancelled()
             self.status, self.message, self.progress = status, message, progress
+            self.activity, self.last_activity = message, time.monotonic()
+            self.download, self.download_started = None, None
 
     def start(self, device):
         if device not in {"cpu", "cuda"}:
@@ -215,69 +255,194 @@ class Manager:
         with self.guard:
             if self.stopping:
                 raise ValueError("SoundShredder is closing. Reopen the installed application.")
-            if self.status in {"installing", "starting", "ready"}:
+            if (self.status in {"installing", "starting", "cancelling", "ready"}
+                    or (self.worker and self.worker.is_alive()) or (self.command and self.command.poll() is None)):
                 raise ValueError("Setup or the app is already running.")
+            self.cancel_event.clear()
+            self.finished.clear()
             self.status, self.message, self.progress = "installing", "Preparing your private runtime…", 5
             self.device = device
-        threading.Thread(target=self.setup, daemon=True).start()
+            self.worker = threading.Thread(target=self.setup, daemon=True)
+            self.worker.start()
 
-    def run(self, args, *, timeout=3600):
+    def cancel_setup(self):
+        with self.guard:
+            if self.status == "cancelling":
+                return
+            if self.status not in {"installing", "starting"}:
+                raise ValueError("There is no setup to cancel.")
+            self.cancel_event.set()
+            self.status, self.message = "cancelling", "Stopping setup safely… Your sessions are kept."
+
+    def record_output(self, output):
+        with self.guard:
+            self.last_activity = time.monotonic()
+            for line in output.splitlines():
+                match = re.fullmatch(r"Progress (\d+) of (\d+)", line.strip())
+                if match:
+                    received, total = map(int, match.groups())
+                    if not self.download or received < self.download["received"] or received == 0:
+                        self.download_started = self.last_activity
+                    seconds = max(.25, self.last_activity - self.download_started)
+                    self.download = dict(received=received, total=total, bytes_per_second=int(received / seconds))
+                elif match := re.match(r"\s*(Downloading|Collecting|Using cached) ([\w.+-]+)", line):
+                    package = match[2].split("-")[0][:60]
+                    self.activity = ("Downloading " if match[1] == "Downloading" else "Preparing ") + package + "…"
+                    self.download, self.download_started = None, None
+                elif "Installing collected packages" in line:
+                    self.activity = "Installing downloaded packages…"
+                    self.download, self.download_started = None, None
+                elif "Retrying" in line:
+                    self.activity = "Connection interrupted. Retrying the download…"
+                elif "Successfully installed" in line:
+                    self.activity = "Packages installed."
+                    self.download, self.download_started = None, None
+
+    @staticmethod
+    def stop_command(command):
+        if command and command.poll() is None:
+            try:
+                command.terminate()
+            except ProcessLookupError:
+                pass  # A simultaneous close or natural exit already stopped it.
+            try:
+                command.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                try:
+                    command.kill()
+                except ProcessLookupError:
+                    pass
+                command.wait(timeout=3)
+
+    def run(self, args, *, timeout=3600, idle_timeout=600):
+        self.check_cancelled()
         with self.log.open("ab") as log:
             log.write(("\n" + " ".join(map(str, args)) + "\n").encode("utf-8"))
+            log.flush()
+            offset = log.tell()
             with self.guard:
-                if self.stopping:
-                    raise RuntimeError("SoundShredder is closing.")
+                self.check_cancelled()
                 self.command = subprocess.Popen(args, cwd=self.root, stdout=log, stderr=subprocess.STDOUT,
                                                 creationflags=FLAGS, env=self.environment(args[0]))
                 command = self.command
+                self.last_activity = time.monotonic()
+            started = time.monotonic()
             try:
-                command.wait(timeout=timeout)
+                with self.log.open("rb") as reader:
+                    reader.seek(offset)
+                    pending = ""
+                    while True:
+                        self.check_cancelled()
+                        chunk = reader.read(65536)
+                        if chunk:
+                            pending += chunk.decode("utf-8", errors="replace").replace("\r", "\n")
+                            lines, _, pending = pending.rpartition("\n")
+                            self.record_output(lines)
+                            pending = pending[-2048:]
+                        if command.poll() is not None:
+                            tail = reader.read(65536).decode("utf-8", errors="replace")
+                            if pending or tail:
+                                self.record_output(pending + tail)
+                            break
+                        now = time.monotonic()
+                        if now - started >= timeout:
+                            raise RuntimeError("This setup step took too long and was stopped. Check setup details, then retry.")
+                        if now - self.last_activity >= idle_timeout:
+                            raise RuntimeError("The installer stopped reporting activity and was stopped. Check your connection and free space, then retry.")
+                        self.cancel_event.wait(.2)
             finally:
-                if command.poll() is None:
-                    command.terminate()
-                    command.wait(timeout=10)
-                with self.guard:
-                    self.command = None
+                try:
+                    self.stop_command(command)
+                finally:
+                    with self.guard:
+                        if command.poll() is not None:
+                            self.command = None
+        self.check_cancelled()
         if command.returncode:
             raise RuntimeError("Setup could not finish. Check your connection and free disk space, then retry. Details are in diagnostics.")
 
+    def runtime_path(self, device):
+        name = "py311-macos-" + self.machine + "-cpu" if self.mac else "py313-" + device
+        return self.home / "runtimes" / name
+
+    def repair_interrupted_runtime(self, runtime):
+        if not any((runtime / name).exists() for name in (".copy-incomplete", ".setup-incomplete")):
+            return
+        expected = self.home.resolve() / "runtimes"
+        if (runtime.parent.resolve() != expected or runtime.resolve().parent != expected
+                or runtime.is_symlink() or getattr(runtime, "is_junction", lambda: False)()):
+            raise RuntimeError("The engine folder is redirected. Choose a normal local profile folder before repairing setup.")
+        self.update("installing", "Repairing an interrupted engine install…", 5)
+        self.check_cancelled()
+        # Only this marked, bounded engine cache is removed; sessions live in data.
+        shutil.rmtree(runtime)
+        self.check_cancelled()
+
+    def copy_runtime_file(self, source, target):
+        self.check_cancelled()
+        result = shutil.copy2(source, target)
+        self.check_cancelled()
+        return result
+
     def prepare_runtime(self, device):
+        runtime = self.runtime_path(device)
         if self.mac:
             if self.machine not in {"arm64", "x86_64"}:
                 raise ValueError("Use the Apple Silicon or Intel Mac download for your processor.")
             bundle = read_json(self.root / "desktop" / "platform.json", {}) or {}
             if bundle.get("machine") != self.machine:
                 raise ValueError("This app is for a different Mac processor. Download the matching Mac package.")
-            runtime = self.home / "runtimes" / ("py311-macos-" + self.machine + "-cpu")
-            if not self.runtime_python(runtime).exists():
-                shutil.copytree(self.root / "python", runtime, dirs_exist_ok=True, symlinks=True)
+        self.repair_interrupted_runtime(runtime)
+        if not self.runtime_python(runtime).exists():
+            runtime.mkdir(parents=True, exist_ok=True)
+            (runtime / ".copy-incomplete").touch()
+            shutil.copytree(self.root / "python", runtime, dirs_exist_ok=True, symlinks=self.mac,
+                            copy_function=self.copy_runtime_file)
+            (runtime / ".copy-incomplete").unlink()
+        if self.mac:
             site = runtime / "lib/python3.11/site-packages"
             site.mkdir(parents=True, exist_ok=True)
             # -I excludes user packages; this private .pth follows relocated app bundles.
             (site / "soundshredder-app.pth").write_text(str(self.root) + "\n", encoding="utf-8")
             return runtime
-        runtime = self.home / "runtimes" / ("py313-" + device)
-        if not (runtime / "python.exe").exists():
-            shutil.copytree(self.root / "python", runtime, dirs_exist_ok=True)
         # _pth isolates the embedded interpreter from system Python and global packages.
         (runtime / "python313._pth").write_text(
             "python313.zip\n.\nLib/site-packages\n" + str(self.root) + "\n", encoding="utf-8")
         return runtime
 
     def setup(self):
+        self.finished.clear()
+        self.setup_started = self.last_activity = time.monotonic()
         try:
+            write_json(self.interrupted, {"device": self.device})
+            self.check_cancelled()
             if self.mac and platform.mac_ver()[0] and int(platform.mac_ver()[0].split(".")[0]) < 12:
                 raise RuntimeError("SoundShredder requires macOS 12 Monterey or newer.")
-            if shutil.disk_usage(self.home).free < 100 * 1024**2:
+            free = self.refresh_storage()
+            if free is None:
+                raise RuntimeError("Could not check free space. Check the installation folder is available, then retry.")
+            if free < 100 * 1024**2:
                 raise RuntimeError("Free some disk space before opening SoundShredder.")
-            runtime = self.prepare_runtime(self.device)
-            python = str(self.runtime_python(runtime))
             requirements = self.root / "desktop" / "requirements.txt"
-            bandit = next((self.root / "desktop" / "wheels").glob("bandit_infer-*.whl"))
-            fingerprint = hashlib.sha256(requirements.read_bytes() + bandit.read_bytes()).hexdigest()
+            requirements_bytes = requirements.read_bytes()
+            bandit = next((self.root / "desktop" / "wheels").glob("bandit_infer-*.whl"), None)
+            if bandit is None:
+                raise RuntimeError("Bundled audio installer files are missing. Reinstall SoundShredder; your sessions are kept.")
+            fingerprint = hashlib.sha256(requirements_bytes + bandit.read_bytes()).hexdigest()
+            runtime = self.runtime_path(self.device)
             marker = runtime / "ready.json"
             ready = read_json(marker, {}) or {}
-            if ready.get("requirements") != fingerprint:
+            install = (ready.get("requirements") != fingerprint or not self.runtime_python(runtime).exists()
+                       or any((runtime / name).exists() for name in (".copy-incomplete", ".setup-incomplete")))
+            if install and free < self.required_space(self.device) * 1024**3:
+                raise RuntimeError(f"Keep at least {self.required_space(self.device)} GiB free for setup, plus space for models and sessions.")
+            runtime = self.prepare_runtime(self.device)
+            python = str(self.runtime_python(runtime))
+            self.check_cancelled()
+            dirty = runtime / ".setup-incomplete"
+            if install:
+                dirty.touch()
+                marker.unlink(missing_ok=True)
                 required = self.required_space(self.device)
                 if shutil.disk_usage(self.home).free < required * 1024**3:
                     raise RuntimeError(f"Keep at least {required} GiB free for setup, plus space for models and sessions.")
@@ -285,7 +450,8 @@ class Manager:
                 torch_version = ("2.2.2" if self.machine == "x86_64" else "2.8.0") if self.mac else f"2.8.0+{flavor}"
                 index = "https://pypi.org/simple" if self.mac else "https://download.pytorch.org/whl/" + flavor
                 pip = [*self.python_command(python), "-m", "pip", "--isolated", "install", "--no-cache-dir",
-                       "--disable-pip-version-check", "--only-binary=:all:"]
+                       "--disable-pip-version-check", "--only-binary=:all:", "--progress-bar", "raw",
+                       "--timeout", "20", "--retries", "3"]
                 self.update("installing", "Downloading the NVIDIA engine (about 3.2 GB)…" if self.device == "cuda" else "Downloading the CPU audio engine…", 20)
                 self.run([*pip, f"torch=={torch_version}", "--index-url", index])
                 self.update("installing", "Installing audio tools. No terminal or extra installers needed…", 55)
@@ -296,29 +462,47 @@ class Manager:
             try:
                 self.run([*self.python_command(python), "-c", "import torch,numpy,bandit_infer,fastapi,uvicorn,soundfile,scipy,imageio_ffmpeg,multipart; "
                           "torch.from_numpy(numpy.zeros(1,dtype=numpy.float32)).numpy()"], timeout=120)
+            except SetupCancelled:
+                raise
             except Exception:
                 marker.unlink(missing_ok=True)
+                dirty.touch()
                 raise
+            self.check_cancelled()
             write_json(marker, {"requirements": fingerprint})
+            dirty.unlink(missing_ok=True)
             write_json(self.home / "settings.json", {"device": self.device})
             self.update("starting", "Opening your SoundShredder workspace…", 95)
             self.launch(python)
+            self.interrupted.unlink(missing_ok=True)
+        except SetupCancelled:
+            self.close_process(self.process, grace=3)
+            self.process, self.url = None, None
+            self.update("idle", "Setup canceled. Select Set up to resume or repair it. Your sessions are kept.", 0)
         except Exception as exc:
+            # A failed readiness check must not leave a second workspace behind
+            # when the user retries. No audio jobs are accepted during setup.
+            self.close_process(self.process, grace=3)
+            self.process, self.url = None, None
             with self.log.open("a", encoding="utf-8") as log:
                 log.write(f"\n{type(exc).__name__}: {exc}\n")
             self.update("error", str(exc), 0)
+        finally:
+            self.refresh_storage()
+            self.finished.set()
 
-    def launch(self, python):
+    def launch(self, python, *, timeout=120):
         port = free_port()
         url = f"http://127.0.0.1:{port}"
         with (self.home / "app.log").open("ab") as log:
             with self.guard:
-                if self.stopping:
-                    raise RuntimeError("SoundShredder is closing.")
+                self.check_cancelled()
                 self.process = subprocess.Popen([*self.python_command(python), str(self.root / "desktop/serve.py"), str(port)],
                     cwd=self.root, stdin=subprocess.PIPE, stdout=log, stderr=subprocess.STDOUT, creationflags=FLAGS,
                     env={**self.environment(python), "SOUNDSHREDDER_DATA": str(self.home / "data")})
-        for _ in range(120):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            self.check_cancelled()
             if self.process.poll() is not None:
                 raise RuntimeError("The app could not start. Open diagnostics and retry.")
             try:
@@ -328,8 +512,8 @@ class Manager:
                     self.update("ready", "Your sound workspace is ready.", 100)
                     return
             except (OSError, ValueError):
-                time.sleep(.5)
-        self.close_process(self.process)
+                self.cancel_event.wait(.5)
+        self.close_process(self.process, grace=3)
         raise RuntimeError("The app took too long to start. See diagnostics and retry.")
 
     def diagnostics(self):
@@ -342,9 +526,13 @@ class Manager:
                     parts += ["\n" + name, stream.read().decode("utf-8", errors="replace")]
         return "\n".join(parts)
 
-    def stop_app(self, *, closing=False):
-        if self.status in {"installing", "starting"}:
-            raise ValueError("Wait for setup to finish before closing SoundShredder.")
+    def stop_app(self, *, closing=False, cancel_setup=False):
+        if self.status in {"installing", "starting", "cancelling"}:
+            if not cancel_setup:
+                raise ValueError("Wait for setup to finish or cancel setup before closing SoundShredder.")
+            self.cancel_setup()
+            if not self.finished.wait(10):
+                raise ValueError("Setup is still stopping. Please wait a moment, then close again.")
         if self.process and self.process.poll() is None:
             if local_request(self.url + "/api/system", timeout=5).get("active_jobs"):
                 raise ValueError("Finish or cancel audio processing in the workspace before closing.")
@@ -353,7 +541,7 @@ class Manager:
             self.close_process(self.process)
 
     @staticmethod
-    def close_process(process):
+    def close_process(process, *, grace=15):
         if process and process.poll() is None:
             # EOF requests graceful server shutdown, including audio-worker cleanup.
             if getattr(process, "stdin", None):
@@ -361,7 +549,7 @@ class Manager:
             else:
                 process.terminate()
             try:
-                process.wait(timeout=15)
+                process.wait(timeout=grace)
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait(timeout=10)
@@ -369,9 +557,12 @@ class Manager:
     def cleanup(self):
         with self.guard:
             self.stopping = True
+            self.cancel_event.set()
             command, process = self.command, self.process
-        self.close_process(command)
+        self.stop_command(command)
         self.close_process(process)
+        if self.worker and self.worker is not threading.current_thread():
+            self.worker.join(timeout=8)
 
     def reopen(self):
         state = self.state()
@@ -384,8 +575,8 @@ class Manager:
         self.process, self.url = None, None
         self.update("idle", "Choose a different audio engine. Existing sessions are kept.", 0)
 
-    def stop(self):
-        self.stop_app(closing=True)
+    def stop(self, *, cancel_setup=False):
+        self.stop_app(closing=True, cancel_setup=cancel_setup)
         self.stopping = True
 
 
@@ -451,8 +642,10 @@ def handler_for(manager):
                         return self.send(200, manager.reopen())
                     elif self.path == "/api/change-engine":
                         manager.change_engine()
+                    elif self.path == "/api/cancel-setup":
+                        manager.cancel_setup()
                     elif self.path == "/api/stop":
-                        manager.stop()
+                        manager.stop(cancel_setup=payload.get("cancel_setup") is True)
                         threading.Thread(target=self.server.shutdown, daemon=True).start()
                     else:
                         return self.send(404, {"error": "Not found."})
@@ -511,7 +704,7 @@ def main():
         write_json(home / "desktop.json", {"url": url, "pid": os.getpid()})
         if not args.no_browser:
             webbrowser.open(url)
-        if (home / "settings.json").exists():
+        if (home / "settings.json").exists() and not manager.interrupted.exists():
             manager.start(manager.device)
         if args.hosted:
             def host_closed():

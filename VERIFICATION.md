@@ -1,5 +1,12 @@
 # Verification record
 
+## Responsive setup (1.2.1 candidate, 2026-09-18)
+
+- Added package/download activity, elapsed time, explicit cancellation, native cancel-and-quit, independent diagnostics fetching and bounded control requests. Interrupted engine copies/installs are repaired on explicit retry; ordinary launches reuse compatible engines. Saved audio is not part of runtime repair.
+- **48 selected Python regressions and 6 Electron tests passed locally on Windows.** Fault tests stop real stalled children, verify idle/absolute deadlines and startup cleanup, cancel and repair a partial engine, preserve a saved audio fixture, and reopen an interrupted profile without automatically restarting setup. Ruff and JavaScript syntax checks passed.
+- The actual setup HTML passed Electron UI fault tests with slow diagnostics and a stalled status request: elapsed time continued, Cancel dispatched, requests timed out, polling reconnected, and the layout had no horizontal overflow at narrow width. Desktop and narrow screenshots were visually checked; no renderer errors occurred.
+- Packaged Windows/macOS checks and release availability will be recorded after their workflow finishes. GPU inference, slow consumer hardware, sleep/resume and browser-download Gatekeeper acceptance are not established by these local checks. Mac release remains pending Developer ID signing/notarization.
+
 ## Windows uninstall access (2026-09-18)
 
 - Added a Start menu uninstall shortcut and a Windows-only native menu action that opens Windows Settings. The normal NSIS uninstaller remains responsible for application/shortcut removal; the profile and model caches remain outside its removal scope. The wizard and Windows guide explain retention and optional manual profile removal.

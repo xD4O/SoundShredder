@@ -32,7 +32,55 @@ function instance() {
 async function state() { const i = instance(); return request(i.base + '/api/state', i.token); }
 const evidence = { platform: process.platform, architecture: process.arch, executable: executablePath, cycles: [] };
 let application, nativePid;
+async function verifySetupCancellation() {
+  application = await electron.launch({ executablePath, args, env, timeout: 60000 });
+  let page = await application.firstWindow();
+  nativePid = await application.evaluate(() => process.pid);
+  const initial = await waitFor(state);
+  if (initial.status !== 'idle' || fs.existsSync(path.join(home, 'settings.json'))) {
+    // Reused local QA profiles deliberately skip a fresh dependency download.
+    await application.close(); application = null;
+    await waitFor(() => !fs.existsSync(path.join(home, 'desktop.json')));
+    return;
+  }
+  const waitInstalling = () => waitFor(async () => {
+    const s = await state();
+    if (s.status === 'error') throw Object.assign(new Error(s.message), { fatal: true });
+    return s.status === 'installing' && s.progress >= 20 && s;
+  }, 120000);
+  await page.locator('#start').click();
+  await waitInstalling();
+  await page.locator('#cancel').waitFor({ state: 'visible' });
+  await page.locator('#diagnostics').click();
+  await page.locator('#log').waitFor();
+  await page.screenshot({ path: path.join(output, 'setup-progress.png'), fullPage: true });
+  await application.evaluate(({ dialog, BrowserWindow }) => {
+    globalThis.qaQuitMessage = null;
+    dialog.showMessageBox = async (_window, options) => { globalThis.qaQuitMessage = options.message; return { response: 0 }; };
+    BrowserWindow.getAllWindows()[0].close();
+  });
+  await waitFor(() => application.evaluate(() => globalThis.qaQuitMessage));
+  assert.match(await application.evaluate(() => globalThis.qaQuitMessage), /Cancel setup and quit/);
+  assert.ok(['installing', 'starting'].includes((await state()).status));
+  await page.locator('#cancel').click();
+  await waitFor(async () => (await state()).status === 'idle');
+  assert.ok(fs.existsSync(path.join(home, 'setup-interrupted.json')));
+  await page.locator('#start').click();
+  await waitInstalling();
+  const closing = application.waitForEvent('close');
+  await application.evaluate(({ dialog, BrowserWindow }) => {
+    dialog.showMessageBox = async () => ({ response: 1 });
+    BrowserWindow.getAllWindows()[0].close();
+  });
+  await closing; application = null;
+  await waitFor(() => !fs.existsSync(path.join(home, 'desktop.json')));
+  assert.ok(fs.existsSync(path.join(home, 'setup-interrupted.json')));
+  // The normal first cycle reopens this interrupted profile and repairs setup.
+  evidence.setup_cancel_retry_and_native_quit = true;
+  console.log('Verified setup cancellation, retry, Continue setup and cancel-and-quit');
+}
 (async () => {
+  await verifySetupCancellation();
   for (let cycle = 0; cycle < 4; cycle++) {
     application = await electron.launch({ executablePath, args, env, timeout: 60000 });
     const page = await application.firstWindow();
@@ -41,6 +89,9 @@ let application, nativePid;
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     const initial = await waitFor(state);
+    if (cycle === 0 && evidence.setup_cancel_retry_and_native_quit) {
+      assert.equal(initial.status, 'idle', 'Interrupted setup must wait for an explicit retry');
+    }
     if (initial.status === 'idle') {
       await page.locator('#start').click();
       console.log('Installing the private CPU engine');

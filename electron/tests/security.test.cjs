@@ -19,3 +19,18 @@ test('local lifecycle client refuses redirects', async () => {
   try { await assert.rejects(request(`http://127.0.0.1:${server.address().port}/`, 'private'), /Engine request failed/); }
   finally { await new Promise(resolve => server.close(resolve)); }
 });
+
+test('control requests have a deadline even when a server keeps sending bytes', async () => {
+  const server = http.createServer((_req, res) => {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.write(' ');
+    const timer = setInterval(() => res.write(' '), 20);
+    res.on('close', () => clearInterval(timer));
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const started = Date.now();
+  try {
+    await assert.rejects(request(`http://127.0.0.1:${server.address().port}/`, 'private', undefined, 150), /not responding/);
+    assert.ok(Date.now() - started < 1500);
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});

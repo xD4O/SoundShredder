@@ -1,4 +1,4 @@
-# SoundShredder 1.2.0 — macOS Electron preview
+# SoundShredder — macOS Electron guide
 
 Made by cyr4x. Made for the Higgsfield Community.
 
@@ -28,12 +28,22 @@ Source changes now enable **ad-hoc signing** for test builds, keep Python from w
 
 1. Use **macOS 13 Ventura or newer**. Check Apple menu > About This Mac: download **arm64** for Apple Silicon (M-series) or **x64** for Intel. Do not use the Windows installer.
 2. Quit the previous standalone through its menu-bar Quit control or setup page's **Close SoundShredder**. Keep `~/Library/Application Support/SoundShredder` to reuse sessions and the CPU engine.
-3. Open the matching `SoundShredder-Electron-1.2.0-macOS-…dmg`. Drag **SoundShredder** into **Applications**, replace the old app when prompted, then eject the disk image. Alternatively, extract the matching ZIP and move its app into Applications.
+3. Open the matching `SoundShredder-Electron-<version>-macOS-<architecture>.dmg`. Drag **SoundShredder** into **Applications**, replace the old app when prompted, then eject the disk image. Alternatively, extract the matching ZIP and move its app into Applications.
 4. Try opening SoundShredder from Applications. If Finder blocks it, follow the launch troubleshooting above; setup cannot start until macOS allows the app to run. Once opened, its original dark/mint interface runs in its own window, with a Dock icon and application menus. Python is bundled; no Homebrew or separate Python installation is needed.
 5. On first use, choose **Set up SoundShredder**. The **CPU engine** downloads automatically. Keep internet connected and at least **3 GiB free**, plus room for the app, models and sessions. Apple Metal/MPS and NVIDIA acceleration are not enabled in this Mac preview.
 6. The workspace opens when ready. Drop audio/video into it, select a preset, listen to the tracks alongside your footage, and download your mix or isolated tracks through a native Save dialog.
 
 Models download on first feature use: about 426 MB for layer separation and 1.2 GB for Bubble FX. Processing works offline once the needed files are cached. Audio is processed locally.
+
+## Setup progress and recovery (1.2.1 candidate)
+
+These improvements are in source and test builds; the existing 1.2.0 Mac download is unchanged while signed distribution is being prepared.
+
+Setup shows the current package, downloaded bytes, average speed and elapsed time. The main bar shows **setup stages**, with a separate bar for the current download. Installing and checking packages can take time without moving either bar. **Setup details** remains available during installation.
+
+Use **Cancel setup** to stop, or close the window and choose **Cancel setup and quit**. Reopen the app and select **Set up SoundShredder** to repair an interrupted engine. Sessions stay saved; some packages may download again. A completed compatible engine is reused on normal launches.
+
+Network requests have timeouts and limited retries. Installer commands stop after ten minutes without output or one hour overall, with an explanation and retry option. A lost local connection shows **Reconnecting**. If it does not recover, close and reopen, check internet/free space, then retry. Computer sleep, network conditions and slow storage can still affect setup time.
 
 ## Quit and reopen
 

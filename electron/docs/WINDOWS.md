@@ -1,10 +1,10 @@
-# SoundShredder 1.2.0 — Windows Electron preview
+# SoundShredder 1.2.1 — Windows Electron preview
 
 Made by cyr4x. Made for the Higgsfield Community.
 
 ## Install and open
 
-1. Use Windows 10/11 **64-bit (x64)**. Download `SoundShredder-Electron-1.2.0-Windows-x64-Setup.exe` from the Windows Electron release.
+1. Use Windows 10/11 **64-bit (x64)**. Download `SoundShredder-Electron-1.2.1-Windows-x64-Setup.exe` from the Windows Electron release.
 2. Quit any earlier standalone using its setup page's **Close SoundShredder** control. Keep its engine/data folders to reuse your setup and sessions.
 3. Run the installer. It installs for your user, lets you choose the app folder, and creates Start menu and desktop shortcuts, including **Uninstall SoundShredder** in Start. No administrator rights, separate Python, terminal commands or browser are required.
 4. Open **SoundShredder**. Setup appears inside its own dark/mint application window. Choose **CPU** or **NVIDIA GPU**, then **Set up SoundShredder**. Existing compatible engines are reused.
@@ -13,9 +13,17 @@ Made by cyr4x. Made for the Higgsfield Community.
 
 Python is bundled; audio dependencies/models are downloaded separately. Models use about 426 MB for layer separation and 1.2 GB for Bubble FX. Once cached, processing works offline.
 
+## Follow or cancel first setup
+
+Version 1.2.1 shows the current package, downloaded bytes, average speed and elapsed time. The main bar shows **setup stages**; the second bar shows the current download. Installing or checking downloaded packages can take time without moving either bar.
+
+**Setup details** opens live diagnostics. **Cancel setup** stops installation safely and keeps your sessions. Closing the window during setup offers **Continue setup** or **Cancel setup and quit**. Reopen and select **Set up SoundShredder** to repair an interrupted engine; some packages may download again. A completed compatible engine is reused on normal launches.
+
+Network requests have timeouts and limited retries. An installer command with no output for ten minutes stops with an explanation; each installer command also has a one-hour limit. If local setup loses its connection, the interface shows **Reconnecting** and keeps trying. If recovery fails, close and reopen the app, check internet/free space, then retry. Computer sleep, slow storage and network conditions can still affect completion time.
+
 ## Close, reopen and return
 
-- Closing the window or **SoundShredder > Quit SoundShredder** stops the local engine. During setup or active audio processing, finish/cancel that work before quitting; the app explains what is still running.
+- Closing the window or **SoundShredder > Quit SoundShredder** stops the local engine. During setup you can cancel and quit. Active audio processing must finish or be canceled in the workspace before quitting.
 - Open the Start menu or desktop shortcut again to start the engine and return. Double-opening brings the existing window forward instead of starting duplicate engines.
 - **SoundShredder > Workspace** (`Ctrl+1`) returns to the workspace. **Setup and diagnostics** (`Ctrl+,`) opens engine settings and copyable diagnostics.
 - Saved sessions remain in the left panel. Closing a session there removes that session; quitting the application does not remove sessions.

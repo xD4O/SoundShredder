@@ -26,12 +26,16 @@ Package Windows with `npm run build -- --win --x64`; package Mac with `npm run b
 
 - Electron's single-instance lock focuses the existing window. The shared Python lock prevents overlap with an older standalone using the same profile. A running older version must be closed before Electron starts.
 - The setup manager owns the workspace through a pipe; Electron owns the manager through another pipe. EOF triggers cleanup after a host crash. No process is selected or killed using a stale PID file.
-- Closing the window or native Quit asks the manager to stop. Setup or active audio jobs block orderly quit with an explanation. There is no package-install cancellation yet.
+- Closing the window or native Quit asks the manager to stop. During setup, users choose Continue setup or Cancel setup and quit. Active audio jobs still block orderly quit until finished or canceled in the workspace.
+- Setup runs on a worker thread; status polling avoids disk probes, diagnostics fetch independently, and installer output supplies package/download activity. Network requests have bounded timeouts and retries. Installer commands stop after ten minutes without output or one hour overall; workspace readiness has a two-minute deadline.
+- Cancel stops the owned installer process. Incomplete copy/install markers trigger repair of only the private engine folder on explicit retry. Interrupted setup does not automatically restart at launch. Sessions and models remain separate, and completed compatible engines are reused.
 - Python and the renderer communicate over authenticated setup APIs and loopback-only workspace APIs. The renderer has no Node access; sandbox/context isolation remain enabled. Privileged IPC accepts only the main window's trusted top-level frame and fixed actions. Navigation and external links are restricted.
 - Old sessions/runtimes are reused from the existing standalone profile. The Electron Chromium profile is a subdirectory. Uninstalling the application leaves engines/sessions intact.
 - GitHub updates are manual. The Help menu links to Electron releases; the shared sidebar checker still follows stable source releases.
 
 ## Verification
+
+`npm run test:setup-ui` injects stalled status and diagnostics responses into the actual setup page in Electron. It checks download reporting, a live timer, usable cancellation, bounded requests, reconnection and narrow-screen overflow. Python regression tests use real stalled child processes to check cancellation, deadlines, interrupted-runtime repair and preservation of saved audio. On a fresh profile, `npm run test:app` additionally cancels setup, retries, tests both native quit choices, then reopens and completes the real CPU installation before the processing/lifecycle checks below.
 
 **Mac distribution issue (September 18, 2026):** the original preview used `mac.identity: null` and did not pass a browser-download Gatekeeper test. Current test packaging uses an explicit ad-hoc identity, hardened runtime, JIT/library-validation entitlements, and strict signature verification. Ad-hoc signing is an integrity measure for testing, **not Developer ID signing or notarization**. The existing release binaries are unchanged. See [Mac launch troubleshooting](docs/MACOS.md#finder-says-damaged-or-cannot-be-opened).
 
