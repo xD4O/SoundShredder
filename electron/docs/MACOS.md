@@ -12,8 +12,8 @@ Use **macOS 13 Ventura or newer**. Open **Apple menu > About This Mac** to check
 
 | Your Mac | Download |
 | --- | --- |
-| Apple Silicon — M1, M2, M3, M4 or newer M-series | `SoundShredder-Electron-1.2.2-macOS-arm64.dmg` |
-| Intel processor | `SoundShredder-Electron-1.2.2-macOS-x64.dmg` |
+| Apple Silicon — M1, M2, M3, M4 or newer M-series | [SoundShredder-Electron-1.2.2-macOS-arm64.dmg](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-arm64.dmg) |
+| Intel processor | [SoundShredder-Electron-1.2.2-macOS-x64.dmg](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-x64.dmg) |
 
 Matching ZIP files are alternatives to the DMGs. Use the native build for your chip. This release processes audio on the **CPU**; Apple Metal/MPS and NVIDIA acceleration are not enabled. Processing speed depends on your Mac, clip length and chosen cleanup settings.
 

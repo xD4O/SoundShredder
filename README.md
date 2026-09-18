@@ -14,7 +14,9 @@ Preview the result with your footage. Download the mix or each isolated track.
 <p>
   <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-windows-preview.1/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe"><strong>Download for Windows</strong></a>
   &nbsp; · &nbsp;
-  <a href="https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1"><strong>Download for Mac</strong></a>
+  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-arm64.dmg"><strong>Mac · Apple Silicon</strong></a>
+  &nbsp; · &nbsp;
+  <a href="https://github.com/xD4O/SoundShredder/releases/download/v1.2.2-electron-macos-preview.1/SoundShredder-Electron-1.2.2-macOS-x64.dmg"><strong>Mac · Intel</strong></a>
 </p>
 
 [Install the desktop app](#install-the-desktop-app) · [Run in your browser](#run-the-web-app-locally) · [How it works](#from-clip-to-cleaned-audio) · [Guides](#guides-and-support)
