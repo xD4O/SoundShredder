@@ -2,9 +2,9 @@
 
 SoundShredder's shared HTML/CSS/JavaScript interface runs in a sandboxed Electron window. The main process starts the bundled Python setup manager, then displays setup or the local workspace. No JavaScript rewrite of the audio engine is needed.
 
-User guides: [Windows](docs/WINDOWS.md) · [macOS](docs/MACOS.md).
+User guides: [Windows](docs/WINDOWS.md) · [macOS](docs/MACOS.md) · [Unsigned Windows downloads](../docs/WINDOWS-DOWNLOADS.md) · [Akira walkthrough](../docs/AKIRA-EXAMPLE.md).
 
-Current downloads: [Latest release — Windows and Mac](https://github.com/xD4O/SoundShredder/releases/latest). Original platform releases: [Windows Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-windows-preview.1) · [signed macOS Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1). The illustrated [community guide](../output/pdf/SoundShredder-Higgsfield-Community-Guide-v1.2.0.pdf) covers installation, presets, video, track exports and sessions; use the platform guides above for current release details.
+Current downloads: [Latest release — Windows and Mac](https://github.com/xD4O/SoundShredder/releases/latest). Original platform releases: [Windows Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-windows-preview.1) · [signed macOS Electron preview](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1). The illustrated [community guide](../output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf) covers installation, presets, video, track exports and sessions; use the platform guides above for current release details.
 
 ## Build
 

@@ -2,7 +2,7 @@
 
 Made by cyr4x. Made for the Higgsfield Community.
 
-> **For the 1.2.2 Mac Electron release.** Use the release notes to check the exact downloads and completed verification. The older 1.2.0 preview remains unsigned and unnotarized and has a known Finder launch issue; a newer release does not change those older files.
+> **The 1.2.2 Mac Electron release is Developer ID signed and Apple-notarized.** Use the [current release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2) for downloads and completed verification. The older 1.2.0 preview remains unsigned and unnotarized and has a known Finder launch issue; a newer release does not change those older files.
 
 SoundShredder opens the familiar dark/mint workspace in its own Mac application window. Python is bundled. The audio engine and models download when needed; you do not need Homebrew, a separate Python installation, or an Apple developer account to use it.
 
@@ -78,7 +78,7 @@ For complete data removal, first note the storage location shown in **Setup and 
 
 The **older `v1.2.0-electron-macos-preview.1` download** skipped signing and notarization and has a known Finder launch issue. Its DMG and ZIP contain the same app; changing archive formats does not repair its trust status. A newer release does not alter those old downloads.
 
-For version 1.2.2, check the [Mac release notes](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1) for the verified signing/notarization status and exact tested files. Personal-Mac browser-download/Finder validation remains unverified unless the release notes explicitly report it.
+Version 1.2.2 passed signing, notarization, Gatekeeper and installed-app checks on native Apple Silicon and Intel CI. A user also confirmed the browser-download/Finder installation and reopening test on their Mac; its chip type was not recorded. This is not exhaustive testing of every Mac. Use the [current release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2), not the old unsigned preview.
 
 If the disk image itself will not mount, download it again and compare its SHA-256 with the release's checksum file. If the image mounts but the app is blocked, confirm the version and chip type, quit old copies, copy the app into Applications and eject the image before retrying. Report the exact warning if the problem persists. Do not disable Gatekeeper or remove quarantine as an installation step.
 
@@ -90,6 +90,10 @@ spctl --assess --type execute --verbose=4 "/Applications/SoundShredder.app"
 ```
 
 A successful signature check establishes bundle integrity; it does not alone prove notarization. See [Apple's explanation of Mac app warnings](https://support.apple.com/en-us/102445). The [local Mac browser version](https://github.com/xD4O/SoundShredder#mac-browser-setup) remains available if you cannot launch the desktop app.
+
+## Worked example
+
+Follow the [Akira walkthrough](https://github.com/xD4O/SoundShredder/blob/main/docs/AKIRA-EXAMPLE.md) to remove music from an MP4, toggle video preview, audition the four tracks and export WAVs. The screenshots were captured on Windows; the shared workspace controls are the same on Mac, where processing uses CPU.
 
 ## Other troubleshooting
 

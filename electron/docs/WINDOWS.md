@@ -4,7 +4,7 @@ Made by cyr4x. Made for the Higgsfield Community.
 
 ## Install and open
 
-1. Use Windows 10/11 **64-bit (x64)**. Download `SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe` from the Windows Electron release.
+1. Use Windows 10/11 **64-bit (x64)**. Download [SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe) from the official **xD4O/SoundShredder** release. Before running it, read the unsigned-download notice below.
 2. Quit any earlier standalone using its setup page's **Close SoundShredder** control. Keep its engine/data folders to reuse your setup and sessions.
 3. Run the installer. It installs for your user, lets you choose the app folder, and creates Start menu and desktop shortcuts, including **Uninstall SoundShredder** in Start. No administrator rights, separate Python, terminal commands or browser are required.
 4. Open **SoundShredder**. Setup appears inside its own dark/mint application window. Use **Choose folder…** to select a drive for engines, models and sessions, or keep the existing location. Choose **CPU** or **NVIDIA GPU**, then **Set up SoundShredder**. Existing compatible engines are reused.
@@ -12,6 +12,16 @@ Made by cyr4x. Made for the Higgsfield Community.
 6. The workspace opens automatically when ready. Drop an audio/video file, select a preset, process, audition tracks, and save your mix or isolated tracks with the download buttons. Downloads show a native Save dialog.
 
 Python is bundled; audio dependencies/models are downloaded separately. Models use about 426 MB for layer separation and 1.2 GB for Bubble FX. Once cached, processing works offline.
+
+## Unsigned Windows download notice
+
+Windows publisher signing is still pending. Edge can report **“isn't commonly downloaded”**, and Windows may show SmartScreen or an unknown publisher. This reputation warning is not a specific malware finding. The official GitHub release is our distribution source, but hosting there is not a blanket safety guarantee.
+
+Use the exact **xD4O/SoundShredder** release, compare the EXE against its **SHA256SUMS.txt**, and keep security protection enabled. A named malware detection needs separate investigation. Follow the [download verification and warning instructions](https://github.com/xD4O/SoundShredder/blob/main/docs/WINDOWS-DOWNLOADS.md), including the optional per-file continuation steps for a verified download.
+
+## Try the Akira example
+
+The [illustrated Akira walkthrough](https://github.com/xD4O/SoundShredder/blob/main/docs/AKIRA-EXAMPLE.md) shows **TestFootage.mp4** with **Remove music**, video comparison, four isolated tracks and WAV downloads. Use your own MP4 to follow the same workflow.
 
 ## Choose where your files live
 
@@ -61,4 +71,4 @@ For complete profile removal, first note the location shown in Setup and diagnos
 - **App files missing:** reinstall the Electron installer; retain the separate profile folder.
 - **Details for support:** use Setup details or SoundShredder > Open logs folder. Review paths before sharing `electron-engine.log`, `setup.log`, or `app.log`.
 
-This is an **unsigned prerelease**. Windows may show a publisher/SmartScreen warning. Only run downloads you trust. Broader clean-PC, GPU and installer testing continues; see the release's verification notes. Checksums are included with the release.
+The current Windows **1.2.2 release is unsigned**. Installation, reinstallation, uninstallation and CPU processing/reopening have passed native CI checks; broader clean-PC and NVIDIA installer testing continues. Functional testing does not replace a security audit. See the [verification record](https://github.com/xD4O/SoundShredder/blob/main/VERIFICATION.md).

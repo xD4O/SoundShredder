@@ -1,5 +1,7 @@
 # SoundShredder releases
 
+Documentation refreshed September 22, 2026: [Akira walkthrough](docs/AKIRA-EXAMPLE.md), [Windows unsigned-download guidance](docs/WINDOWS-DOWNLOADS.md) and the current [community PDF](output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf). Application version remains 1.2.2; this documentation update does not change installer binaries. Entries below retain their original release context.
+
 ## v1.2.2 - Current Windows and Mac downloads
 
 - [Latest release](https://github.com/xD4O/SoundShredder/releases/latest) now points to 1.2.2 with the Windows EXE, signed/notarized Apple Silicon and Intel Mac packages, platform guides and checksums together.

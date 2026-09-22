@@ -25,9 +25,9 @@ Made by **cyr4x** for the **Higgsfield Community**.
 
 </div>
 
-![Choose what stays: keep dialogue and effects while removing music](docs/images/mix-controls.png)
+![Akira footage in the video monitor with the cleaned mix selected](docs/images/akira-video-preview.png)
 
-<p align="center"><sub>The shared desktop and browser interface. Remove music, keep the scene, then adjust each layer.</sub></p>
+<p align="center"><sub>Akira worked example: compare the cleaned soundtrack with your footage in the shared desktop and browser workspace.</sub></p>
 
 ## Your footage. Your soundtrack.
 
@@ -54,6 +54,9 @@ Audio stays on your computer. Initial engine/model downloads need internet; cach
 
 ### Windows EXE
 
+> [!IMPORTANT]
+> **Windows 1.2.2 is unsigned.** Edge may say the EXE is not commonly downloaded; Windows may show SmartScreen or an unknown publisher. Use only the official **xD4O/SoundShredder** release and compare its SHA-256 checksum. This reputation warning is not a specific malware finding; GitHub hosting alone is not a safety guarantee. [Download verification and warning instructions](docs/WINDOWS-DOWNLOADS.md).
+
 1. **Download the EXE** above. Quit an older SoundShredder standalone through its setup screen before installing.
 2. **Run the installer.** Choose the app folder and finish setup. No separate Python installation, PATH changes or administrator rights are needed.
 3. **Open SoundShredder** from Start or the desktop shortcut. Use **Choose folder…** to pick a drive for engines, models and sessions, or keep the current location.
@@ -73,7 +76,7 @@ Allow **4 GiB free for CPU** or **14 GiB for NVIDIA** setup, plus the app, model
 2. **Quit any older standalone.** Open the DMG, drag **SoundShredder** into **Applications**, then eject the disk image.
 3. **Open SoundShredder** from Applications. Optionally use **Choose folder…** for engines, models and sessions, then select **Set up SoundShredder**. The CPU engine downloads automatically. No Homebrew or separate Python is needed.
 
-Allow **3 GiB free for setup**, plus the app, models and saved media. Mac processing currently uses CPU; Apple Metal/MPS is not enabled. ZIP alternatives, Mac instructions and checksums are on the [Mac release page](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1).
+Allow **3 GiB free for setup**, plus the app, models and saved media. Mac processing currently uses CPU; Apple Metal/MPS is not enabled. ZIP alternatives, Mac instructions and checksums are on the [current release page](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2).
 
 > [!IMPORTANT]
 > The Windows installer is unsigned and may show SmartScreen. The current Mac builds are signed and notarized; macOS may still ask for the usual confirmation when opening an app downloaded from the internet. Read the [Windows guide](electron/docs/WINDOWS.md) or [Mac guide](electron/docs/MACOS.md) for installation and troubleshooting.
@@ -117,6 +120,10 @@ Both browser setups need internet for the first engine/model downloads. Run one 
 
 **Exports are audio, not a replacement MP4.** Inputs support up to **500 MB / 10 minutes / mono or stereo**. AI separation can affect wanted sounds too; audition the result before using it in your final edit.
 
+### Try it with the Akira example
+
+The [Akira walkthrough](docs/AKIRA-EXAMPLE.md) uses **TestFootage.mp4**, a roughly 43-second clip: select **Remove music**, keep dialogue/effects at 100%, preview **Original** versus **Cleaned mix**, then download the WAV or isolated tracks. The screenshots show a real completed session, including a nearly silent dialogue track. Use your own footage to follow along; the video itself is not bundled.
+
 ### Stubborn bubbles, meet another pass
 
 Choose **Bubble FX → Water bubbles**, enable **Aggressive multi-pass**, and start with **2 passes**. Try 3 or 4 for stronger cleanup. Limit the range when possible, such as **7–11 seconds**, and listen to **Removed sounds** to check what was taken away.
@@ -129,7 +136,7 @@ More passes take longer and may reduce similar effects. Bubble FX is experimenta
 
 Listen to **Dialogue**, **Music**, **Sound effects** and **Removed sounds** independently, with waveforms and individual WAV downloads. Keep playback positions linked to compare the same moment.
 
-![Four independent audio tracks with waveforms, playback controls and WAV downloads](docs/images/isolated-tracks.png)
+![Four isolated tracks from the Akira example with individual WAV downloads](docs/images/akira-isolated-tracks.png)
 
 Normal separation prepares the tracks automatically. In a Bubble FX session, use **Prepare isolated tracks** to separate dialogue, music and effects from the original audio; the cleaned result stays intact.
 
@@ -149,7 +156,8 @@ The sidebar **Check for updates** follows the latest numbered release, currently
 
 ## Guides and support
 
-- **[Illustrated community guide (PDF)](output/pdf/SoundShredder-Higgsfield-Community-Guide-v1.2.0.pdf)** · [Save the HTML guide](https://raw.githubusercontent.com/xD4O/SoundShredder/main/output/html/SoundShredder-Higgsfield-Community-Guide.html) and open it in a browser.
+- **[Illustrated community guide (PDF)](output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf)** · [Save the HTML guide](https://raw.githubusercontent.com/xD4O/SoundShredder/main/output/html/SoundShredder-Higgsfield-Community-Guide.html) and open it in a browser.
+- **[Akira walkthrough](docs/AKIRA-EXAMPLE.md)** · [Windows download warnings](docs/WINDOWS-DOWNLOADS.md) · [All guides](docs/README.md).
 - **[Windows desktop help](electron/docs/WINDOWS.md)** · **[Mac desktop help](electron/docs/MACOS.md)** · [Mac source SSL repair](support/mac/README.md).
 - [Detailed usage, CLI and model reference](docs/REFERENCE.md) · [Build Electron](electron/README.md) · [Tested behavior and limitations](VERIFICATION.md).
 - [Report an issue](https://github.com/xD4O/SoundShredder/issues) · [Roadmap](ROADMAP.md) · [Release history](RELEASE_NOTES.md).

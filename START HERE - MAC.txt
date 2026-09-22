@@ -1,4 +1,7 @@
-SOUNDSHREDDER FOR MAC
+SOUNDSHREDDER FOR MAC - PYTHON SOURCE / BROWSER VERSION
+For the current signed desktop app with bundled Python, use:
+https://github.com/xD4O/SoundShredder/releases/latest
+The instructions below apply to the source ZIP, not the DMG.
 Separate dialogue, music and effects. Keep only the sound you want.
 
 QUICK START

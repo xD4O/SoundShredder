@@ -1,5 +1,13 @@
 # Verification record
 
+## Documentation example - September 22, 2026
+
+The user-supplied Akira `TestFootage.mp4` completed a real layer-separation run in the local 1.2.2 Python source app on Windows with Auto selecting an RTX 5090/CUDA. Settings were dialogue 100%, music 0%, effects 100%. The original file's SHA-256 remained unchanged. The dialogue, music, effects, cleaned and removed WAVs each preserved 2,052,096 frames at 48 kHz stereo (42.752 seconds); the exported ZIP passed an integrity check.
+
+The [Akira walkthrough](docs/AKIRA-EXAMPLE.md) contains actual screenshots of the completed video monitor and four listening tracks. The dialogue waveform is nearly silent. This is a workflow/timing check on one local source-app configuration, not a perceptual-quality benchmark, a Bubble FX test, or broader packaged-GPU validation. No source media or extracted audio is included in the repository.
+
+The maintained community HTML/PDF was refreshed for 1.2.2, including unsigned Windows downloads, signed Mac installation, source setup, storage, manual updates and session deletion. All 12 PDF pages were rendered and visually checked; the HTML was checked at desktop and narrow widths. Versioned older PDFs remain historical. Installer binaries and their existing signing status are unchanged.
+
 ## Signed and notarized Mac Electron release (1.2.2)
 
 - [Workflow 35354510031](https://github.com/xD4O/SoundShredder/actions/runs/35354510031) passed on native Apple Silicon and Intel for source revision `2c017845b781d709cdb7bc49d5110cf9419ae224`. Both DMG and ZIP app copies passed Developer ID signature verification, all 24 native-file integrity checks, Gatekeeper assessment and stapled notarization-ticket validation. `notarized_distribution_ready` is `true` for both archives and the installed app after lifecycle testing.

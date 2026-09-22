@@ -2,6 +2,8 @@
 
 Detailed usage, model behavior and command-line setup. For downloads and installation, start at the [project home page](../README.md). Run commands below from the project folder.
 
+See the [Akira worked example](AKIRA-EXAMPLE.md) for the full MP4-to-WAV workflow and [Windows warning guide](WINDOWS-DOWNLOADS.md) for the unsigned EXE.
+
 ## CPU and GPU
 
 In Electron, select the engine in **SoundShredder > Setup and diagnostics**. The `.bat` setup scripts below apply to the Windows source package.

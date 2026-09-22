@@ -1,5 +1,7 @@
 # SoundShredder for Mac â€” standalone preview 1.1.1
 
+> **Historical browser-based standalone guide.** For the current Electron app, use the [latest release](https://github.com/xD4O/SoundShredder/releases/latest) and [current platform instructions](https://github.com/xD4O/SoundShredder/tree/main/electron/docs). Old binaries keep their original signing status.
+
 Made by cyr4x. Made for the Higgsfield Community.
 
 ## Install and open
