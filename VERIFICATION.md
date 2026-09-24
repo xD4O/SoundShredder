@@ -1,5 +1,18 @@
 # Verification record
 
+## Targeted cleanup source prototype — September 24, 2026
+
+Development branch: `codex/targeted-cleanup`. This is not a packaged release; published installers remain 1.2.2.
+
+- Dynamic local text encoding matched all four fixed Bubble FX vectors with maximum absolute error below **1.1e-7**. Encoding reused the existing AudioSep checkpoint and a SHA-256-verified, revision-pinned RoBERTa tokenizer. Local environment: PyTorch 2.8/CUDA 12.8, Transformers 4.51.3, tokenizers 0.21.4. Newer resolutions and native Mac engine setup have not been validated here.
+- The owner's bubble MP4 completed a real CUDA run on an RTX 5090: prompt **Water bubbling**, strength 85%, two passes, interval 7–11 seconds. Processing reported **13.72 seconds** with cached sound weights. A preview and full cleanup of that same interval produced identical audio samples. WAV container bytes can differ because of metadata; byte-identical files are not claimed.
+- A real CPU run using **Liquid gurgling**, strength 70%, one pass and interval 7–7.5 seconds reported **13.47 seconds**. These are different workloads, not a CPU/GPU speed comparison. Audio outside the selection was unchanged and exports retained timing. No perceptual-quality judgment is inferred from completion.
+- Cancellation during the first pass's model-loading stage completed in about **0.02 seconds**, released the worker and allowed a new attempt from its saved source. The retry at zero strength reproduced the input samples exactly. Cancellation at every possible inference stage is not established by this check.
+- **213 Python tests passed**, with two existing framework deprecation warnings. Tests cover validation, prompt caching, repeated-pass inputs, bounded preview/context, source preservation, independent version copies, preview-chain rejection, cancellation/retry API behavior and GPU-memory fallback. **21 Electron/DOM tests passed**, including three isolated-DOM workspace flows for guided cleanup, stale results, version restoration and waiting for engine exit. Ruff and JavaScript syntax checks passed.
+- Existing user sessions were not used as test output storage. Local evidence is under the ignored `artifacts/targeted-cleanup/` directory; source footage and processed audio are not added to Git.
+
+Rendered browser verification could not run: the browser-control tool failed during initialization with a local kernel-assets/path error, including after a reset. DOM tests do not establish actual layout, waveform dragging or audiovisual synchronization. Listening evaluation, native Windows/Mac installer setup and lifecycle checks, dependency-advisory review and release screenshots remain required before publishing this feature. The [development guide](docs/TARGETED-CLEANUP.md) and [release plan](docs/NEXT-RELEASE-PLAN.md) document that boundary.
+
 ## Documentation example - September 22, 2026
 
 The user-supplied Akira `TestFootage.mp4` completed a real layer-separation run in the local 1.2.2 Python source app on Windows with Auto selecting an RTX 5090/CUDA. Settings were dialogue 100%, music 0%, effects 100%. The original file's SHA-256 remained unchanged. The dialogue, music, effects, cleaned and removed WAVs each preserved 2,052,096 frames at 48 kHz stereo (42.752 seconds); the exported ZIP passed an integrity check.

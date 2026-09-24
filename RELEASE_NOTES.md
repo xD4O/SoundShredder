@@ -1,5 +1,11 @@
 # SoundShredder releases
 
+## Unreleased: targeted cleanup prototype
+
+Source development adds **Quick Cleanup · Easy** and **Target a Sound · Guided**, with local text prompts, waveform intervals, up-to-ten-second previews, independent strength/1–4-pass controls and saved versions. A completed cleaned version can explicitly become another step's input. Original uploads and earlier results are preserved. Custom prompts reuse AudioSep's text weights with a separately verified tokenizer.
+
+This is not a new installer release. Listening review, rendered UI checks and packaged Windows/Mac validation are pending. See the [development guide](docs/TARGETED-CLEANUP.md) and [release gates](docs/NEXT-RELEASE-PLAN.md). Published downloads remain 1.2.2.
+
 Documentation refreshed September 22, 2026: [Akira walkthrough](docs/AKIRA-EXAMPLE.md), [Windows unsigned-download guidance](docs/WINDOWS-DOWNLOADS.md) and the current [community PDF](output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf). Application version remains 1.2.2; this documentation update does not change installer binaries. Entries below retain their original release context.
 
 ## v1.2.2 - Current Windows and Mac downloads

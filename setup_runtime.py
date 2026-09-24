@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-BINARY_PACKAGES = ("torch", "numpy", "scipy", "soundfile", "imageio-ffmpeg", "pydantic-core", "cffi")
+BINARY_PACKAGES = ("torch", "numpy", "scipy", "soundfile", "imageio-ffmpeg", "pydantic-core", "cffi", "tokenizers", "safetensors")
 
 
 @dataclass(frozen=True)

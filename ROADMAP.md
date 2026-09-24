@@ -2,6 +2,10 @@
 
 No release date is committed for the remaining work. The latest release is v1.2.2, with Windows, Apple Silicon and Intel Mac installers together and source available separately. Earlier platform previews remain available for their verification history. Both Mac builds are Developer ID signed and Apple-notarized; native CI passed Gatekeeper, real CPU separation, export, close/reopen and crash recovery. A user confirmed the Finder installation test worked on their Mac. Broader hardware and Windows signing/SmartScreen validation remain separate work.
 
+## Next major release: targeted cleanup with text prompts
+
+The approved workflow is in source development: **Quick Cleanup · Easy** for presets and **Target a Sound · Guided** for local prompts, waveform intervals, short previews, independent strength/1–4-pass controls and saved versions. See the [accepted plan](docs/NEXT-RELEASE-PLAN.md), [development guide](docs/TARGETED-CLEANUP.md) and [AudioShake research](docs/AUDIOSHAKE-RESEARCH.md). Listening review, rendered UI checks and native installer validation remain before publication. No new version or date is committed; published installers remain 1.2.2.
+
 ## Published in the Electron desktop app
 
 - Shared web interface in a dedicated application window, with native menus and Save dialogs.

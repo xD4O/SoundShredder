@@ -7,9 +7,10 @@
   <meta name="author" content="cyr4x">
   <title>SoundShredder — Your sound. In focus.</title>
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/style.css?v=9">
+  <link rel="stylesheet" href="/static/style.css?v=10">
+  <link rel="stylesheet" href="/static/targeted.css?v=1">
   <script src="/static/video.js?v=1" defer></script>
-  <script src="/static/app.js?v=8" defer></script>
+  <script src="/static/app.js?v=10" defer></script>
 </head>
 <body>
   <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -97,11 +98,37 @@
           <div class="compute-note"><span class="note-dot"></span><p>First use downloads the model. Then you’re ready to work offline. CPU takes longer.</p></div>
         </section>
       </div>
-      <section class="panel mix-panel" aria-labelledby="mix-heading">
+      <div class="cleanup-modes" role="group" aria-label="Cleanup workflow">
+        <button id="mode-quick" class="mode-choice active" aria-pressed="true"><span>Quick Cleanup</span><small>EASY · START WITH A PRESET</small></button>
+        <button id="mode-targeted" class="mode-choice" aria-pressed="false" disabled><span>Target a Sound</span><small>GUIDED · DESCRIBE WHAT TO REMOVE</small></button>
+      </div>
+      <section id="targeted-panel" class="panel targeted-panel" aria-labelledby="targeted-heading" hidden>
+        <div class="panel-heading"><h2 id="targeted-heading">A little more precise.</h2><span class="chip">LOCAL · EXPERIMENTAL</span></div>
+        <div class="target-step"><div class="target-step-heading"><span class="step">01</span><h3>Choose where to listen</h3><button id="prepare-source" class="text-button" type="button">Load waveform ↗</button></div>
+          <p class="muted small">Drag across the source waveform above, or enter an interval. Leave the range off to clean the whole clip.</p>
+          <div class="target-range-controls"><label class="check-label"><input id="target-range" type="checkbox"><span>Use a selected interval</span></label><label>From <input id="target-start" type="number" min="0" step="0.01" value="0" aria-label="Target start seconds"> sec</label><label>To <input id="target-end" type="number" min="0" step="0.01" value="10" aria-label="Target end seconds"> sec</label></div>
+          <p id="target-range-help" class="muted small" role="status">Add a file to prepare its waveform. No sound is removed during preparation.</p>
+        </div>
+        <div class="target-step"><div class="target-step-heading"><span class="step">02</span><h3><label for="target-prompt">What sound should we remove?</label></h3></div>
+          <input id="target-prompt" class="prompt-input" type="text" maxlength="200" placeholder="For example: water bubbling" autocomplete="off" aria-describedby="target-prompt-help">
+          <div class="prompt-suggestions" role="group" aria-label="Sound description examples"><button type="button" data-prompt="Water bubbling">Water bubbling</button><button type="button" data-prompt="A ringing phone">Ringing phone</button><button type="button" data-prompt="Background laughter">Background laughter</button><button type="button" data-prompt="Wind noise">Wind noise</button></div>
+          <p id="target-prompt-help" class="muted small">Name one sound in English. These are starting points, not guaranteed results. This does not identify individual speakers.</p>
+        </div>
+        <div class="target-step"><div class="target-step-heading"><span class="step">03</span><h3>Preview, then refine</h3></div>
+          <div class="target-adjustments"><div><div class="level-label"><label for="target-strength">REMOVAL STRENGTH PER PASS</label><output id="target-strength-value" for="target-strength">85%</output></div><input id="target-strength" class="level" type="range" min="0" max="100" value="85"></div>
+            <div><label class="field-label" for="target-passes">CLEANUP PASSES</label><select id="target-passes"><option value="1">1 pass · Start here</option><option value="2">2 passes · Extra cleanup</option><option value="3">3 passes · Aggressive</option><option value="4">4 passes · Most aggressive</option></select></div></div>
+          <p class="muted small">Each pass rechecks the previous result. More passes take longer and may remove wanted details. Check Removed sounds before applying.</p>
+          <div class="target-preview-row"><button id="preview-target" class="secondary" type="button" disabled>Preview cleanup ↗</button><p id="target-preview-help" class="muted small">Preview up to 10 seconds from the beginning of your selection.</p></div>
+          <label class="field-label" for="target-source">INPUT FOR THE NEXT CLEANUP</label><select id="target-source"><option value="original">Original upload · compare a fresh attempt</option><option value="cleaned" disabled>Current cleaned version · add another step</option></select>
+          <p class="muted small">Your description stays local. First use downloads AudioSep (1.2 GB) and a small tokenizer. Completed attempts are saved as separate versions.</p>
+        </div>
+      </section>
+      <section id="quick-panel" class="panel mix-panel" aria-labelledby="mix-heading">
         <div class="panel-heading"><h2 id="mix-heading"><span class="step">03</span> Make it your mix</h2><span class="mini-label">THREE LAYERS. TOTAL CONTROL.</span></div>
         <div class="preset-row" role="group" aria-label="Quick presets"><span>START WITH A PRESET</span><div class="preset-options"><button class="preset active" data-preset="no-music" aria-pressed="true">Remove music</button><button class="preset" data-preset="dialogue" aria-pressed="false">Dialogue only</button><button class="preset" data-preset="effects" aria-pressed="false">Effects only</button><button class="preset" data-preset="no-effects" aria-pressed="false">Remove effects</button><button class="preset" data-preset="no-dialogue" aria-pressed="false">Remove dialogue</button><button class="preset bubble-preset" data-preset="bubble" aria-pressed="false">Bubble FX <small>BETA</small></button></div></div>
         <div id="bubble-settings" class="bubble-settings" hidden>
           <div class="bubble-intro"><span class="bubble-orb" aria-hidden="true">◌</span><div><div class="eyebrow">TARGET A SOUND · BETA</div><h3>Less bubble. More scene.</h3><p>Reduce bubble-like sounds in the original mix. Similar pops or liquid effects may also change—check the removed-sound preview.</p></div></div>
+          <details class="easy-details"><summary>More control · sound type, strength &amp; passes</summary>
           <div class="bubble-grid">
             <div><label class="field-label" for="bubble-type">SOUND TO TARGET</label><select id="bubble-type"><option value="water">Water bubbles</option><option value="popping">Bubbling & popping</option><option value="gurgling">Liquid gurgle</option><option value="cartoon">Cartoon boing</option></select><p class="muted small">Changing the sound type requires a new separation.</p></div>
             <div><div class="level-label"><label for="bubble-strength">REDUCTION</label><output id="bubble-strength-value" for="bubble-strength">85%</output></div><input id="bubble-strength" class="level" type="range" min="0" max="100" value="85" aria-label="Bubble reduction"><p class="muted small">Lower it if wanted effects begin to disappear.</p></div>
@@ -111,7 +138,8 @@
             <div class="bubble-pass-count"><label class="field-label" for="bubble-passes">CLEANUP PASSES</label><select id="bubble-passes" disabled><option value="2">2 passes · Start here</option><option value="3">3 passes · Stronger</option><option value="4">4 passes · Maximum</option></select></div>
           </div>
           <div class="bubble-range-row"><label class="check-label"><input id="bubble-range" type="checkbox"><span>Limit cleanup to a time range</span></label><div class="bubble-times"><label for="bubble-start">From <input id="bubble-start" type="number" min="0" step="0.01" value="7" disabled> sec</label><span aria-hidden="true">→</span><label for="bubble-end">To <input id="bubble-end" type="number" min="0" step="0.01" value="11" disabled> sec</label></div></div>
-          <p class="bubble-foot">Audio outside your selected range stays unchanged. Works on CPU or NVIDIA GPU; first use downloads a separate 1.2 GB model.</p>
+          </details>
+          <p class="bubble-foot">Water bubbles starts at 85% reduction with one pass. Open More control to change the sound, strength, passes or time range. First use downloads a separate 1.2 GB model.</p>
         </div>
         <div class="tracks">
           <article class="track speech" data-stem="speech"><div class="track-top"><span class="track-icon"><svg class="icon"><use href="#icon-speech"/></svg></span><span class="track-channel">CH / 01</span><label class="toggle"><input id="keep-speech" type="checkbox" checked aria-label="Keep dialogue"><span></span></label></div><div class="track-title"><h3>Dialogue</h3><span class="track-state">KEEP</span></div><p>Voices, spoken words & vocal detail</p><div class="track-wave" aria-hidden="true" data-wave="speech"></div><div class="level-label"><label for="level-speech">KEEP IN MIX</label><output id="value-speech" for="level-speech">100%</output></div><input id="level-speech" class="level" type="range" min="0" max="100" value="100" aria-label="Dialogue volume"></article>
@@ -134,6 +162,7 @@
       <div class="action-row"><div class="action-copy"><span class="action-spark"><svg class="icon"><use href="#icon-spark"/></svg></span><div><strong id="action-title">A little less noise. A lot more you.</strong><p id="action-help">Add your file to start separating.</p></div></div><button id="separate" class="primary" disabled>Separate audio <span>↗</span></button></div>
       <section id="progress-panel" class="panel progress-panel" aria-label="Separation progress" hidden><div class="progress-top"><div><span class="eyebrow"><span></span> ISOLATING YOUR SOUND</span><h3 id="progress-message" role="status" aria-live="polite">Starting…</h3></div><button id="cancel" class="secondary">Cancel</button></div><progress id="progress" value="0" max="1"></progress><div class="progress-bottom"><span id="progress-percent">0%</span><span id="elapsed">0:00 elapsed</span></div></section>
       <section id="results" class="panel results" aria-labelledby="result-heading" hidden><div class="panel-heading"><h2 id="result-heading"><span class="ready-icon">✓</span> Your sound, refined.</h2><span id="result-device" class="chip"></span></div><div id="result-notice" class="notice" hidden></div><div class="result-body"><div class="result-player"><div class="player-label"><span>CLEANED MIX</span><span>PREVIEW YOUR FINAL CUT</span></div><canvas id="result-wave" aria-label="Cleaned mix waveform"></canvas><audio id="mix-audio" controls preload="metadata" aria-label="Cleaned mix preview"></audio></div><div class="export-actions"><button id="render-mix" class="primary" hidden>Update mix <span>↗</span></button><a id="download-mix" class="primary" download>Download cleaned WAV <svg class="icon"><use href="#icon-download"/></svg></a><a id="download-bundle" class="secondary" download>All tracks + mix (.zip) <svg class="icon"><use href="#icon-download"/></svg></a><a id="download-report" class="text-button" download>Processing report ↗</a></div></div><div class="result-foot"><span id="result-meta"></span><button id="delete-session" class="text-button danger">Delete this session</button></div></section>
+      <section id="versions-panel" class="panel versions-panel" aria-labelledby="versions-heading" hidden><div class="panel-heading"><h2 id="versions-heading">Your cleanup versions</h2><span class="mini-label">COMPARE · RETURN · BUILD ON</span></div><p class="muted small">Open an attempt to compare its audio and settings. Deleting a session removes that version; download the results you want to keep.</p><div id="cleanup-versions" class="cleanup-versions"></div></section>
       <section id="listening-panel" class="panel listening-panel" aria-labelledby="listening-heading" hidden>
         <div class="panel-heading"><h2 id="listening-heading"><svg class="icon"><use href="#icon-wave"/></svg> Listen to each layer</h2><span id="listening-count" class="chip">FOUR SEPARATE TRACKS</span></div>
         <div class="listening-intro"><div><p id="listening-help">Dialogue, music, and effects are isolated from your original audio. Removed sounds reflects your last exported mix.</p><label class="check-label"><input id="sync-listening" type="checkbox" checked><span>Keep playback position when switching tracks</span></label></div><button id="prepare-listening" class="secondary" hidden>Prepare isolated tracks ↗</button><button id="cancel-listening" class="secondary" hidden>Cancel preparation</button></div>

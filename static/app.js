@@ -10,6 +10,7 @@ let sourceURL = null, pollTimer = null, startedAt = null, lastMix = null;
 let sourcePeaks = null, mixPeaks = null, mode = "stems", bubbleAvailable = false;
 let multipassAvailable = false, rerunAvailable = false;
 let updatesAvailable = false;
+let targetedAvailable = false;
 let listeningAvailable = false, listeningTimer = null, listeningData = null, listeningBusy = false, activeAudio = null;
 let listeningAnchorPending = location.hash === "#listening-panel";
 const listeningColors = {speech:"#79f6d3", music:"#8eaeff", effects:"#c2a0ff", removed:"#ffbe96"};
@@ -42,6 +43,7 @@ async function api(path, options = {}) {
   return data;
 }
 function gains() { return Object.fromEntries(stems.map(s => [s, Number($("level-" + s).value) / 100])); }
+function canRerun() { return rerunAvailable && currentJob && ["complete", "failed", "cancelled"].includes(jobData?.status); }
 function sameGains(a, b) { return a && b && stems.every(s => Math.abs(a[s] - b[s]) < 0.001); }
 function cleanupSettings() {
   const ranged = $("bubble-range").checked;
@@ -67,10 +69,16 @@ function setCleanup(value) {
 }
 function setMode(value) {
   mode = value;
+  $("quick-panel").hidden = mode === "targeted";
+  $("targeted-panel").hidden = mode !== "targeted";
+  document.body.classList.toggle("targeting", mode === "targeted");
+  for (const [id, active] of [["mode-quick", mode !== "targeted"], ["mode-targeted", mode === "targeted"]]) {
+    $(id).classList.toggle("active", active); $(id).setAttribute("aria-pressed", String(active));
+  }
   $("bubble-settings").hidden = mode !== "bubble";
   document.querySelector(".tracks").hidden = mode === "bubble";
   document.querySelector(".mix-foot").hidden = mode === "bubble";
-  $("separate").innerHTML = mode === "bubble" ? "Clean up bubbles <span>↗</span>" : "Separate audio <span>↗</span>";
+  $("separate").innerHTML = mode === "targeted" ? "Save cleanup version <span>↗</span>" : mode === "bubble" ? "Clean up bubbles <span>↗</span>" : "Separate audio <span>↗</span>";
   updateControls();
 }
 function formatTime(value) { const seconds = Math.floor(value); return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`; }
@@ -115,7 +123,7 @@ function updateControls() {
   $("bubble-pass-help").textContent = multipassAvailable ?
     "Catch stubborn bubbles by analyzing the cleaned audio again. Each pass applies your reduction level. Extra passes take longer and may reduce wanted effects." :
     "Restart the updated SoundShredder app to enable multi-pass cleanup.";
-  $("separate").disabled = busy || !(selectedFile || (rerunAvailable && currentJob && jobData?.status === "complete"));
+  $("separate").disabled = busy || !(selectedFile || canRerun());
   for (const id of ["bubble-start", "bubble-end"]) $(id).disabled = busy || !$("bubble-range").checked;
   if (lastMix && jobData?.status === "complete") {
     const settings = cleanupSettings();
@@ -136,6 +144,7 @@ function updateControls() {
       "These settings need a new separation. Choose the source file again. The preview is your previous result.") :
       dirty ? "Settings changed. Update the mix to hear and download these settings. The preview below is the previous mix." : (jobData.report?.warnings || []).join(" ");
   }
+  updateTargetControls();
 }
 
 function setGains(values) { stems.forEach((s, i) => { $("level-" + s).value = Math.round((Array.isArray(values) ? values[i] : values[s]) * 100); }); updateControls(); }
@@ -155,6 +164,7 @@ function drawWave(canvas, peaks, color) {
 }
 function redraw() {
   drawWave($("source-wave"), sourcePeaks, "#78ceca"); drawWave($("result-wave"), mixPeaks, "#79f6d3");
+  drawTargetSelection();
   for (const name of [...stems, "removed"]) drawWave($("listen-wave-" + name), listeningData?.tracks[name]?.waveform, listeningColors[name]);
 }
 window.addEventListener("resize", redraw);
@@ -167,6 +177,10 @@ function reset() {
   if (sourceURL) URL.revokeObjectURL(sourceURL); sourceURL = null;
   $("file-input").value = ""; $("dropzone").hidden = false; $("source-selected").hidden = true;
   $("results").hidden = true; $("progress-panel").hidden = true;
+  $("versions-panel").hidden = true; $("cleanup-versions").replaceChildren();
+  sourcePeaks = null; mixPeaks = null;
+  setTargetSettings({prompt:"", strength:.85, passes:1, start:0, end:null});
+  $("target-source").value = "original";
   $("action-help").textContent = "Add your file to start separating.";
   document.querySelectorAll("audio").forEach(a => { a.pause(); a.removeAttribute("src"); a.load(); });
   clearError(); setCleanup({kind:"water", strength:.85, start:7, end:11}); $("bubble-range").checked = false; setMode("stems"); setGains(presets["no-music"]); setBusy(false);
@@ -176,9 +190,10 @@ function selectFile(file) {
   if (!file || busy) return;
   if (file.size > 500 * 1024 * 1024) { showError("Choose a file smaller than 500 MB."); return; }
   if (!file.size) { showError("That file is empty. Choose an audio file with some sound."); return; }
-  const selectedMode = mode, selectedGains = gains(), selectedCleanup = cleanupSettings();
+  const selectedMode = mode, selectedGains = gains(), selectedCleanup = cleanupSettings(), selectedTarget = targetSettings();
   reset(); selectedFile = file;
   setCleanup(selectedCleanup); setMode(selectedMode); setGains(selectedGains);
+  setTargetSettings(selectedTarget);
   $("dropzone").hidden = true; $("source-selected").hidden = false;
   $("file-name").textContent = file.name;
   $("file-meta").textContent = `${(file.size / 1048576).toFixed(1)} MB · ready to separate`;
@@ -187,6 +202,8 @@ function selectFile(file) {
   sourcePeaks = null; $("wave-label").hidden = false;
   requestAnimationFrame(redraw); setBusy(false);
   $("action-help").textContent = mode === "bubble" ? "Choose the bubble type and time range, then clean up your clip." : "Choose your layers, then separate. Your original stays untouched.";
+  updateTargetControls();
+  if (mode === "targeted") startSeparation({inspect:true});
 }
 $("file-input").addEventListener("change", e => selectFile(e.target.files[0]));
 $("change-file").addEventListener("click", () => $("file-input").click());
@@ -222,20 +239,27 @@ function applyMix(mix) {
 }
 function showResult(data) {
   $("progress-panel").hidden = true; $("results").hidden = false;
-  const bubble = data.report.mode === "bubble";
+  const bubble = ["bubble", "targeted"].includes(data.report.mode);
   $("download-bundle").textContent = bubble ? "Cleaned + removed (.zip) ↓" : "All tracks + mix (.zip) ↓";
   $("result-device").textContent = `${data.report.device === "cuda" ? "GPU" : "CPU"}${bubble ? ` · ${data.report.passes || 1} PASS${data.report.passes > 1 ? "ES" : ""}` : ""} · COMPLETE`;
   $("result-meta").textContent = `${data.report.output_format || "24-bit WAV"} · ${data.report.sample_rate / 1000} kHz · ${data.report.channels === 2 ? "Stereo" : "Mono"} · ${formatTime(data.report.duration)} · Timing verified`;
   applyMix(data.mix);
   $("action-help").textContent = bubble ? "Check Removed sounds for everything taken out. Multi-pass changes need a fresh cleanup; Clean up again reuses your saved source." : "Your tracks are ready. Adjust the levels above, then update your mix.";
   $("separate").innerHTML = bubble ? "Clean up again <span>↗</span>" : "Separate again <span>↗</span>";
+  if (data.report.mode === "targeted") {
+    $("result-device").textContent = `${data.report.device === "cuda" ? "GPU" : "CPU"} · ${data.report.passes} PASS${data.report.passes > 1 ? "ES" : ""} · ${data.report.preview ? "PREVIEW" : "SAVED VERSION"}`;
+    $("action-help").textContent = "Compare Original, Cleaned and Removed. Save another version to try different settings.";
+    seekTargetStart();
+  }
+  refreshVersions(); updateTargetControls();
 }
 function updateSource(data) {
   if (data.video_preview !== undefined) videoPreview.setSource(data.video_preview ? `/api/jobs/${currentJob}/video` : null);
   if (!data.source) return;
   sourcePeaks = data.source.waveform;
   $("file-name").textContent = data.filename;
-  $("file-meta").textContent = `${formatTime(data.source.duration)} · ${data.source.sample_rate / 1000} kHz · ${data.source.channels === 2 ? "Stereo" : "Mono"}`;
+  $("original-audio").setAttribute("aria-label", data.settings?.source_basis === "cleaned" ? "Input audio: previous cleaned version" : "Original audio preview");
+  $("file-meta").textContent = `${formatTime(data.source.duration)} · ${data.source.sample_rate / 1000} kHz · ${data.source.channels === 2 ? "Stereo" : "Mono"}${data.settings?.source_basis === "cleaned" ? " · Input: previous cleaned version" : ""}`;
   $("dropzone").hidden = true; $("source-selected").hidden = false; $("wave-label").hidden = true;
   const target = previewURL("original.wav");
   // Use the decoded track for A/B: video-container duration may include extra padding.
@@ -245,6 +269,7 @@ function updateSource(data) {
     sourceURL = null;
   }
   requestAnimationFrame(redraw);
+  updateTargetControls();
 }
 async function poll(id) {
   if (id !== currentJob) return;
@@ -256,8 +281,19 @@ async function poll(id) {
     $("progress-percent").textContent = `${Math.round(data.progress * 100)}%`;
     $("elapsed").textContent = startedAt ? `${formatTime((Date.now() - startedAt) / 1000)} elapsed` : "Session restored";
     if (data.status === "running") { pollTimer = setTimeout(() => poll(id), 1400); return; }
+    if (data.worker_active) {
+      $("progress-message").textContent = "Audio saved. Finishing up…";
+      $("cancel").disabled = true;
+      pollTimer = setTimeout(() => poll(id), 700); return;
+    }
     setBusy(false); $("cancel").disabled = false;
-    if (data.status === "complete") showResult(data);
+    if (data.status === "complete") {
+      selectedFile = null;
+      if (data.settings?.mode === "inspect") {
+        $("progress-panel").hidden = true; $("action-help").textContent = "Waveform ready. Select an interval, describe a sound and preview cleanup.";
+        setMode("targeted"); refreshVersions();
+      } else showResult(data);
+    }
     else { $("progress-panel").hidden = true; showError(data.message); }
     await refreshHistory();
   } catch (error) {
@@ -266,20 +302,26 @@ async function poll(id) {
     pollTimer = setTimeout(() => poll(id), 3500);
   }
 }
-$("separate").addEventListener("click", async () => {
-  if (busy || !(selectedFile || (rerunAvailable && currentJob && jobData?.status === "complete"))) return;
+async function startSeparation({preview = false, inspect = false} = {}) {
+  if (busy || !(selectedFile || canRerun())) return;
   clearError();
-  try { if (mode === "bubble") checkCleanup(); } catch (error) { showError(error.message); return; }
+  try { if (mode === "bubble") checkCleanup(); if (mode === "targeted" && !inspect) checkTarget(); }
+  catch (error) { showError(error.message); return; }
   setBusy(true); startedAt = Date.now();
   $("results").hidden = true; $("listening-panel").hidden = true; clearTimeout(listeningTimer); $("progress-panel").hidden = false;
   $("progress-message").textContent = selectedFile ? "Uploading to your local workspace…" : "Reusing your saved source in a new session…"; $("progress").value = 0;
   $("cancel").disabled = true;
-  const settingsToSend = {...gains(), device:$("device").value, cpu_fallback:$("cpu-fallback").checked, mode};
+  const settingsToSend = {...gains(), device:$("device").value, cpu_fallback:$("cpu-fallback").checked, mode:inspect ? "inspect" : mode};
   if (mode === "bubble") {
     const settings = cleanupSettings();
     Object.assign(settingsToSend, {bubble_type:settings.kind, bubble_strength:settings.strength,
       range_start:settings.start, range_end:settings.end});
     if (multipassAvailable) settingsToSend.bubble_passes = settings.passes;
+  }
+  if (mode === "targeted" && !inspect) {
+    const settings = targetSettings();
+    Object.assign(settingsToSend, {prompt:settings.prompt, bubble_strength:settings.strength,
+      range_start:settings.start, range_end:settings.end, bubble_passes:settings.passes, preview});
   }
   try {
     let data;
@@ -288,14 +330,16 @@ $("separate").addEventListener("click", async () => {
       Object.entries(settingsToSend).forEach(([key, value]) => { if (value !== null) form.append(key, value); });
       data = await api("/api/jobs", {method:"POST", body:form});
     } else {
+      settingsToSend.source_basis = mode === "targeted" && !inspect ? $("target-source").value : "original";
       data = await api(`/api/jobs/${currentJob}/rerun`, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(settingsToSend)});
     }
-    currentJob = data.id; lastMix = null; $("cancel").disabled = false;
+    currentJob = data.id; lastMix = null; jobData = null; $("cancel").disabled = false;
     history.replaceState(null, "", `?session=${currentJob}`);
     document.querySelectorAll("audio").forEach(a => a.pause());
     await poll(currentJob); await refreshHistory();
-  } catch (error) { showError(error.message); $("progress-panel").hidden = true; setBusy(false); if (jobData?.status === "complete") showResult(jobData); }
-});
+  } catch (error) { showError(error.message); $("progress-panel").hidden = true; setBusy(false); if (jobData?.mix) showResult(jobData); }
+}
+$("separate").addEventListener("click", () => startSeparation());
 $("cancel").addEventListener("click", async () => {
   if (!currentJob) return;
   $("cancel").disabled = true;
@@ -324,11 +368,18 @@ async function openSession(id) {
   try {
     const data = await api(`/api/jobs/${id}`); jobData = data;
     if (data.settings?.mode === "bubble") { setCleanup(data.mix?.cleanup || data.settings.cleanup); setMode("bubble"); }
+    if (["targeted", "inspect"].includes(data.settings?.mode)) {
+      if (data.settings.mode === "targeted") setTargetSettings(data.settings.cleanup);
+      setMode("targeted");
+    }
     setGains(data.mix?.gains || data.settings?.gains || presets["no-music"]);
     if (data.settings) { $("device").value = data.settings.device; $("cpu-fallback").checked = data.settings.cpu_fallback; }
     updateSource(data);
-    if (data.status === "complete") showResult(data);
-    else if (data.status === "running") { setBusy(true); $("progress-panel").hidden = false; await poll(id); }
+    if (data.status === "complete" && !data.worker_active) {
+      if (data.mix) showResult(data);
+      else { refreshVersions(); updateTargetControls(); }
+    }
+    else if (data.status === "running" || data.worker_active) { setBusy(true); $("progress-panel").hidden = false; await poll(id); }
     else showError(data.message);
   } catch (error) { showError(error.message); }
 }
@@ -339,7 +390,9 @@ async function refreshHistory() {
     history.forEach(item => {
       const button=document.createElement("button"); button.className="history-item";
       const title=document.createElement("strong"); title.textContent=item.filename;
-      const status=document.createElement("small"); status.textContent=item.status === "complete" ? "✓ Ready to mix" : item.status;
+      const status=document.createElement("small"); status.textContent=item.settings?.mode === "targeted" ?
+        `${item.settings.preview ? "Preview" : "Cleanup"} · ${item.settings.cleanup.prompt} · ${item.status}` :
+        item.settings?.mode === "inspect" && item.status === "complete" ? "Waveform ready" : item.status === "complete" ? "✓ Ready to mix" : item.status;
       button.append(title,status); button.addEventListener("click",()=>openSession(item.id));
       const row = document.createElement("div"); row.className = "history-row";
       const remove = document.createElement("button"); remove.className = "history-delete";
@@ -371,12 +424,13 @@ function showListening(data) {
   $("prepare-listening").hidden = running || !data.missing.length;
   $("prepare-listening").disabled = busy || !listeningAvailable;
   $("listening-count").textContent = `${4 - data.missing.length} / 4 TRACKS READY`;
+  const inputDescription = jobData?.settings?.source_basis === "cleaned" ? "this step's input (the previous cleaned version)" : "your original audio";
   $("listening-help").textContent = !listeningAvailable && data.missing.length ?
     "Restart the updated SoundShredder app to prepare missing tracks in this session." :
     data.status === "failed" || data.status === "cancelled" ? data.message :
     data.missing.some(name => name !== "removed") ?
-    "Prepare dialogue, music, and effects from the original audio. This is a separate processing step; your cleaned mix stays unchanged. CPU takes longer." :
-    "Dialogue, music, and effects are isolated from your original audio. Listen to each track independently; preview volume does not change your exported mix.";
+    `Prepare dialogue, music, and effects from ${inputDescription}. This is a separate processing step; your cleaned mix stays unchanged. CPU takes longer.` :
+    `Dialogue, music, and effects are isolated from ${inputDescription}. Listen to each track independently; preview volume does not change your exported mix.`;
   $("removed-description").textContent = data.removed_definition;
   for (const name of [...stems, "removed"]) {
     const track = data.tracks[name], player = trackAudio(name), link = $("download-" + name);
@@ -493,6 +547,7 @@ async function boot() {
     multipassAvailable = !!info.features?.bubble_multipass;
     rerunAvailable = !!info.features?.rerun_source;
     updatesAvailable = !!info.features?.update_check;
+    targetedAvailable = !!info.features?.targeted_cleanup;
     document.querySelectorAll("[data-app-version]").forEach(el => { el.textContent = info.version ? `v${info.version}` : ""; });
     $("check-updates").disabled = !updatesAvailable;
     if (!updatesAvailable) $("update-help").textContent = "Restart the updated SoundShredder app to enable update checks. Releases are available on GitHub.";
@@ -508,6 +563,147 @@ async function boot() {
       if (session && /^[a-f0-9]{32}$/.test(session)) await openSession(session);
     }
   } catch (error) { showError("Could not connect to SoundShredder. Keep the launcher window open and refresh this page."); }
+}
+
+function targetSettings() {
+  return {prompt:$("target-prompt").value.trim().replace(/\s+/g," "), strength:Number($("target-strength").value)/100,
+    passes:Number($("target-passes").value), start:$("target-range").checked ? Number($("target-start").value) : 0,
+    end:$("target-range").checked ? Number($("target-end").value) : null};
+}
+function setTargetSettings(settings) {
+  $("target-prompt").value = settings.prompt || "";
+  $("target-strength").value = Math.round((settings.strength ?? .85)*100);
+  $("target-passes").value = String(settings.passes || 1);
+  $("target-range").checked = settings.start > 0 || settings.end != null;
+  $("target-start").value = settings.start || 0;
+  $("target-end").value = settings.end ?? 10;
+}
+function checkTarget() {
+  const settings = targetSettings(), duration = jobData?.source?.duration;
+  if (!settings.prompt || settings.prompt.length > 200) throw new Error("Describe one sound in 1–200 characters.");
+  if (!Number.isFinite(settings.start) || settings.start < 0 || (settings.end !== null &&
+      (!$("target-start").value || !$("target-end").value || !Number.isFinite(settings.end) || settings.end <= settings.start)))
+    throw new Error("Enter an interval with its end after its start.");
+  if (duration && (settings.start >= duration || (settings.end !== null && settings.end > duration)))
+    throw new Error(`Choose an interval within this ${duration.toFixed(2)}-second clip.`);
+  return settings;
+}
+function updateTargetControls() {
+  $("mode-quick").disabled = busy;
+  $("mode-targeted").disabled = busy || !targetedAvailable;
+  for (const id of ["target-prompt","target-strength","target-passes","target-range","target-source"])
+    $(id).disabled = busy;
+  for (const id of ["target-start","target-end"]) $(id).disabled = busy || !$("target-range").checked;
+  document.querySelectorAll("[data-prompt]").forEach(button => { button.disabled = busy; });
+  const usable = !!(selectedFile || canRerun());
+  $("prepare-source").disabled = busy || !usable || !!sourcePeaks;
+  $("prepare-source").textContent = sourcePeaks ? "Waveform ready ✓" : "Load waveform ↗";
+  $("preview-target").disabled = busy || !usable || !targetedAvailable || !targetSettings().prompt;
+  $("target-strength-value").value = `${$("target-strength").value}%`;
+  $("target-strength").style.setProperty("--level", `${$("target-strength").value}%`);
+  const eligibleBase = jobData?.status === "complete" && !!lastMix && !lastMix.preview;
+  $("target-source").querySelector('[value="cleaned"]').disabled = !eligibleBase;
+  if (!eligibleBase) $("target-source").value = "original";
+  const duration = jobData?.source?.duration;
+  $("target-range-help").textContent = sourcePeaks && duration ?
+    `${duration.toFixed(2)} seconds loaded. Drag across the waveform to select the sound; numeric inputs are also available.` :
+    "Add a file to prepare its waveform. No sound is removed during preparation.";
+  if (duration) {
+    $("target-start").max = duration; $("target-end").max = duration;
+    if (!$("target-range").checked) $("target-end").value = Math.min(10, duration).toFixed(2);
+  }
+  const settings = targetSettings(), end = Math.min(settings.end ?? duration ?? settings.start+10, settings.start+10);
+  $("target-preview-help").textContent = `Preview ${settings.start.toFixed(2)}–${end.toFixed(2)} seconds. Outside that interval, the audio stays unchanged.`;
+  if (mode === "targeted") {
+    $("separate").innerHTML = "Save cleanup version <span>↗</span>";
+    $("separate").disabled = busy || !usable || !targetedAvailable || !settings.prompt;
+    $("render-mix").hidden = true;
+    if (lastMix && jobData?.status === "complete") {
+      const changed = $("target-source").value === "cleaned" || lastMix.mode !== "targeted" || ["prompt","strength","passes","start","end"].some(key => settings[key] !== lastMix.cleanup?.[key]);
+      for (const id of ["download-mix","download-bundle","download-report"]) $(id).hidden = changed;
+      $("download-mix").textContent = lastMix.preview ? "Download preview WAV ↓" : "Download cleaned WAV ↓";
+      $("download-removed").hidden = changed || !listeningData?.tracks.removed.file;
+      $("listening-notice").hidden = !changed;
+      $("listening-notice").textContent = "Settings changed. The audio is the previous attempt; preview or save a new version to hear these settings.";
+      $("result-notice").hidden = false;
+      $("result-notice").textContent = changed ? "You are hearing the previous version. Preview or save your new settings before downloading." :
+        [...(jobData.report?.warnings || []), jobData.settings.source_basis === "cleaned" ? "This version started from the preceding cleaned audio." : "This version started from the original upload."].join(" ");
+    }
+  } else if (lastMix && !lastMix.preview) $("download-mix").textContent = "Download cleaned WAV ↓";
+  requestAnimationFrame(redraw);
+}
+function drawTargetSelection() {
+  const duration = jobData?.source?.duration;
+  if (mode !== "targeted" || !duration || !sourcePeaks || !$("target-range").checked) return;
+  const canvas = $("source-wave"), settings = targetSettings(), context = canvas.getContext("2d");
+  const rect = canvas.getBoundingClientRect(), start = Math.max(0,Math.min(duration,settings.start))/duration*rect.width;
+  const end = Math.max(0,Math.min(duration,settings.end ?? duration))/duration*rect.width;
+  context.fillStyle="rgba(121,246,211,.19)"; context.fillRect(start,0,end-start,rect.height);
+  context.strokeStyle="#79f6d3"; context.lineWidth=2;
+  context.beginPath(); context.moveTo(start,0); context.lineTo(start,rect.height); context.moveTo(end,0); context.lineTo(end,rect.height); context.stroke();
+}
+let rangeAnchor = null;
+function rangeTime(event) {
+  const rect = $("source-wave").getBoundingClientRect();
+  return Math.max(0,Math.min(1,(event.clientX-rect.left)/rect.width)) * jobData.source.duration;
+}
+$("source-wave").addEventListener("pointerdown", event => {
+  if (busy || mode !== "targeted" || !sourcePeaks || !jobData?.source?.duration) return;
+  rangeAnchor=rangeTime(event); $("source-wave").setPointerCapture(event.pointerId);
+});
+function finishRange(event, done=false) {
+  if (rangeAnchor === null) return;
+  const position=rangeTime(event), lo=Math.min(rangeAnchor,position), hi=Math.max(rangeAnchor,position);
+  if (hi-lo >= .02) {
+    $("target-range").checked=true; $("target-start").value=lo.toFixed(2); $("target-end").value=String(Math.min(Number(hi.toFixed(2)),jobData.source.duration));
+    updateControls();
+  }
+  if (done) rangeAnchor=null;
+}
+$("source-wave").addEventListener("pointermove", event => finishRange(event));
+$("source-wave").addEventListener("pointerup", event => finishRange(event,true));
+$("source-wave").addEventListener("pointercancel", () => { rangeAnchor=null; });
+for (const id of ["target-prompt","target-strength","target-passes","target-range","target-start","target-end","target-source"])
+  $(id).addEventListener("input", updateControls);
+document.querySelectorAll("[data-prompt]").forEach(button => button.addEventListener("click", () => {
+  $("target-prompt").value=button.dataset.prompt; updateControls();
+}));
+$("mode-quick").addEventListener("click", () => { setMode("stems"); setGains(presets["no-music"]); });
+$("mode-targeted").addEventListener("click", () => {
+  setMode("targeted");
+  if (selectedFile && !sourcePeaks) startSeparation({inspect:true});
+});
+$("prepare-source").addEventListener("click", () => startSeparation({inspect:true}));
+$("preview-target").addEventListener("click", () => startSeparation({preview:true}));
+function seekTargetStart() {
+  const start=jobData?.report?.applied_cleanup?.start ?? 0;
+  for (const id of ["original-audio","mix-audio","removed-audio"]) {
+    const player=$(id), job=currentJob;
+    const seek=()=>{ if (job===currentJob && Number.isFinite(player.duration)) player.currentTime=Math.min(start,player.duration); };
+    if (player.readyState>=1) seek(); else player.addEventListener("loadedmetadata",seek,{once:true});
+  }
+}
+for (const id of ["mix-audio","removed-audio"]) $(id).addEventListener("timeupdate",()=>{
+  const end=jobData?.report?.applied_cleanup?.end;
+  if (jobData?.report?.preview && end && $(id).currentTime>=end && !$(id).paused) $(id).pause();
+});
+async function refreshVersions() {
+  const id=currentJob; if (!id || !targetedAvailable) return;
+  try {
+    const versions=await api(`/api/jobs/${id}/versions`); if(id!==currentJob) return;
+    $("cleanup-versions").replaceChildren(); $("versions-panel").hidden=versions.length<2 && mode!=="targeted";
+    versions.forEach((version,index)=>{
+      const button=document.createElement("button"); button.className="cleanup-version";
+      button.classList.toggle("active",version.id===currentJob); button.disabled=busy;
+      button.setAttribute("aria-pressed",String(version.id===currentJob));
+      const title=document.createElement("strong"), detail=document.createElement("small");
+      title.textContent=version.mode==="inspect" ? "Prepared original" : `${version.preview?"Preview":"Version"} ${versions.length-index} · ${version.cleanup?.prompt || "Preset cleanup"}`;
+      const c=version.preview && version.applied_cleanup ? version.applied_cleanup : version.cleanup;
+      detail.textContent=version.mode==="inspect" ? `Original preserved · ${version.status}` :
+        `${c?.passes||1} pass${c?.passes>1?"es":""} · ${Math.round((c?.strength??1)*100)}% · ${c?.end!=null?`${c.start.toFixed(2)}–${c.end.toFixed(2)} sec`:"Whole clip"} · ${version.source_basis==="cleaned"?"From cleaned version":"From original"} · ${version.status}`;
+      button.append(title,detail); button.addEventListener("click",()=>openSession(version.id)); $("cleanup-versions").append(button);
+    });
+  } catch(error) { if(id===currentJob) showError(`Could not load cleanup versions: ${error.message}`); }
 }
 updateControls();
 boot();

@@ -40,6 +40,15 @@ def process(job_dir: Path) -> None:
         "waveform": waveform(audio),
     }
     write_json(job_dir / "source.json", source_info)
+    if request.get("mode") == "inspect":
+        write_json(job_dir / "progress.json", {"status": "complete", "progress": 1,
+                                              "message": "Waveform ready. Select a range and describe the sound."})
+        return
+    if request.get("mode") == "targeted":
+        from .targeted import process_targeted
+
+        process_targeted(job_dir, audio, rate, source_info, request, started, progress, original_hash)
+        return
     if request.get("mode") == "bubble":
         from .bubble import process_bubble
 

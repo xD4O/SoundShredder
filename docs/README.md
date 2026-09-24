@@ -17,4 +17,6 @@ The `desktop/` guides describe the earlier browser-based standalones. Older vers
 
 ## Maintaining the illustrated guide
 
+The next release is tracked separately in the [targeted-cleanup plan](NEXT-RELEASE-PLAN.md), [prototype guide](TARGETED-CLEANUP.md) and [AudioShake research](AUDIOSHAKE-RESEARCH.md). These features are not yet in the current installers or illustrated release guide.
+
 Edit `scripts/community_guide_content.py`, then run `python scripts/build_community_guide.py` with ReportLab and Pillow installed. The builder uses the committed screenshots in `docs/images`, the bundled Space Grotesk font, and Windows Segoe UI fonts. On another system, point `SOUNDSHREDDER_DOC_FONT_DIR` to a licensed copy of `segoeui.ttf` and `segoeuib.ttf`. It produces the maintained PDF and self-contained HTML and fails if PDF content crosses its footer boundary. Render and inspect every page after changing layout or text.

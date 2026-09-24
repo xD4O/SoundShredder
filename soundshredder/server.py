@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import time
 import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -24,6 +25,8 @@ from . import __version__
 from .audio import EXTENSIONS, MAX_BYTES, export_mix, read_json, validate_gains, write_json
 from .bubble import MAX_PASSES, export_cleanup, validate_settings
 from .listening import manifest as listening_manifest
+from .targeted import PREVIEW_SECONDS
+from .targeted import validate_settings as validate_targeted
 from .updates import RELEASES_URL, REPOSITORY_URL, check_latest
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -61,9 +64,11 @@ def snapshot(job_id: str) -> dict:
     result = {
         "id": job_id,
         **progress,
+        "worker_active": process is not None and process.poll() is None,
         "filename": settings["filename"],
-        "video_preview": Path(settings["source"]).suffix.lower() in VIDEO_TYPES,
-        "settings": {key: settings[key] for key in ("device", "gains", "cpu_fallback", "mode", "cleanup") if key in settings},
+        "video_preview": Path(settings.get("video_source", settings["source"])).suffix.lower() in VIDEO_TYPES,
+        "settings": {key: settings[key] for key in ("device", "gains", "cpu_fallback", "mode", "cleanup", "preview",
+                                                    "source_basis", "parent_id", "root_id", "created_at") if key in settings},
     }
     for key, filename in (("source", "source.json"), ("report", "separation.json"), ("mix", "mix.json")):
         if (directory / filename).is_file():
@@ -132,8 +137,10 @@ def system():
         "max_mb": MAX_BYTES // (1024 * 1024),
         "active_jobs": active_jobs(),
         "features": {"bubble_cleanup": True, "listening_tracks": True,
-                     "bubble_multipass": True, "rerun_source": True, "update_check": True},
+                     "bubble_multipass": True, "rerun_source": True, "update_check": True,
+                     "targeted_cleanup": True, "cleanup_versions": True},
         "max_bubble_passes": MAX_PASSES,
+        "max_preview_seconds": PREVIEW_SECONDS,
     }
 
 
@@ -170,15 +177,20 @@ async def create_job(
     range_start: Annotated[float, Form()] = 0,
     range_end: Annotated[float | None, Form()] = None,
     bubble_passes: Annotated[int, Form()] = 1,
+    prompt: Annotated[str, Form()] = "",
+    preview: Annotated[bool, Form()] = False,
 ):
     if device not in {"auto", "cpu", "cuda"}:
         raise HTTPException(400, "Choose Auto, CPU, or NVIDIA GPU.")
     try:
         gains = validate_gains({"speech": speech, "music": music, "effects": effects})
-        if mode not in {"stems", "bubble"}:
-            raise ValueError("Choose stem separation or bubble cleanup.")
-        cleanup = validate_settings(bubble_type, bubble_strength, range_start, range_end, bubble_passes)
-        if mode == "bubble":
+        if mode not in {"stems", "bubble", "targeted", "inspect"}:
+            raise ValueError("Choose layer separation, Bubble FX or targeted cleanup.")
+        cleanup = (validate_targeted(prompt, bubble_strength, range_start, range_end, bubble_passes)
+                   if mode == "targeted" else validate_settings(bubble_type, bubble_strength, range_start, range_end, bubble_passes))
+        if preview and mode != "targeted":
+            raise ValueError("Short previews are available in Target a Sound.")
+        if mode in {"bubble", "targeted"}:
             gains = dict(speech=1, music=1, effects=1)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
@@ -213,6 +225,9 @@ async def create_job(
                 "cpu_fallback": cpu_fallback,
                 "mode": mode,
                 "cleanup": cleanup,
+                "preview": preview,
+                "root_id": job_id,
+                "created_at": time.time(),
             },
         )
         with GUARD:
@@ -258,27 +273,108 @@ class RerunSettings(BaseModel):
     range_start: float = 0
     range_end: float | None = None
     bubble_passes: int = Field(default=1, strict=True, ge=1, le=MAX_PASSES)
+    prompt: str = ""
+    preview: bool = False
+    source_basis: str = "original"
 
 
 @app.post("/api/jobs/{job_id}/rerun", status_code=202)
 async def rerun(job_id: str, settings: RerunSettings):
     directory = job_path(job_id)
-    if snapshot(job_id)["status"] != "complete":
-        raise HTTPException(409, "Finish this session before running its source again.")
+    if snapshot(job_id)["status"] == "running":
+        raise HTTPException(409, "Finish or cancel this session before running its source again.")
+    with GUARD:
+        if active_jobs():
+            raise HTTPException(409, "The audio engine is still busy. Wait for it to finish or cancel the active job.")
     saved = read_json(directory / "request.json")
-    source = (directory / saved["source"]).resolve()
-    if source.parent != directory.resolve() or not source.is_file():
+    original = (directory / saved.get("original_source", saved["source"])).resolve()
+    if original.parent != directory.resolve() or not original.is_file():
         raise HTTPException(404, "The saved source is missing. Upload the original file again.")
-    # Use the original upload, never the cleaned export; retain the old session.
-    with source.open("rb") as stream:
-        upload = UploadFile(file=stream, filename=saved["filename"])
-        return await create_job(file=upload, **settings.model_dump())
+    if settings.source_basis not in {"original", "cleaned"}:
+        raise HTTPException(400, "Choose the original upload or the current cleaned version.")
+    if settings.device not in {"auto", "cpu", "cuda"} or settings.mode not in {"stems", "bubble", "targeted", "inspect"}:
+        raise HTTPException(400, "Choose a supported cleanup mode and device.")
+    try:
+        gains = validate_gains(dict(speech=settings.speech, music=settings.music, effects=settings.effects))
+        cleanup = (validate_targeted(settings.prompt, settings.bubble_strength, settings.range_start,
+                                     settings.range_end, settings.bubble_passes) if settings.mode == "targeted"
+                   else validate_settings(settings.bubble_type, settings.bubble_strength, settings.range_start,
+                                          settings.range_end, settings.bubble_passes))
+        if settings.preview and settings.mode != "targeted":
+            raise ValueError("Short previews are available in Target a Sound.")
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    if settings.mode in {"targeted", "bubble"}:
+        gains = dict(speech=1, music=1, effects=1)
+    source = original
+    if settings.source_basis == "cleaned":
+        mix = read_json(directory / "mix.json") if (directory / "mix.json").is_file() else {}
+        if not re.fullmatch(r"cleaned-[a-f0-9]{12}\.wav", mix.get("mix", "")) or mix.get("preview"):
+            raise HTTPException(400, "Apply a full cleanup before using it as the input to another step.")
+        source = directory / "output" / mix["mix"]
+        if not source.is_file():
+            raise HTTPException(404, "The selected cleaned audio is missing.")
+    new_id = uuid.uuid4().hex
+    target = DATA / new_id
+    target.mkdir()
+    try:
+        # Each version owns its source copies, so deleting an earlier session does
+        # not break a later one. Disk copies run off the async request loop.
+        import asyncio
+
+        original_name = "source" + original.suffix.lower()
+        await asyncio.to_thread(shutil.copyfile, original, target / original_name)
+        source_name = original_name
+        if settings.source_basis == "cleaned":
+            source_name = "base.wav"
+            await asyncio.to_thread(shutil.copyfile, source, target / source_name)
+        write_json(target / "request.json", {
+            "filename": saved["filename"], "source": source_name, "original_source": original_name,
+            "video_source": original_name, "device": settings.device, "cpu_fallback": settings.cpu_fallback,
+            "mode": settings.mode, "gains": gains, "cleanup": cleanup, "preview": settings.preview,
+            "parent_id": job_id, "root_id": saved.get("root_id", job_id),
+            "source_basis": settings.source_basis, "created_at": time.time(),
+        })
+        with GUARD:
+            if active_jobs():
+                raise HTTPException(409, "Another cleanup is running. Finish or cancel it first.")
+            write_json(target / "progress.json", {"status": "running", "progress": 0.01, "message": "Preparing a new version…"})
+            with (target / "worker.log").open("wb") as log:
+                PROCESSES[new_id] = subprocess.Popen([sys.executable, "-m", "soundshredder.worker", str(target)],
+                                                     cwd=ROOT, stdout=log, stderr=subprocess.STDOUT,
+                                                     creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        return {"id": new_id}
+    except BaseException:
+        if new_id not in PROCESSES and target.resolve().parent == DATA.resolve():
+            shutil.rmtree(target, ignore_errors=True)
+        raise
+
+
+@app.get("/api/jobs/{job_id}/versions")
+def versions(job_id: str):
+    directory = job_path(job_id)
+    root = read_json(directory / "request.json").get("root_id", job_id)
+    result = []
+    for folder in DATA.iterdir():
+        if not folder.is_dir() or not JOB_ID.fullmatch(folder.name):
+            continue
+        with contextlib.suppress(OSError, ValueError, KeyError, HTTPException):
+            saved = read_json(folder / "request.json")
+            if saved.get("root_id", folder.name) != root:
+                continue
+            state = snapshot(folder.name)
+            result.append({"id": folder.name, "status": state["status"], "mode": saved.get("mode", "stems"),
+                           "cleanup": saved.get("cleanup"), "preview": saved.get("preview", False),
+                           "applied_cleanup": state.get("report", {}).get("applied_cleanup"),
+                           "parent_id": saved.get("parent_id"), "source_basis": saved.get("source_basis", "original"),
+                           "created_at": saved.get("created_at", folder.stat().st_mtime)})
+    return sorted(result, key=lambda value: value["created_at"], reverse=True)
 
 
 @app.get("/api/jobs/{job_id}/listening")
 def get_listening(job_id: str):
     directory = job_path(job_id)
-    if snapshot(job_id)["status"] != "complete":
+    if snapshot(job_id)["status"] != "complete" or not (directory / "mix.json").is_file():
         raise HTTPException(409, "Finish separation before preparing listening tracks.")
     result = listening_manifest(directory)
     process = LISTENING_PROCESSES.get(job_id)
@@ -366,13 +462,15 @@ class MixLevels(BaseModel):
 @app.post("/api/jobs/{job_id}/mix")
 def remix(job_id: str, levels: MixLevels):
     directory = job_path(job_id)
-    if snapshot(job_id)["status"] != "complete":
+    if snapshot(job_id)["status"] != "complete" or not (directory / "separation.json").is_file():
         raise HTTPException(409, "Wait until separation is complete to adjust the mix.")
     with GUARD, MIX_LOCK:
         listening_process = LISTENING_PROCESSES.get(job_id)
         if listening_process and listening_process.poll() is None:
             raise HTTPException(409, "Finish or cancel track preparation before updating the mix.")
         try:
+            if read_json(directory / "separation.json").get("mode") == "targeted":
+                raise ValueError("Save a new targeted cleanup version to apply these settings.")
             if read_json(directory / "separation.json").get("mode") == "bubble":
                 return export_cleanup(directory, levels.bubble_strength, levels.range_start, levels.range_end, levels.bubble_passes)
             return export_mix(directory, levels.model_dump(include={"speech", "music", "effects"}))
@@ -384,7 +482,7 @@ def remix(job_id: str, levels: MixLevels):
 def video_preview(job_id: str):
     directory = job_path(job_id)
     saved = read_json(directory / "request.json")
-    source = (directory / saved["source"]).resolve()
+    source = (directory / saved.get("video_source", saved["source"])).resolve()
     if source.parent != directory.resolve() or source.suffix.lower() not in VIDEO_TYPES or not source.is_file():
         raise HTTPException(404, "This session has no available video preview.")
     return FileResponse(source, media_type=VIDEO_TYPES[source.suffix.lower()], content_disposition_type="inline")

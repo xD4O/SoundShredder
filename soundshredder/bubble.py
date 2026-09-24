@@ -89,7 +89,7 @@ def load_model(path, device):
     return model.eval().to(device)
 
 
-def estimate_target(audio, kind, device, model, progress):
+def estimate_target(audio, kind, device, model, progress, condition_vector=None):
     import torch
 
     torch.set_num_threads(max(1, min(8, (os.cpu_count() or 2) // 2)))
@@ -98,7 +98,8 @@ def estimate_target(audio, kind, device, model, progress):
     while starts[-1] + block < len(audio):
         starts.append(starts[-1] + block - overlap)
     target, weights = np.zeros_like(audio), np.zeros((len(audio), 1), np.float32)
-    condition = torch.tensor(PROMPTS[kind]["vector"], device=device)[None]
+    condition = torch.tensor(PROMPTS[kind]["vector"] if condition_vector is None else condition_vector,
+                             dtype=torch.float32, device=device)[None]
     with torch.inference_mode():
         for index, start in enumerate(starts):
             stop = min(start + block, len(audio))
@@ -111,7 +112,7 @@ def estimate_target(audio, kind, device, model, progress):
                 predicted = model({"mixture": signal, "condition": condition})["waveform"]
                 channels.append(predicted[0, 0, :len(segment)].cpu().numpy())
                 progress(0.2 + 0.62 * (index + (channel + 1) / audio.shape[1]) / len(starts),
-                         f"Finding bubble sounds on {'GPU' if device == 'cuda' else 'CPU'} · block {index + 1}/{len(starts)} · channel {channel + 1}/{audio.shape[1]}")
+                         f"Finding the target sound on {'GPU' if device == 'cuda' else 'CPU'} · block {index + 1}/{len(starts)} · channel {channel + 1}/{audio.shape[1]}")
             values = np.stack(channels, axis=1)
             if not np.isfinite(values).all():
                 raise RuntimeError("The bubble model returned invalid audio.")

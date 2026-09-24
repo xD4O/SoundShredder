@@ -19,7 +19,7 @@ def manifest(directory: Path) -> dict:
     report = read_json(directory / "separation.json")
     state_path = directory / "listening.json"
     state = read_json(state_path) if state_path.is_file() else {}
-    is_bubble = report.get("mode") == "bubble"
+    is_bubble = report.get("mode") in {"bubble", "targeted"}
     ready = not is_bubble or state.get("status") == "complete"
     peaks = state.get("waveforms", {}) if is_bubble else (report.get("stem_waveforms") or state.get("waveforms", {}))
     tracks = {}
@@ -39,7 +39,8 @@ def manifest(directory: Path) -> dict:
         status = "complete"
     return {"status": status, "progress": state.get("progress", 0), "message": state.get("message", ""),
             "tracks": tracks, "missing": missing, "mix_revision": mix["revision"],
-            "basis": "original", "removed_definition": "Estimated bubble sound removed from the original." if is_bubble
+            "basis": report.get("source_basis", "original"),
+            "removed_definition": "Estimated target sound removed from this cleanup's input audio." if is_bubble
             else "Excluded portions of the separated tracks at your last exported levels."}
 
 
@@ -103,7 +104,9 @@ def prepare(directory: Path) -> None:
     # Older layer-separation sessions may predate removed-sound exports.
     removed = mix.get("removed") or f"removed-{mix['revision']}.wav"
     if not (output / removed).is_file():
-        if report.get("mode") == "bubble":
+        if report.get("mode") == "targeted":
+            raise ValueError("The removed-sound file is missing. Save a new cleanup version to recreate it.")
+        if report.get("mode") in {"bubble", "targeted"}:
             raise ValueError("The removed-sound file is missing. Update the cleanup mix to recreate it.")
         _, samples = render_layers(directory, report, validate_gains(mix["gains"]))
         sf.write(output / removed, samples, report["sample_rate"], subtype="PCM_24")
