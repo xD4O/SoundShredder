@@ -1,5 +1,11 @@
 # SoundShredder releases
 
+## Unreleased: Mixing Lab prototype
+
+The source app now includes a dedicated Mixing Lab with synchronized reference video and stem playback, actual peak meters, time-scoped volume/mute edits, saved automation and optional imported Ambience. Targeted cleanup creates versions of one selected stem with independent strength and 1–4 passes; removed sounds remain separate from the mix. Exports include automated channel WAVs, a master WAV, an edit report, a ZIP and optional MP4 with replaced audio. Source assets remain available. See the [Lab guide](docs/MIXING-LAB.md).
+
+This is local development work, not a published installer update. Automatic ambience separation and native Windows/macOS package validation remain future work. Downloads remain 1.2.2.
+
 ## Unreleased: targeted cleanup prototype
 
 Source development adds **Quick Cleanup · Easy** and **Target a Sound · Guided**, with local text prompts, waveform intervals, up-to-ten-second previews, independent strength/1–4-pass controls and saved versions. A completed cleaned version can explicitly become another step's input. Original uploads and earlier results are preserved. Custom prompts reuse AudioSep's text weights with a separately verified tokenizer.

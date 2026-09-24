@@ -705,5 +705,8 @@ async function refreshVersions() {
     });
   } catch(error) { if(id===currentJob) showError(`Could not load cleanup versions: ${error.message}`); }
 }
+$("mixing-lab-link")?.addEventListener("click",event=>{
+  event.currentTarget.href=currentJob ? `/lab?session=${currentJob}` : "/lab";
+});
 updateControls();
 boot();

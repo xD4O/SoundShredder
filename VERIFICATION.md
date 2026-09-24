@@ -1,5 +1,19 @@
 # Verification record
 
+## Mixing Lab source prototype — September 24, 2026
+
+Development branch: `codex/mixing-lab`, building on the targeted-cleanup prototype. This is local source work, not a published Windows/macOS installer update.
+
+- **229 Python tests and 25 Electron/DOM tests passed**, with two existing framework deprecation warnings. New checks cover finite/non-overlapping time edits, unchanged samples outside intervals, native-rate stereo exports, fixed shared headroom, preview export blocking, per-stem cleanup provenance, removed-sound isolation, explicit import fitting, stale-tab rejection, cancellation, video-export fallback and interrupted state-finalization recovery. Ruff, JavaScript syntax and diff whitespace checks passed.
+- A separate headless Microsoft Edge session tested the actual Lab at port 7863. It uploaded a private copy of the owner's bubble MP4, extracted real stems, saved second/frame edits, restored baseline outside each interval, retained edits across reloads and played audio against the reference video. Actual digital peak meters responded. A sampled playhead/video difference was about 54 ms; this is a spot check, not a guarantee of frame-perfect synchronization on all systems.
+- Browser checks also covered a fitted ambience import, a two-pass **water bubbling** preview and full cleanup of the Effects stem over 7–11 seconds, Before/Cleaned/Removed controls, audition stopping at the processed interval, WAV/ZIP/video download availability, keyboard focus, solo-state retention, stale-tab rejection, ignoring late responses after a session switch, and closing/reopening a saved Lab. No renderer errors were observed.
+- Four channels played across a 20-second buffering boundary on a separate 42-second stereo fixture without stopping. A backend check compared resampled audio across adjoining chunk boundaries. Desktop, intermediate and 390 px layouts were rendered; desktop/mobile screenshots were visually inspected without horizontal overflow. This browser route became available after the earlier browser-control initialization failure described below.
+- The tested real export retained **638,976 frames at 32 kHz stereo** in the mix and each active WAV stem. Preview/full cleanup samples matched for the same settings and interval; the targeted stem retained its original samples outside 7–11 seconds. Other channel selections and automation were unchanged, and cleaned plus removed reconstructed the input within float precision. The original uploaded file's SHA-256 stayed unchanged.
+- The exported MP4's encoded picture stream hash matched the input. Cross-correlation of decoded AAC audio against the rendered WAV found **zero samples of offset** on this clip. AAC remains lossy; this is not a claim of sample-identical video audio or universal codec/VFR compatibility.
+- Real cancellation of a Lab cleanup worker returned in about **0.30 seconds**, left the saved state intact and released the active-job slot. A subsequent export succeeded. Worker-owned temporary source/separation copies are discarded after successful asset creation; immutable Lab assets and original sessions remain.
+
+Evidence, private test sessions, generated tone fixtures and screenshots are under ignored `artifacts/mixing-lab/` and `artifacts/targeted-cleanup/ui-data/`. No source footage or separated audio is committed. Perceptual cleanup quality, CPU/GPU memory limits across long sources, every interruption stage, and the new Lab inside packaged Windows/Apple Silicon/Intel applications remain release validation work. Automatic ambience extraction is not implemented. See the [Lab guide](docs/MIXING-LAB.md).
+
 ## Targeted cleanup source prototype — September 24, 2026
 
 Development branch: `codex/targeted-cleanup`. This is not a packaged release; published installers remain 1.2.2.

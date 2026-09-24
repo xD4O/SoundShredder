@@ -35,6 +35,12 @@ The first wording should guide users toward naming the sound, such as "water bub
 
 If multiple targets are selected, define how each is processed, previewed and undone. A single combined text description must not be assumed equivalent to reliably removing every named sound. Any later cleanup applied to a previous result must make that source choice visible.
 
+## Added scope: Mixing Lab
+
+Following the initial targeted-cleanup prototype, the owner approved a dedicated Mixing Lab. It now has a source implementation: reference video and one audio clock, stem peak meters, frame/second/range automation, per-stem prompt cleanup and saved versions, imported replacements and optional Ambience, and mix/stem/video exports. The [Lab guide](MIXING-LAB.md) describes the actual controls and limitations.
+
+This extends the earlier scope table's video-export deferral **for the Lab**: its export can copy the source picture into an MP4 and replace the soundtrack, with WAV delivery retained if the picture format is incompatible. The earlier Target a Sound workspace continues to export WAV/ZIP. Automatic ambience extraction remains research, not a shipped model capability.
+
 ## First milestone: prove that custom prompts are useful
 
 Bubble FX uses four precomputed text embeddings. The new local text encoder reuses RoBERTa/CLAP weights already in the AudioSep checkpoint and downloads a verified 1.4 MB tokenizer on first custom use. Fixed presets retain their existing vectors. No separate language-model weights or cloud prompt service are added.

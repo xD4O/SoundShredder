@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090e15"><meta name="author" content="cyr4x">
+  <title>Mixing Lab — SoundShredder</title>
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/lab.css">
+  <script defer src="/static/lab-math.js"></script><script defer src="/static/lab-player.js"></script><script defer src="/static/lab.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to Mixing Lab</a>
+<aside class="rail">
+  <a class="brand" href="/"><img src="/static/icon.svg" width="32" height="32" alt=""><span>SoundShredder<small>THE AUDIO WORKSPACE</small></span></a>
+  <p class="overline">CREATE</p>
+  <a class="nav" id="separator-link" href="/">⌁ <span>Audio separator</span> ↗</a>
+  <a class="nav selected" href="/lab">☷ <span>Mixing Lab</span><i></i></a>
+  <div class="rail-title"><span class="overline">YOUR SESSIONS</span><button id="new-session" title="Start a new Lab session">＋</button></div>
+  <div id="sessions" class="sessions"></div>
+  <div class="rail-bottom">
+    <div class="version"><span>SoundShredder</span><b id="version">—</b></div>
+    <a href="https://github.com/xD4O/SoundShredder" target="_blank" rel="noopener noreferrer">GitHub project ↗</a>
+    <button id="updates">Check for updates ↻</button><p id="update-info" role="status"></p>
+    <small>Local processing. Your footage stays here.</small>
+  </div>
+</aside>
+<main id="main">
+  <header class="top"><span>Made by <a href="https://higgsfield.ai/@cyr4x" target="_blank" rel="noopener noreferrer">cyr4x ↗</a></span><span><i></i> LOCAL WORKSPACE <b class="dev">DEVELOPMENT</b></span></header>
+  <div class="heading"><div><p class="overline">YOUR SCENE. EVERY LAYER.</p><h1>Mixing <em>Lab.</em></h1><p>Shape the sound of a moment. Keep the rest of your scene.</p></div><span class="pill">VIDEO + STEMS + TIME EDITS</span></div>
+  <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+  <div id="job-progress" class="progress-panel panel" hidden><div><strong id="progress-label">Preparing…</strong><button id="cancel">Cancel processing</button></div><progress id="progress" max="1" value="0"></progress></div>
+  <section id="welcome" class="welcome panel">
+    <div class="welcome-art" aria-hidden="true">⌁</div><h2>Bring your scene into focus.</h2>
+    <p>Drop a video or audio file. Extract its stems once, then mix each moment.<br>Or open a completed session from the left.</p>
+    <label class="primary file-pick">Choose video or audio<input id="source-file" type="file" accept=".mp4,.mov,.mkv,.webm,.wav,.mp3,.flac,.m4a,.aac,.ogg,.opus,.aif,.aiff,.wma"></label>
+    <small>500 MB maximum · up to 10 minutes · all processing on your computer</small>
+  </section>
+  <section id="work" hidden>
+    <div class="session-bar"><div><strong id="filename"></strong><span id="format"></span></div><span id="saved" role="status">Saved</span><button id="close-session">Close session</button></div>
+    <p id="source-basis" class="basis" hidden>These stems use the input before this session's cleanup. Import a cleaned export to mix that result.</p>
+    <div class="console">
+      <section class="reference panel"><div class="panel-title"><span>01 / REFERENCE</span><label><input id="show-video" type="checkbox" checked> Video</label></div>
+        <div id="picture" class="picture"><video id="video" muted playsinline preload="metadata" aria-label="Reference footage"></video><div id="audio-art" hidden><span>⌁</span><p>AUDIO SESSION</p></div></div>
+        <div class="transport"><button id="play" class="play" aria-label="Play mix">▶</button><div class="time"><strong id="time">00:00.000</strong><small id="duration">/ 00:00</small></div><button id="back" title="Previous nominal frame">− frame</button><button id="forward" title="Next nominal frame">+ frame</button></div>
+        <label class="scrub-label" for="scrub">PLAYHEAD <span id="playback-label">Paused</span></label><input id="scrub" type="range" min="0" max="1" step="0.001" value="0" aria-label="Video and audio playhead">
+        <div class="audition"><span id="audition-label">Listening to the mix</span><button id="return-mix" hidden>Return to mix</button></div>
+      </section>
+      <section class="mixer panel"><div class="panel-title"><span>02 / CHANNELS</span><span id="meter-caption">PEAK LEVEL · dBFS</span></div><div id="channels" class="channels"></div><p class="mixer-help">Faders = gain in dB. <b>0 dB keeps the stem unchanged.</b> Solo is for listening only.</p><div class="master"><b>MASTER</b><div class="master-bar"><i id="master-fill"></i></div><output id="master-db">−∞</output><span id="trim"></span></div></section>
+    </div>
+    <section class="scope-bar panel"><div><span class="overline">EDIT ONLY</span><div class="segments" id="scopes"><button data-scope="second" aria-pressed="true">This second</button><button data-scope="frame" aria-pressed="false">This frame</button><button data-scope="range" aria-pressed="false">Selected range</button></div></div><div class="range-fields"><label>FROM <input id="range-start" type="number" min="0" step="0.001" value="0"></label><span>→</span><label>TO <input id="range-end" type="number" min="0" step="0.001" value="1"></label><span>seconds</span></div><div class="scope-note"><strong id="scope-label">0.000 – 1.000 s</strong><small>Returns to the saved level outside this interval.</small></div><button id="undo" disabled>Undo edit</button></section>
+    <section class="timeline panel"><div class="panel-title"><span>03 / TIME EDITS</span><span id="frame-note">Drag a lane to select a range · click to seek</span></div><div id="lanes"></div><div class="legend"><span><i></i> Saved volume edit</span><span>Edges fade for 5 ms to soften clicks.</span></div></section>
+    <section class="tools-grid">
+      <div class="panel tool"><p class="overline">TARGET A SOUND</p><h2>Clean one layer.</h2><p>Describe the unwanted sound in a selected stem. Your other tracks stay intact.</p>
+        <div class="fields"><label>STEM<select id="target-track"><option value="effects">Effects</option><option value="speech">Dialogue</option><option value="music">Music</option><option value="ambience">Ambience</option></select></label><label>PROCESS ON<select id="device"><option value="auto">Auto</option><option value="cpu">CPU</option><option value="cuda">NVIDIA GPU</option></select></label></div>
+        <label class="field">UNWANTED SOUND<input id="prompt" maxlength="200" placeholder="e.g. water bubbling, ringing phone"></label>
+        <div class="fields"><label>STRENGTH <output id="strength-label">85%</output><input id="strength" type="range" min="0" max="1" step="0.05" value="0.85"></label><label>REPEATED PASSES<select id="passes"><option value="1">1 · Gentle start</option><option value="2">2 · More cleanup</option><option value="3">3 · Aggressive</option><option value="4">4 · Most aggressive</option></select></label></div>
+        <p id="target-range" class="accent">Applies to the interval above.</p><div class="actions"><button id="preview" class="primary">Preview ≤10 s</button><button id="apply">Apply cleanup</button></div><small>Experimental. More passes can reduce wanted detail too. Preview and listen to Removed sounds before applying.</small>
+        <div id="target-result" class="result-note" hidden></div>
+      </div>
+      <div class="panel tool"><p class="overline">BRING YOUR OWN LAYERS</p><h2>Set the atmosphere.</h2><p>Add a room tone, forest bed or custom ambience. You can also replace dialogue, music or effects with an edited track.</p>
+        <div class="fields"><label>CHANNEL<select id="import-track"><option value="ambience">Ambience</option><option value="speech">Dialogue</option><option value="music">Music</option><option value="effects">Effects</option></select></label><label>DURATION<select id="fit"><option value="exact">Match footage exactly</option><option value="fit">Pad / trim to footage</option></select></label></div>
+        <label class="import-box">＋ Import a stem<input id="stem-file" type="file" accept=".wav,.mp3,.flac,.m4a,.aac,.ogg,.opus,.aif,.aiff,.mp4,.mov"></label><small>Aligned from 0:00. Pad / trim adds silence or cuts the tail; it never stretches or loops audio. Imported audio is fitted to the session sample rate and mono/stereo layout.</small>
+        <div class="future"><b>AMBIENCE / OPTIONAL</b><p>Automatic ambience separation is planned research. Today, environmental sounds remain in the Effects stem until you import your own ambience.</p></div>
+        <button id="extract">Extract missing dialogue, music & effects</button>
+      </div>
+    </section>
+    <section class="export panel"><div><p class="overline">READY FOR THE EDIT</p><h2>Take your mix with you.</h2><p>Download the mix, each automated stem and an edit report.</p></div><div><label><input id="export-video" type="checkbox" checked> Include footage with the new soundtrack</label><button id="export" class="primary">Export mix & stems ↗</button></div><div id="downloads" class="downloads" hidden></div></section>
+  </section>
+  <footer>Made for the <a href="https://higgsfield.ai/" target="_blank" rel="noopener noreferrer"><b>HIGGSFIELD</b></a> Community <span>·</span> Local development preview</footer>
+</main>
+</body></html>

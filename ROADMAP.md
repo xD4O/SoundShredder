@@ -6,6 +6,12 @@ No release date is committed for the remaining work. The latest release is v1.2.
 
 The approved workflow is in source development: **Quick Cleanup · Easy** for presets and **Target a Sound · Guided** for local prompts, waveform intervals, short previews, independent strength/1–4-pass controls and saved versions. See the [accepted plan](docs/NEXT-RELEASE-PLAN.md), [development guide](docs/TARGETED-CLEANUP.md) and [AudioShake research](docs/AUDIOSHAKE-RESEARCH.md). Listening review, rendered UI checks and native installer validation remain before publication. No new version or date is committed; published installers remain 1.2.2.
 
+## Mixing Lab — accepted and in source development
+
+The approved Lab combines a shared video/audio playhead with Dialogue, Music, Effects and optional imported Ambience. Faders write edits for one nominal frame, one second or a selected interval, restoring the saved level outside it. It adds per-stem prompt cleanup with previews and 1–4 passes, source versions, removed-sound audition, imported replacements, WAV/stem ZIP export and optional video soundtrack replacement. See the [development guide](docs/MIXING-LAB.md).
+
+Automatic ambience separation remains a research item. First evaluate a separate foreground-effects/background-ambience model against representative footage; a generic Effects output must not be relabeled as two independently separated stems. Instrument stems, EQ/compression, batching and installer changes are separate future work.
+
 ## Published in the Electron desktop app
 
 - Shared web interface in a dedicated application window, with native menus and Save dialogs.

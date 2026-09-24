@@ -34,6 +34,7 @@ DATA = Path(os.environ.get("SOUNDSHREDDER_DATA", str(ROOT / "data"))).resolve()
 JOB_ID = re.compile(r"^[a-f0-9]{32}$")
 PROCESSES: dict[str, subprocess.Popen] = {}
 LISTENING_PROCESSES: dict[str, subprocess.Popen] = {}
+LAB_PROCESSES: dict[str, subprocess.Popen] = {}
 GUARD = threading.RLock()
 MIX_LOCK = threading.Lock()
 VIDEO_TYPES = {".mp4": "video/mp4", ".mov": "video/quicktime", ".mkv": "video/x-matroska", ".webm": "video/webm"}
@@ -46,7 +47,7 @@ def job_path(job_id: str) -> Path:
 
 
 def active_jobs() -> list[str]:
-    return list(dict.fromkeys(job for group in (PROCESSES, LISTENING_PROCESSES)
+    return list(dict.fromkeys(job for group in (PROCESSES, LISTENING_PROCESSES, LAB_PROCESSES)
                              for job, process in group.items() if process.poll() is None))
 
 
@@ -81,6 +82,7 @@ async def lifespan(_app):
     DATA.mkdir(parents=True, exist_ok=True)
     yield
     with GUARD:
+        lab_manager.close()
         for processes, filename in ((PROCESSES, "progress.json"), (LISTENING_PROCESSES, "listening.json")):
             for job_id, process in processes.items():
                 if process.poll() is not None:
@@ -138,7 +140,7 @@ def system():
         "active_jobs": active_jobs(),
         "features": {"bubble_cleanup": True, "listening_tracks": True,
                      "bubble_multipass": True, "rerun_source": True, "update_check": True,
-                     "targeted_cleanup": True, "cleanup_versions": True},
+                     "targeted_cleanup": True, "cleanup_versions": True, "mixing_lab": True},
         "max_bubble_passes": MAX_PASSES,
         "max_preview_seconds": PREVIEW_SECONDS,
     }
@@ -513,7 +515,11 @@ def delete_job(job_id: str):
         shutil.rmtree(directory)
         PROCESSES.pop(job_id, None)
         LISTENING_PROCESSES.pop(job_id, None)
+        LAB_PROCESSES.pop(job_id, None)
     return {"deleted": True}
 
 
+from .lab_api import register as register_lab  # noqa: E402
+
+lab_manager = register_lab(app, sys.modules[__name__])
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
