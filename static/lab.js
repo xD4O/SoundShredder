@@ -6,7 +6,7 @@
   const colors={speech:'#ef93bd',music:'#77d7f4',effects:'#f2c17c',ambience:'#9bd6a2'};
   let job=new URLSearchParams(location.search).get('session'), state=null, player=null;
   let time=0, mode='second', pending=false, active=false, timer=null, undo=[], audition=null, canvasRows={};
-  let lastTask=null, sessionGeneration=0, busyLabel='', auditionEnd=null, auditionStart=0;
+  let lastTask=null, sessionGeneration=0, busyLabel='', auditionEnd=null, auditionStart=0, labTask=null;
   const endpoint=()=>`/api/jobs/${job}/lab`;
   const fmt=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${(t%60).toFixed(3).padStart(6,'0')}`;
   function notice(text) { $('notice').textContent=text; $('notice').hidden=!text; }
@@ -82,9 +82,41 @@
       for(const [name,t] of Object.entries(state.tracks)) for(const suffix of ['fader','mute','solo','reset']) {
         const node=$(`${suffix}-${name}`); if(node)node.disabled=locked||!t.asset;
       }
-      $('extract').disabled=locked||['speech','music','effects'].every(k=>state.tracks[k].asset);
     }
     $('saved').textContent=pending?'Saving…':active?'Processing…':state?`Saved · revision ${state.revision}`:'';
+    showExtraction();
+  }
+  function showExtraction() {
+    if(!state)return;
+    const stemNames=['speech','music','effects'];
+    const missing=stemNames.filter(name=>!state.tracks[name].asset);
+    const extracting=active&&labTask?.operation==='extract';
+    const stopped=!active&&labTask?.operation==='extract'&&['failed','cancelled'].includes(labTask.status);
+    const ready=!missing.length, playable=Object.values(state.tracks).some(track=>track.asset);
+    $('stem-extraction').dataset.state=extracting?'running':ready?'ready':stopped?'stopped':'empty';
+    $('extraction-title').textContent=extracting?'Extracting your stems…':ready?'Your stems are ready.':
+      stopped?(labTask.status==='cancelled'?'Extraction cancelled.':'Extraction stopped.'):
+      missing.length===3?'Extract your audio stems.':'Complete your audio stems.';
+    $('extraction-description').textContent=extracting?'Keep this session open to follow progress. Your tracks will appear below when extraction finishes.':
+      ready?'Dialogue, music and effects are available below. Press Play to listen, then shape your mix.':
+      stopped?'Your saved tracks and source are intact. Retry extraction when you’re ready.':
+      missing.length===3?'Separate this file into dialogue, music and effects, then mix them with your footage.':
+      `Create the remaining tracks: ${missing.map(name=>labels[name]).join(', ')}. Existing tracks are retained.`;
+    for(const name of stemNames){
+      const available=Boolean(state.tracks[name].asset), status=$(`status-${name}`);
+      status.dataset.ready=String(available);
+      status.querySelector('b').textContent=available?'Ready':extracting?'Extracting…':'Not extracted';
+    }
+    $('extract').textContent=extracting?'Extracting stems…':ready?'Stems ready':stopped?'Retry extraction':missing.length===3?'Extract stems':'Extract missing stems';
+    $('extract').disabled=pending||active||ready;
+    $('extract-device').disabled=pending||active;
+    $('extraction-progress').hidden=!extracting;
+    if(extracting){$('extraction-message').textContent=labTask.message;$('extraction-meter').value=labTask.progress||0;}
+    $('play').disabled=!playable;
+    $('mix-ready-hint').hidden=playable;
+    $('mix-ready-hint').textContent=extracting?'Your stems are being extracted. Play will be available when they’re ready.':
+      'Extract stems above, or import a track, to play your mix.';
+    if(!playable)$('playback-label').textContent=extracting?'Extracting stems…':'Waiting for stems';
   }
   async function saveTracks(next,remember=true) {
     if(pending||active)return;
@@ -216,6 +248,7 @@
     if(focus?.match(/^(fader|version|mute|reset)-/))$(focus)?.focus({preventScroll:true});
   }
   function accept(data) {
+    labTask=data.task;
     active=Boolean(data.task?.active);
     if(data.state && (!state||state.revision<data.state.revision)) {
       if(state&&state.last_task!==data.state.last_task&&['import','extract','cleanup'].includes(data.task?.operation)){
@@ -223,7 +256,7 @@
       }
       stop();state=data.state;audition=null;auditionEnd=null;renderState();setAuditionLabel();
     } else if(data.state&&state.revision===data.state.revision){state=data.state;renderDownloads();}
-    $('job-progress').hidden=!active;
+    $('job-progress').hidden=!active||(labTask?.operation==='extract'&&Boolean(state));
     if(data.task){$('progress-label').textContent=data.task.message;$('progress').value=data.task.progress||0;}
     if(data.task && !active && lastTask!==`${data.task.id}:${data.task.status}`) {
       lastTask=`${data.task.id}:${data.task.status}`;
@@ -259,7 +292,7 @@
   }
   function listen(asset,start,end) {stop();audition=asset;time=start;auditionStart=start;auditionEnd=end;setAuditionLabel();player.start(time,state,audition);}
   async function openSession(id) {
-    ++sessionGeneration;const generation=sessionGeneration;clearTimeout(timer);stop();state=null;job=id;undo=[];audition=null;auditionEnd=null;lastTask=null;active=false;pending=false;
+    ++sessionGeneration;const generation=sessionGeneration;clearTimeout(timer);stop();state=null;job=id;undo=[];audition=null;auditionEnd=null;lastTask=null;labTask=null;active=false;pending=false;
     history.replaceState({},'',id?`/lab?session=${id}`:'/lab');
     $('separator-link').href=id?`/?session=${id}`:'/';
     $('work').hidden=true;$('welcome').hidden=false;$('job-progress').hidden=true;notice('');time=0;
@@ -325,8 +358,11 @@
     try {const [start,end]=validInterval();action('cleanup',{track:$('target-track').value,prompt:$('prompt').value,strength:+$('strength').value,passes:+$('passes').value,start,end,preview:id==='preview'});}
     catch(error){notice(error.message);}
   };
-  $('extract').onclick=()=>action('extract');$('export').onclick=()=>action('export',{video:state.video&&$('export-video').checked});
+  $('extract').onclick=()=>action('extract',{device:$('extract-device').value});$('export').onclick=()=>action('export',{video:state.video&&$('export-video').checked});
+  $('extract-device').onchange=()=>{$('device').value=$('extract-device').value;};
+  $('device').onchange=()=>{$('extract-device').value=$('device').value;};
   $('cancel').onclick=async()=>{const generation=sessionGeneration;try{const data=await api(`${endpoint()}/cancel`,{method:'POST'});if(generation===sessionGeneration)accept(data);}catch(error){if(generation===sessionGeneration)notice(error.message);}};
+  $('cancel-extract').onclick=()=>$('cancel').click();
   $('stem-file').onchange=async e=>{
     const file=e.target.files[0];if(!file||pending||active)return;
     const generation=sessionGeneration;
@@ -341,6 +377,6 @@
   };
   window.addEventListener('resize',()=>drawLanes());
   window.addEventListener('pagehide',()=>{stop();clearTimeout(timer);});
-  api('/api/system').then(info=>{$('version').textContent=`v${info.version}`;$('device').querySelector('[value="cuda"]').disabled=!info.gpu_available;}).catch(error=>notice(error.message));
+  api('/api/system').then(info=>{$('version').textContent=`v${info.version}`;for(const id of ['device','extract-device'])$(id).querySelector('[value="cuda"]').disabled=!info.gpu_available;}).catch(error=>notice(error.message));
   openSession(job);
 })();

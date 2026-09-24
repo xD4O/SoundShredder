@@ -1,5 +1,12 @@
 # Verification record
 
+## Mixing Lab extraction area — September 24, 2026
+
+- Moved manual stem extraction above the reference video and mixer, with a dedicated device selector, per-stem availability, progress, cancel and retry controls. Uploads still require an explicit **Extract stems** action. Imported or existing tracks remain playable without extracting again.
+- **25 Electron/DOM tests passed.** The rendered Lab regression (`npm run test:lab-ui` in `electron/`, with the local source server running) covered the empty, extracting, cancelled, failed, ready and partial-import states, device selection, reopening without automatic extraction, and desktop/narrow layouts with no horizontal overflow or renderer errors.
+- A separate headless Edge session uploaded a new three-second synthetic MP4, used the visible extraction button with Auto on the local RTX 5090, received Dialogue/Music/Effects stems and played them with the reference video. No existing user session was edited. Screenshots were inspected; evidence is under ignored `artifacts/mixing-lab/extraction-ui/`. This verifies workflow completion, not separation quality or packaged-app behavior.
+- JavaScript syntax and diff whitespace checks passed. The Lab guide now describes the upload → extract → mix workflow. This remains a local source change, not a published installer update.
+
 ## Mixing Lab source prototype — September 24, 2026
 
 Development branch: `codex/mixing-lab`, building on the targeted-cleanup prototype. This is local source work, not a published Windows/macOS installer update.

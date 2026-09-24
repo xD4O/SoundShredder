@@ -7,3 +7,28 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 .skip{top:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.skip:focus{width:auto;height:auto;clip-path:none}
 .basis{font-size:11px;color:var(--muted);line-height:1.6;margin:0 0 16px}
+
+/* The upload-to-stems step stays beside the primary workspace, above the mixer. */
+.extraction{display:flex;flex-wrap:wrap;align-items:center;gap:20px;padding:20px 22px;margin:0 0 16px;border-color:#386653;background:linear-gradient(115deg,#16352b88,#111923 70%)}
+.extraction-copy{flex:1;min-width:220px}
+.extraction-copy .overline{color:#98cfb8;margin:0 0 8px}
+.extraction h2{font:500 23px Space;letter-spacing:-.7px;margin:0 0 8px}
+.extraction-copy>p:not(.overline){font-size:12px;line-height:1.65;color:#b0c5cd;margin:0;max-width:620px}
+.stem-status{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+.stem-status>span{display:flex;gap:7px;align-items:center;border:1px solid #334b44;border-radius:6px;padding:7px 9px;font-size:10px;color:#d8e6df}
+.stem-status b{font-size:9px;font-weight:400;color:var(--muted)}
+.stem-status [data-ready=true]{border-color:#568c6e;background:#274f3e55}
+.stem-status [data-ready=true] b{color:var(--mint)}
+.extraction-controls{display:grid;grid-template-columns:minmax(140px,190px) auto;align-items:end;gap:9px 12px}
+.extraction-controls label{font-size:9px;letter-spacing:1px;color:#adc5bb}
+.extraction-controls select{display:block;margin-top:6px;width:100%;font-size:11px;height:39px;letter-spacing:0}
+.extraction-controls .primary{height:39px;font-size:12px;min-width:150px}
+.extraction-controls>a{grid-column:1/-1;justify-self:end;font-size:10px;color:#a6c7b8;padding:3px 0;text-decoration:underline;text-underline-offset:3px}
+.extraction-progress{width:100%;border-top:1px solid #355343;padding-top:14px}
+.extraction-progress>div{display:flex;align-items:center;justify-content:space-between;gap:15px;font-size:12px;color:#cbe4d8}
+.extraction-progress button{font-size:10px;flex-shrink:0}
+.extraction-progress progress{width:100%;height:6px;accent-color:var(--mint);margin-top:12px}
+.extraction[data-state=ready]{border-color:var(--line);background:linear-gradient(115deg,#17332a55,#111923 70%)}
+.mix-ready-hint{margin:0 0 14px;color:#b4cfbf;font-size:11px;line-height:1.6}
+@media(max-width:850px){.extraction-controls{width:100%;grid-template-columns:1fr 1fr}.extraction-controls>a{justify-self:start}}
+@media(max-width:450px){.extraction{padding:17px;gap:16px}.extraction-copy{min-width:0}.extraction h2{font-size:22px}.extraction-controls{grid-template-columns:1fr}.extraction-controls .primary{width:100%}.stem-status{gap:5px}.stem-status>span{font-size:9px;padding:6px}.stem-status b{font-size:8px}.extraction-progress>div{align-items:flex-start}}

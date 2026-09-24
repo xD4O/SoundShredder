@@ -4,7 +4,11 @@ The Mixing Lab is an **unreleased source feature**, approved during planning for
 
 ## Open a scene
 
-Choose **Mixing Lab** in the left panel. Upload a video/audio file, or open a completed session. The source upload is preserved. If stems are already available, the Lab reuses copies of them. Otherwise choose **Extract missing dialogue, music & effects**. Extraction uses Bandit; ordinary fader changes do not run a model again.
+Choose **Mixing Lab** in the left panel. Upload a video/audio file, or open a completed session. The source upload is preserved. Uploading prepares the file; it does not start stem extraction automatically.
+
+Use the **Stem Extraction** area directly above the reference video and mixer. Choose Auto, CPU or NVIDIA GPU, then click **Extract stems**. Follow progress or cancel from that area. Dialogue, Music and Effects each show their availability; Play becomes available when at least one track is ready. If extraction stops, **Retry extraction** is available there too. You can also follow **Or import your own stems** to bring in tracks from an editor.
+
+If stems are already available, the Lab reuses copies of them and the area shows **Your stems are ready**. Partial sessions offer **Extract missing stems**, preserving existing tracks. Extraction uses Bandit; ordinary fader changes do not run a model again.
 
 The reference video shares a playhead with all active stems. Use Play, the scrubber or the waveform lanes to navigate. The Video checkbox hides the picture when you want more focus on audio. For audio-only sources, the transport and channels work without a picture.
 

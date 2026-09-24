@@ -5,8 +5,8 @@
   <meta name="theme-color" content="#090e15"><meta name="author" content="cyr4x">
   <title>Mixing Lab — SoundShredder</title>
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/lab.css">
-  <script defer src="/static/lab-math.js"></script><script defer src="/static/lab-player.js"></script><script defer src="/static/lab.js"></script>
+  <link rel="stylesheet" href="/static/lab.css?v=2">
+  <script defer src="/static/lab-math.js"></script><script defer src="/static/lab-player.js"></script><script defer src="/static/lab.js?v=2"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to Mixing Lab</a>
@@ -38,10 +38,32 @@
   <section id="work" hidden>
     <div class="session-bar"><div><strong id="filename"></strong><span id="format"></span></div><span id="saved" role="status">Saved</span><button id="close-session">Close session</button></div>
     <p id="source-basis" class="basis" hidden>These stems use the input before this session's cleanup. Import a cleaned export to mix that result.</p>
+    <section id="stem-extraction" class="extraction panel" aria-labelledby="extraction-title" data-state="empty">
+      <div class="extraction-copy">
+        <p class="overline">START HERE / STEM EXTRACTION</p>
+        <h2 id="extraction-title">Extract your audio stems.</h2>
+        <p id="extraction-description">Separate this file into dialogue, music and effects, then mix them with your footage.</p>
+        <div class="stem-status" aria-label="Stem availability">
+          <span id="status-speech">Dialogue <b>Not extracted</b></span>
+          <span id="status-music">Music <b>Not extracted</b></span>
+          <span id="status-effects">Effects <b>Not extracted</b></span>
+        </div>
+      </div>
+      <div class="extraction-controls">
+        <label for="extract-device">PROCESS ON<select id="extract-device"><option value="auto">Auto · best available</option><option value="cpu">CPU</option><option value="cuda">NVIDIA GPU</option></select></label>
+        <button id="extract" class="primary">Extract stems</button>
+        <a href="#import-stems">Or import your own stems ↓</a>
+      </div>
+      <div id="extraction-progress" class="extraction-progress" hidden>
+        <div><span id="extraction-message" role="status" aria-live="polite">Starting extraction…</span><button id="cancel-extract">Cancel extraction</button></div>
+        <progress id="extraction-meter" max="1" value="0" aria-label="Stem extraction progress"></progress>
+      </div>
+    </section>
     <div class="console">
       <section class="reference panel"><div class="panel-title"><span>01 / REFERENCE</span><label><input id="show-video" type="checkbox" checked> Video</label></div>
         <div id="picture" class="picture"><video id="video" muted playsinline preload="metadata" aria-label="Reference footage"></video><div id="audio-art" hidden><span>⌁</span><p>AUDIO SESSION</p></div></div>
-        <div class="transport"><button id="play" class="play" aria-label="Play mix">▶</button><div class="time"><strong id="time">00:00.000</strong><small id="duration">/ 00:00</small></div><button id="back" title="Previous nominal frame">− frame</button><button id="forward" title="Next nominal frame">+ frame</button></div>
+        <div class="transport"><button id="play" class="play" aria-label="Play mix" aria-describedby="mix-ready-hint">▶</button><div class="time"><strong id="time">00:00.000</strong><small id="duration">/ 00:00</small></div><button id="back" title="Previous nominal frame">− frame</button><button id="forward" title="Next nominal frame">+ frame</button></div>
+        <p id="mix-ready-hint" class="mix-ready-hint" hidden>Extract stems above, or import a track, to play your mix.</p>
         <label class="scrub-label" for="scrub">PLAYHEAD <span id="playback-label">Paused</span></label><input id="scrub" type="range" min="0" max="1" step="0.001" value="0" aria-label="Video and audio playhead">
         <div class="audition"><span id="audition-label">Listening to the mix</span><button id="return-mix" hidden>Return to mix</button></div>
       </section>
@@ -57,11 +79,10 @@
         <p id="target-range" class="accent">Applies to the interval above.</p><div class="actions"><button id="preview" class="primary">Preview ≤10 s</button><button id="apply">Apply cleanup</button></div><small>Experimental. More passes can reduce wanted detail too. Preview and listen to Removed sounds before applying.</small>
         <div id="target-result" class="result-note" hidden></div>
       </div>
-      <div class="panel tool"><p class="overline">BRING YOUR OWN LAYERS</p><h2>Set the atmosphere.</h2><p>Add a room tone, forest bed or custom ambience. You can also replace dialogue, music or effects with an edited track.</p>
+      <div id="import-stems" class="panel tool"><p class="overline">BRING YOUR OWN LAYERS</p><h2>Set the atmosphere.</h2><p>Add a room tone, forest bed or custom ambience. You can also replace dialogue, music or effects with an edited track.</p>
         <div class="fields"><label>CHANNEL<select id="import-track"><option value="ambience">Ambience</option><option value="speech">Dialogue</option><option value="music">Music</option><option value="effects">Effects</option></select></label><label>DURATION<select id="fit"><option value="exact">Match footage exactly</option><option value="fit">Pad / trim to footage</option></select></label></div>
         <label class="import-box">＋ Import a stem<input id="stem-file" type="file" accept=".wav,.mp3,.flac,.m4a,.aac,.ogg,.opus,.aif,.aiff,.mp4,.mov"></label><small>Aligned from 0:00. Pad / trim adds silence or cuts the tail; it never stretches or loops audio. Imported audio is fitted to the session sample rate and mono/stereo layout.</small>
         <div class="future"><b>AMBIENCE / OPTIONAL</b><p>Automatic ambience separation is planned research. Today, environmental sounds remain in the Effects stem until you import your own ambience.</p></div>
-        <button id="extract">Extract missing dialogue, music & effects</button>
       </div>
     </section>
     <section class="export panel"><div><p class="overline">READY FOR THE EDIT</p><h2>Take your mix with you.</h2><p>Download the mix, each automated stem and an edit report.</p></div><div><label><input id="export-video" type="checkbox" checked> Include footage with the new soundtrack</label><button id="export" class="primary">Export mix & stems ↗</button></div><div id="downloads" class="downloads" hidden></div></section>
