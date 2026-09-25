@@ -49,6 +49,23 @@
     return layer?layer.children.flatMap(child=>leafNames(state,child)):[name];
   }
   function activeTracks(state) {return Object.fromEntries(ROOTS.flatMap(name=>leafNames(state,name)).map(name=>[name,state.tracks[name]]));}
+  function playbackTracks(state,layerId=null) {
+    if(!layerId)return activeTracks(state);
+    const layer=state.layers?.[layerId];
+    if(!layer)return {};
+    return Object.fromEntries(layer.children.flatMap(name=>leafNames(state,name)).map(name=>[name,state.tracks[name]]));
+  }
+  function playbackProtection(state,layerId=null) {
+    const master=protection(state);if(!layerId)return master;
+    // Keep an active branch at its Master level. A saved, inactive branch may
+    // need additional headroom when auditioned on its own.
+    let bound=0;
+    for(const name of Object.keys(playbackTracks(state,layerId))){
+      const assets=Object.values(state.assets).filter(a=>a.track===name&&a.role!=='removed');
+      if(assets.length)bound+=Math.max(...assets.map(a=>a.peak))*linear(6);
+    }
+    return Math.min(master,.98/Math.max(bound,1e-12));
+  }
   function reachableTracks(state) {
     const names=new Set();const visit=name=>{names.add(name);const layer=activeLayer(state,name);if(layer)layer.children.forEach(visit);};
     ROOTS.forEach(visit);return names;
@@ -63,7 +80,7 @@
     param.setValueAtTime(gainAt(regions,first),contextFirst);
     for (const point of sorted.slice(1)) param.linearRampToValueAtTime(gainAt(regions,point),contextFirst+point-first);
   }
-  const api = {FADE,linear,dbfs,valueAt,gainAt,insert,scope,protection,schedule,activeLayer,leafNames,activeTracks,reachableTracks};
+  const api = {FADE,linear,dbfs,valueAt,gainAt,insert,scope,protection,schedule,activeLayer,leafNames,activeTracks,reachableTracks,playbackTracks,playbackProtection};
   if (typeof module !== 'undefined') module.exports = api;
   root.LabMath = api;
 })(typeof window !== 'undefined' ? window : globalThis);

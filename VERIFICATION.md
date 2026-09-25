@@ -1,5 +1,14 @@
 # Verification record
 
+## Layer listening and Master routing — September 25, 2026
+
+- Opening a layer now scopes playback to that branch's selected leaves, including any active descendants. Master displays all active leaf channels with depth/path labels and plays the complete mix with deeper edits. Switching views stops the prior audio, cancels pending buffers, clears listening-only Solo/source auditions and resumes at the same position when appropriate. Empty layers never fall back to unrelated stems. Exports continue to use the complete Master.
+- **28 Electron/DOM tests and all four headless Edge Lab suites passed.** The new listening suite renders distinguishable test tones through the actual Web Audio player graph and checks the resulting samples: unrelated roots and muted children are silent in Layer 2, Master retains root tracks and child automation without doubling the parent, a −9 dB edit is confined to its selected second, and Solo isolates one child. It also tests switching while playing/buffering, inactive branch previews, empty layers and explicit parent auditions.
+- The prior extraction, session lifecycle and recursive-layer browser regressions passed. Desktop, 760 px and 390 px layouts had no horizontal overflow or renderer errors; screenshots were visually inspected. The video/transport panel stays beside longer Master channel lists on desktop.
+- An existing isolated synthetic MP4 session was reopened against the real local API on port 7863. Layer 2 and Layer 3 used only their respective branch tracks; Master used all nine active tracks. Embedded video audio remained muted. The saved Lab state was unchanged and the QA session's original closed state was restored. No model processing or edits to user sessions were needed.
+
+Evidence is under ignored `artifacts/mixing-lab/listening-ui/`. This verifies playback routing and saved automation, not perceptual separation quality or packaged Windows/macOS behavior. The local source app serves the fix; published installers are unchanged.
+
 ## Recursive stem layers — September 25, 2026
 
 - **Split again** reruns Bandit on the selected active stem and saves Dialogue, Music, Effects and Remainder as the next numbered layer. Parent assets remain immutable. Playback and export select active leaves instead of counting parents again; child time edits begin as copies of the parent's edits. Parent restore/reuse, nested cleanup/import targets and layer-aware filenames are implemented in the source app.

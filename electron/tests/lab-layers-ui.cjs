@@ -41,7 +41,8 @@ function model(){
   };
   return source;
 }
-(async()=>{
+module.exports={model};
+if(require.main===module)(async()=>{
   fs.mkdirSync(out,{recursive:true});
   const browser=await chromium.launch({headless:true,channel:process.env.SOUNDSHREDDER_TEST_BROWSER||(process.platform==='win32'?'msedge':undefined)});
   try{
@@ -65,11 +66,13 @@ function model(){
     const layer3=data.finish();await page.waitForFunction(layer=>document.querySelector('#layer-view').value===layer,layer3);
     const deep=state.layers[layer3].children[0];assert.equal(state.track_info[deep].depth,3);assert.equal(state.tracks[deep].regions[0].db,-9);
     assert.equal(await page.locator(`#target-track option[value="${deep}"]`).count(),1);
-    await page.locator('#layer-view').selectOption('');assert.equal(await page.locator('#fader-effects').isDisabled(),true);
+    await page.locator('#layer-master').click();assert.equal(await page.locator('#fader-effects').count(),0);
+    assert.equal(await page.locator(`#fader-${deep}`).isEnabled(),true);
+    assert.equal(await page.locator('#layer-master').getAttribute('aria-pressed'),'true');
     await page.locator('#layer-view').selectOption(layer3);await page.locator(`#solo-${deep}`).click();
     await page.locator('#play').click();await page.waitForFunction(()=>document.querySelector('#playback-label').textContent==='Playing in sync');
     assert.equal(data.buffers.includes('effects'),false);assert.equal(data.buffers.includes(state.tracks[child].asset),false);
-    assert.ok(data.buffers.includes(state.tracks[deep].asset));await page.locator('#play').click();
+    assert.deepEqual(data.buffers.sort(),state.layers[layer3].children.map(name=>state.tracks[name].asset).sort());await page.locator('#play').click();
     await page.locator('#layer-view').selectOption(layer2);await page.locator('#layer-toggle').click();
     await page.waitForFunction(()=>document.querySelector('#layer-toggle').textContent==='Use this split in mix');
     await page.locator('#layer-view').selectOption('');

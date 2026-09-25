@@ -5,8 +5,8 @@
   <meta name="theme-color" content="#090e15"><meta name="author" content="cyr4x">
   <title>Mixing Lab — SoundShredder</title>
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/lab.css?v=4">
-  <script defer src="/static/lab-math.js?v=4"></script><script defer src="/static/lab-player.js?v=4"></script><script defer src="/static/lab.js?v=4"></script>
+  <link rel="stylesheet" href="/static/lab.css?v=5">
+  <script defer src="/static/lab-math.js?v=5"></script><script defer src="/static/lab-player.js?v=5"></script><script defer src="/static/lab.js?v=5"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to Mixing Lab</a>
@@ -67,18 +67,19 @@
       <div class="split-controls"><label>PROCESS ON<select id="split-device"><option value="auto">Auto · best available</option><option value="cpu">CPU</option><option value="cuda">NVIDIA GPU</option></select></label><button id="split-run" class="primary">Split stem</button><button id="split-dismiss">Keep current layer</button></div>
     </section>
     <section class="layer-navigation panel" aria-label="Stem layers">
-      <div><label class="overline" for="layer-view">EXPLORE YOUR LAYERS</label><select id="layer-view"><option value="">Layer 1 · Original stems</option></select><p id="layer-description">Split any stem again to explore a deeper layer.</p></div>
-      <div class="layer-actions"><button id="layer-back" hidden>↑ Parent layer</button><button id="layer-original" hidden>Listen to parent</button><button id="layer-toggle" hidden>Use parent in mix</button></div>
+      <div><label class="overline" for="layer-view">MIXER / LISTENING VIEW</label><select id="layer-view"><option value="">Master · All active layers</option></select><p id="layer-description">Hear the complete mix or focus on one layer.</p></div>
+      <div class="layer-actions"><button id="layer-master" aria-pressed="true">Master</button><button id="layer-back" hidden>↑ Parent layer</button><button id="layer-original" hidden>Listen to parent</button><button id="layer-toggle" hidden>Use parent in mix</button></div>
     </section>
     <div class="console">
       <section class="reference panel"><div class="panel-title"><span>01 / REFERENCE</span><label><input id="show-video" type="checkbox" checked> Video</label></div>
         <div id="picture" class="picture"><video id="video" muted playsinline preload="metadata" aria-label="Reference footage"></video><div id="audio-art" hidden><span>⌁</span><p>AUDIO SESSION</p></div></div>
-        <div class="transport"><button id="play" class="play" aria-label="Play mix" aria-describedby="mix-ready-hint">▶</button><div class="time"><strong id="time">00:00.000</strong><small id="duration">/ 00:00</small></div><button id="back" title="Previous nominal frame">− frame</button><button id="forward" title="Next nominal frame">+ frame</button></div>
+        <div id="listening-scope" class="listening-scope" role="status">MASTER · ALL ACTIVE LAYERS</div>
+        <div class="transport"><button id="play" class="play" aria-label="Play mix" aria-describedby="mix-ready-hint listening-scope">▶</button><div class="time"><strong id="time">00:00.000</strong><small id="duration">/ 00:00</small></div><button id="back" title="Previous nominal frame">− frame</button><button id="forward" title="Next nominal frame">+ frame</button></div>
         <p id="mix-ready-hint" class="mix-ready-hint" hidden>Extract stems above, or import a track, to play your mix.</p>
         <label class="scrub-label" for="scrub">PLAYHEAD <span id="playback-label">Paused</span></label><input id="scrub" type="range" min="0" max="1" step="0.001" value="0" aria-label="Video and audio playhead">
         <div class="audition"><span id="audition-label">Listening to the mix</span><button id="return-mix" hidden>Return to mix</button></div>
       </section>
-      <section class="mixer panel"><div class="panel-title"><span>02 / CHANNELS</span><span id="meter-caption">PEAK LEVEL · dBFS</span></div><div id="channels" class="channels"></div><p class="mixer-help">Faders = gain in dB. <b>0 dB keeps the stem unchanged.</b> Solo is for listening only.</p><div class="master"><b>MASTER</b><div class="master-bar"><i id="master-fill"></i></div><output id="master-db">−∞</output><span id="trim"></span></div></section>
+      <section class="mixer panel"><div class="panel-title"><span id="channels-heading">02 / MASTER MIX</span><span id="meter-caption">PEAK LEVEL · dBFS</span></div><div id="channels" class="channels"></div><p class="mixer-help">Faders = gain in dB. <b>0 dB keeps the stem unchanged.</b> Solo is for listening only.</p><div class="master"><b id="output-label">MASTER</b><div class="master-bar"><i id="master-fill"></i></div><output id="master-db">−∞</output><span id="trim"></span></div></section>
     </div>
     <section class="scope-bar panel"><div><span class="overline">EDIT ONLY</span><div class="segments" id="scopes"><button data-scope="second" aria-pressed="true">This second</button><button data-scope="frame" aria-pressed="false">This frame</button><button data-scope="range" aria-pressed="false">Selected range</button></div></div><div class="range-fields"><label>FROM <input id="range-start" type="number" min="0" step="0.001" value="0"></label><span>→</span><label>TO <input id="range-end" type="number" min="0" step="0.001" value="1"></label><span>seconds</span></div><div class="scope-note"><strong id="scope-label">0.000 – 1.000 s</strong><small>Returns to the saved level outside this interval.</small></div><button id="undo" disabled>Undo edit</button></section>
     <section class="timeline panel"><div class="panel-title"><span>03 / TIME EDITS</span><span id="frame-note">Drag a lane to select a range · click to seek</span></div><div id="lanes"></div><div class="legend"><span><i></i> Saved volume edit</span><span>Edges fade for 5 ms to soften clicks.</span></div></section>
@@ -96,7 +97,7 @@
         <div class="future"><b>AMBIENCE / OPTIONAL</b><p>Automatic ambience separation is planned research. Today, environmental sounds remain in the Effects stem until you import your own ambience.</p></div>
       </div>
     </section>
-    <section class="export panel"><div><p class="overline">READY FOR THE EDIT</p><h2>Take your mix with you.</h2><p>Download the mix, each automated stem and an edit report.</p></div><div><label><input id="export-video" type="checkbox" checked> Include footage with the new soundtrack</label><button id="export" class="primary">Export mix & stems ↗</button></div><div id="downloads" class="downloads" hidden></div></section>
+    <section class="export panel"><div><p class="overline">READY FOR THE EDIT</p><h2>Take your mix with you.</h2><p>Exports use the complete Master mix with all saved deeper edits. Use a stem's download arrow for that track alone.</p></div><div><label><input id="export-video" type="checkbox" checked> Include footage with the new soundtrack</label><button id="export" class="primary">Export Master & stems ↗</button></div><div id="downloads" class="downloads" hidden></div></section>
   </section>
   <footer>Made for the <a href="https://higgsfield.ai/" target="_blank" rel="noopener noreferrer"><b>HIGGSFIELD</b></a> Community <span>·</span> Local development preview</footer>
 </main>

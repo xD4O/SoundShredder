@@ -61,9 +61,28 @@ test('nested layers play and export leaves without their parent being counted ag
     layers:{L2:{id:'L2',parent_track:'effects',children:['child','rest'],active:true},L3:{id:'L3',parent_track:'child',children:['deep'],active:true}}};
   assert.deepEqual(Object.keys(M.activeTracks(state)),['speech','music','deep','rest']);
   assert.deepEqual(M.leafNames(state,'effects'),['deep','rest']);
+  assert.deepEqual(Object.keys(M.playbackTracks(state,'L2')),['deep','rest']);
+  assert.deepEqual(Object.keys(M.playbackTracks(state,'L3')),['deep']);
+  assert.deepEqual(M.playbackTracks(state),M.activeTracks(state));
+  assert.deepEqual(M.playbackTracks(state,'missing'),{});
+  assert.equal(M.playbackProtection(state,'L2'),M.protection(state));
   const gain=M.protection(state);state.tracks.deep.regions=[{start:0,end:1,db:6}];assert.equal(M.protection(state),gain);
   state.layers.L2.active=false;
   assert.deepEqual(Object.keys(M.activeTracks(state)),['speech','music','effects']);
   assert.equal(M.reachableTracks(state).has('deep'),false);
+  assert.deepEqual(Object.keys(M.playbackTracks(state,'L2')),['deep','rest'],'a saved layer can be previewed without changing Master');
   state.layers.L2.active=true;assert.equal(M.reachableTracks(state).has('deep'),true);
+  state.tracks.deep.asset=null;state.tracks.rest.asset=null;
+  assert.deepEqual(M.playbackTracks(state,'L2'),{},'an empty layer must never fall back to unrelated stems');
+});
+
+test('inactive layer preview reserves its own headroom without boosting above Master',()=>{
+  const state={tracks:{music:{asset:'a',regions:[]},child:{asset:'b',regions:[]}},
+    assets:{a:{track:'music',role:'original',peak:.01},b:{track:'child',role:'split',peak:1}},
+    layers:{L2:{id:'L2',parent_track:'music',children:['child'],active:false}}};
+  assert.equal(M.protection(state),1);
+  const trim=M.playbackProtection(state,'L2');assert.ok(trim<1);
+  assert.ok(trim*M.linear(6)<=.98);
+  state.tracks.child.regions=[{start:0,end:1,db:6}];
+  assert.equal(M.playbackProtection(state,'L2'),trim);
 });

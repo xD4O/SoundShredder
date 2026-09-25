@@ -13,7 +13,7 @@
     "test:app": "node tests/lifecycle.cjs",
     "test:setup-ui": "node tests/setup-ui.cjs",
     "test:storage-ui": "node tests/storage-ui.cjs",
-    "test:lab-ui": "node tests/lab-extraction-ui.cjs && node tests/lab-session-ui.cjs && node tests/lab-layers-ui.cjs",
+    "test:lab-ui": "node tests/lab-extraction-ui.cjs && node tests/lab-session-ui.cjs && node tests/lab-layers-ui.cjs && node tests/lab-listening-ui.cjs",
     "build": "electron-builder --publish never"
   },
   "devDependencies": {

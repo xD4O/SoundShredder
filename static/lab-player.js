@@ -5,20 +5,20 @@ class LabPlayer {
     this.ctx=null; this.time=0; this.playing=false; this.serial=0; this.nodes=[]; this.channels={}; this.solo=null;
   }
   current() { return this.playing ? Math.max(this.first,Math.min(this.state.duration,this.first+this.ctx.currentTime-this.clock)) : this.time; }
-  async start(time,state,audition=null) {
+  async start(time,state,audition=null,layerId=null) {
     this.stop(time); const serial=++this.serial;
     try {
       this.ctx ||= new AudioContext({sampleRate:48000});
       await this.ctx.resume();
     } catch(error) {if(serial===this.serial)this.fail(error);return;}
     if(serial!==this.serial)return;
-    this.state=structuredClone(state); this.audition=audition;
+    this.state=structuredClone(state); this.audition=audition;this.layerId=layerId;
     this.abort=new AbortController(); this.onStatus('buffering');
-    this.master=this.ctx.createGain(); this.master.gain.value=audition?1:LabMath.protection(state);
+    this.master=this.ctx.createGain(); this.master.gain.value=audition?1:LabMath.playbackProtection(state,layerId);
     this.masterMeter=this.ctx.createAnalyser(); this.masterMeter.fftSize=2048;
     this.master.connect(this.masterMeter).connect(this.ctx.destination);
     this.channels={};
-    const selected=audition?{[state.assets[audition].track]:{asset:audition,regions:[]}}:LabMath.activeTracks(state);
+    const selected=audition?{[state.assets[audition].track]:{asset:audition,regions:[]}}:LabMath.playbackTracks(state,layerId);
     for (const [name,track] of Object.entries(selected)) if (track.asset) {
       const gate=this.ctx.createGain(), analyser=this.ctx.createAnalyser(); analyser.fftSize=2048;
       gate.connect(analyser).connect(this.master);

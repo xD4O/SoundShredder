@@ -45,6 +45,12 @@
 .layer-navigation>div:first-child{flex:1;min-width:0}.layer-navigation select{display:block;margin:8px 0;width:min(100%,450px);font-size:13px}
 .layer-navigation p{font-size:11px;color:var(--muted);line-height:1.6;margin:7px 0 0}.layer-actions{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;max-width:300px}.layer-actions button{font-size:10px}
 .layer-badge{display:block;font-size:7px;letter-spacing:1px;color:var(--muted);margin:0 0 8px}.channel .split-stem,.channel .open-layer{display:block;width:100%;font-size:9px;margin-top:9px;padding:8px 3px;border-color:#395e53;color:var(--mint);background:#17322866}.channel .open-layer{background:#2b3548;border-color:#546281;color:#cad4f6}
+.listening-scope{margin:14px 0 0;padding:9px 11px;border:1px solid #3c6c5d;border-radius:6px;background:#14352b99;color:var(--mint);font:9px Space;letter-spacing:1px;line-height:1.6;overflow-wrap:anywhere}
+#layer-master[aria-pressed=true]{background:#274c3f;border-color:#72cbaa;color:var(--mint)}
+.channel-path{font-size:8px;line-height:1.5;color:#a8bac7;overflow-wrap:anywhere;min-height:26px;margin:-3px 0 8px}
+.master-channels .channel{display:flex;flex-direction:column}.master-channels .channel select{margin-top:auto}.lane>span{overflow-wrap:anywhere}
+.console{align-items:start}
+@media(min-width:1151px){.reference{position:sticky;top:16px}}
 .split-panel{display:flex;gap:24px;align-items:center;padding:22px;margin-bottom:16px;border-color:#668371;background:linear-gradient(115deg,#1d463566,#111c26)}.split-panel>div:first-child{flex:1}.split-panel h2{font:500 24px Space;letter-spacing:-.6px;margin:8px 0}.split-panel p{font-size:12px;line-height:1.65;color:#c4d7ce}.split-panel small{font-size:10px;line-height:1.7;display:block;color:var(--muted)}.split-controls{display:grid;gap:9px;min-width:185px}.split-controls label{font-size:9px;color:var(--muted);letter-spacing:1px}.split-controls select{display:block;width:100%;margin-top:6px;font-size:11px}.split-controls>button:not(.primary){font-size:10px}
 @media(max-width:850px){.layer-navigation,.split-panel{flex-direction:column;align-items:stretch}.layer-actions{max-width:none;justify-content:flex-start}.split-controls{min-width:0}.layer-navigation select{width:100%}}
 @media(max-width:850px){.extraction-controls{width:100%;grid-template-columns:1fr 1fr}.extraction-controls>a{justify-self:start}}
