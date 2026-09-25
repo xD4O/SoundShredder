@@ -37,7 +37,8 @@ function fixture(initial=[]) {
     data.task={...data.task,active:false,status:'complete',progress:1,message:'Your Lab is ready.'};}};
 }
 
-(async()=>{
+module.exports={fixture};
+if(require.main===module)(async()=>{
   fs.mkdirSync(out,{recursive:true});
   const browser=await chromium.launch({headless:true,channel:process.env.SOUNDSHREDDER_TEST_BROWSER||(process.platform==='win32'?'msedge':undefined)});
   try {

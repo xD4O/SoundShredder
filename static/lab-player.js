@@ -18,7 +18,7 @@ class LabPlayer {
     this.masterMeter=this.ctx.createAnalyser(); this.masterMeter.fftSize=2048;
     this.master.connect(this.masterMeter).connect(this.ctx.destination);
     this.channels={};
-    const selected=audition?{[state.assets[audition].track]:{asset:audition,regions:[]}}:state.tracks;
+    const selected=audition?{[state.assets[audition].track]:{asset:audition,regions:[]}}:LabMath.activeTracks(state);
     for (const [name,track] of Object.entries(selected)) if (track.asset) {
       const gate=this.ctx.createGain(), analyser=this.ctx.createAnalyser(); analyser.fftSize=2048;
       gate.connect(analyser).connect(this.master);
@@ -75,6 +75,15 @@ class LabPlayer {
   }
   peak(name) {
     const channel=this.channels[name];
+    if(this.playing&&name!=='master'&&!channel&&LabMath.activeLayer(this.state,name)){
+      const sum=this.groupSamples||=new Float32Array(2048);sum.fill(0);
+      for(const leaf of LabMath.leafNames(this.state,name)){
+        const child=this.channels[leaf];if(!child)continue;
+        child.analyser.getFloatTimeDomainData(child.samples);
+        for(let i=0;i<sum.length;i++)sum[i]+=child.samples[i];
+      }
+      let peak=0;for(const sample of sum)peak=Math.max(peak,Math.abs(sample));return peak;
+    }
     const analyser=name==='master'?this.masterMeter:channel?.analyser;
     if (!this.playing || !analyser) return 0;
     const samples=channel?.samples || (this.masterSamples ||=new Float32Array(2048));
@@ -83,7 +92,8 @@ class LabPlayer {
   }
   setSolo(name) {
     this.solo=name;
-    for (const [key,channel] of Object.entries(this.channels)) channel.gate.gain.value=this.audition||!name||key===name?1:0;
+    const selected=name&&this.state?LabMath.leafNames(this.state,name):[];
+    for (const [key,channel] of Object.entries(this.channels)) channel.gate.gain.value=this.audition||!name||selected.includes(key)?1:0;
   }
   fail(error) { const time=this.current(); this.stop(time); if (error.name!=='AbortError') this.onStatus('error',error.message); }
   dispose() {

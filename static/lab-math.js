@@ -35,11 +35,23 @@
   }
   function protection(state) {
     let bound = 0;
-    for (const name of Object.keys(state.tracks)) {
+    for (const name of Object.keys(Object.keys(state.layers||{}).length?activeTracks(state):state.tracks)) {
       const assets=Object.values(state.assets).filter(a=>a.track===name&&a.role!=='removed');
       if(assets.length)bound += Math.max(...assets.map(a=>a.peak)) * linear(6);
     }
     return Math.min(1,.98/Math.max(bound,1e-12));
+  }
+  const ROOTS=['speech','music','effects','ambience'];
+  function activeLayer(state,name) {return Object.values(state.layers||{}).find(layer=>layer.parent_track===name&&layer.active);}
+  function leafNames(state,name) {
+    if(!state.tracks[name]?.asset)return [];
+    const layer=activeLayer(state,name);
+    return layer?layer.children.flatMap(child=>leafNames(state,child)):[name];
+  }
+  function activeTracks(state) {return Object.fromEntries(ROOTS.flatMap(name=>leafNames(state,name)).map(name=>[name,state.tracks[name]]));}
+  function reachableTracks(state) {
+    const names=new Set();const visit=name=>{names.add(name);const layer=activeLayer(state,name);if(layer)layer.children.forEach(visit);};
+    ROOTS.forEach(visit);return names;
   }
   function schedule(param, regions, first, last, contextFirst) {
     const points = new Set([first,last]);
@@ -51,7 +63,7 @@
     param.setValueAtTime(gainAt(regions,first),contextFirst);
     for (const point of sorted.slice(1)) param.linearRampToValueAtTime(gainAt(regions,point),contextFirst+point-first);
   }
-  const api = {FADE,linear,dbfs,valueAt,gainAt,insert,scope,protection,schedule};
+  const api = {FADE,linear,dbfs,valueAt,gainAt,insert,scope,protection,schedule,activeLayer,leafNames,activeTracks,reachableTracks};
   if (typeof module !== 'undefined') module.exports = api;
   root.LabMath = api;
 })(typeof window !== 'undefined' ? window : globalThis);

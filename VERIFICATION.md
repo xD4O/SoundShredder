@@ -1,5 +1,15 @@
 # Verification record
 
+## Recursive stem layers — September 25, 2026
+
+- **Split again** reruns Bandit on the selected active stem and saves Dialogue, Music, Effects and Remainder as the next numbered layer. Parent assets remain immutable. Playback and export select active leaves instead of counting parents again; child time edits begin as copies of the parent's edits. Parent restore/reuse, nested cleanup/import targets and layer-aware filenames are implemented in the source app.
+- **233 Python tests and 27 Electron/DOM tests passed**, with the two existing framework deprecation warnings. New checks cover the actual selected input at each recursive step, residual reconstruction, inherited edits, active-leaf exports, parent restoration, stale revisions, preview/invalid input rejection and cancellation. Ruff, JavaScript syntax and whitespace checks passed.
+- Three rendered headless Edge suites passed: extraction, session closing, and layers. Layer checks covered recursive navigation, CPU request selection, inherited time edits, buffering only active leaves, restoring/reusing a parent, clearing a solo that becomes inactive, reloading the selected layer and desktop/760 px/390 px layouts. Desktop and narrow screenshots were visually inspected. No renderer errors occurred.
+- On the local RTX 5090, an isolated synthetic MP4 completed initial extraction, a real Bandit split of Music into **Layer 2**, and another split of its Music child into **Layer 3**. Saved edits, parent reuse, video playback and WAV/ZIP/MP4 exports passed. A sampled audio/video playhead difference was about 35 ms; this is one spot check, not a universal synchronization guarantee.
+- Both real layers retained **144,384 frames at 48 kHz mono**. For this fixture, summing each layer's three estimates and Remainder reproduced the stored parent with zero measured sample error. Nine active exported WAVs summed to the master within the expected 24-bit quantization tolerance. Separate stereo tests cover source shape and export reconstruction. No perceptual improvement is inferred from these checks.
+
+Private evidence and the closed synthetic QA session are under ignored `artifacts/mixing-lab/layers-ui/` and the development data directory. Existing user sessions were not changed. Native Windows/macOS packaged testing, long-source performance and listening evaluation remain release work. The running local source app on port 7863 has the feature; published installers remain unchanged.
+
 ## Mixing Lab session closing — September 24, 2026
 
 - **Close session** and each sidebar **×** now move the session out of the active list into **Closed sessions**. Closing/reopening is saved separately from audio and mix revisions in the session's Lab view metadata, so it survives refreshes and application restarts. The Lab list includes saved sessions beyond the main workspace's 20-item recent-history limit.

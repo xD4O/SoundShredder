@@ -29,6 +29,13 @@ class SessionView(BaseModel):
     closed: bool = Field(strict=True)
 
 
+class LayerView(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    revision: int = Field(ge=0, strict=True)
+    layer: str
+    enabled: bool = Field(strict=True)
+
+
 class Action(BaseModel):
     model_config = ConfigDict(extra="forbid")
     revision: int = Field(default=0, ge=0, strict=True)
@@ -224,7 +231,7 @@ def register(app, service):
 
     @app.post("/api/jobs/{job_id}/lab/actions/{operation}", status_code=202)
     def action(job_id: str, operation: str, body: Action):
-        if operation not in {"prepare", "extract", "cleanup", "export"} or body.device not in {"auto", "cpu", "cuda"}:
+        if operation not in {"prepare", "extract", "split", "cleanup", "export"} or body.device not in {"auto", "cpu", "cuda"}:
             raise HTTPException(400, "Choose a supported Lab action and device.")
         with service.GUARD:
             state = manager.ready(job_id, body.revision)
@@ -235,8 +242,14 @@ def register(app, service):
                 return manager.status(job_id)
             if operation == "extract" and state and all(state["tracks"][t]["asset"] for t in ("speech", "music", "effects")):
                 raise HTTPException(409, "These stems are already available. Mix them without extracting again.")
+            if operation == "split":
+                try:
+                    mixing.split_source(state, body.track)
+                except ValueError as exc:
+                    raise HTTPException(400, str(exc)) from exc
+                extra.update(track=body.track)
             if operation == "cleanup":
-                if body.track not in mixing.TRACKS or not state["tracks"][body.track]["asset"]:
+                if body.track not in mixing.active_tracks(state):
                     raise HTTPException(400, "Select an available stem to clean up.")
                 try:
                     cleanup = validate_settings(body.prompt, body.strength, body.start, body.end, body.passes)
@@ -246,21 +259,38 @@ def register(app, service):
                     raise HTTPException(400, str(exc)) from exc
                 extra.update(track=body.track, cleanup=cleanup, preview=body.preview)
             if operation == "export":
-                selected = [state["assets"][t["asset"]] for t in state["tracks"].values() if t["asset"]]
+                selected = [state["assets"][t["asset"]] for t in mixing.active_tracks(state).values()]
                 if not selected or any(a["role"] == "preview" for a in selected):
                     raise HTTPException(409, "Select full stem versions before exporting. Previews need Apply cleanup.")
             return manager.launch(job_id, operation, body.revision, extra)
+
+    @app.put("/api/jobs/{job_id}/lab/layer")
+    def layer_view(job_id: str, body: LayerView):
+        with service.GUARD:
+            state = manager.ready(job_id, body.revision)
+            if state is None:
+                raise HTTPException(409, "Open this session in the Lab first.")
+            try:
+                state = mixing.use_layer(state, body.layer, body.enabled)
+            except ValueError as exc:
+                raise HTTPException(400, str(exc)) from exc
+            state["revision"] += 1
+            write_json(manager.folder(job_id) / "state.json", state)
+            return manager.status(job_id)
 
     @app.post("/api/jobs/{job_id}/lab/import", status_code=202)
     def import_track(job_id: str, file: Annotated[UploadFile, File()], revision: Annotated[int, Form()],
                      track: Annotated[str, Form()], fit: Annotated[str, Form()] = "exact"):
         filename = (file.filename or "audio").replace("\\", "/").split("/")[-1][:200]
         extension = service.Path(filename).suffix.lower()
-        if track not in mixing.TRACKS or fit not in {"exact", "fit"} or extension not in EXTENSIONS:
+        if fit not in {"exact", "fit"} or extension not in EXTENSIONS:
             raise HTTPException(400, "Choose a channel, an audio file and a duration rule.")
         with service.GUARD:
-            if manager.ready(job_id, revision) is None:
+            state = manager.ready(job_id, revision)
+            if state is None:
                 raise HTTPException(409, "Open this session in the Lab first.")
+            if track not in state["tracks"] or mixing.active_layer(state, track):
+                raise HTTPException(400, "Choose an unsplit channel to import into.")
             task = manager.folder(job_id) / "tasks" / uuid.uuid4().hex
             task.mkdir(parents=True)
             upload = task / ("upload" + extension)
@@ -294,7 +324,10 @@ def register(app, service):
             raise HTTPException(404, "That stem version is unavailable.")
         if start is None:
             name = state["assets"][asset_id]
-            return FileResponse(mixing.asset_path(folder, asset_id), filename=f"{name['track']}-{name['role']}.wav")
+            info = mixing.track_info(state, name["track"])
+            filename = (f"{name['track']}-{name['role']}.wav" if info["depth"] == 1 else
+                        f"layer-{info['depth']}-{info['kind']}-{asset_id[:8]}.wav")
+            return FileResponse(mixing.asset_path(folder, asset_id), filename=filename)
         try:
             return Response(mixing.segment(folder, state, asset_id, start, seconds), media_type="audio/wav")
         except ValueError as exc:

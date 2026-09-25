@@ -5,8 +5,8 @@
   <meta name="theme-color" content="#090e15"><meta name="author" content="cyr4x">
   <title>Mixing Lab — SoundShredder</title>
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/lab.css?v=3">
-  <script defer src="/static/lab-math.js"></script><script defer src="/static/lab-player.js?v=3"></script><script defer src="/static/lab.js?v=3"></script>
+  <link rel="stylesheet" href="/static/lab.css?v=4">
+  <script defer src="/static/lab-math.js?v=4"></script><script defer src="/static/lab-player.js?v=4"></script><script defer src="/static/lab.js?v=4"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to Mixing Lab</a>
@@ -61,6 +61,14 @@
         <div><span id="extraction-message" role="status" aria-live="polite">Starting extraction…</span><button id="cancel-extract">Cancel extraction</button></div>
         <progress id="extraction-meter" max="1" value="0" aria-label="Stem extraction progress"></progress>
       </div>
+    </section>
+    <section id="split-panel" class="split-panel panel" hidden aria-labelledby="split-heading">
+      <div><p class="overline">SPLIT AGAIN / ONE STEM, MORE LAYERS</p><h2 id="split-heading">Create the next layer.</h2><p id="split-description"></p><small>Splits the full stem into Dialogue, Music, Effects and Remainder. Your time edits carry into the new tracks. Deeper splits can introduce artifacts; compare with the parent.</small></div>
+      <div class="split-controls"><label>PROCESS ON<select id="split-device"><option value="auto">Auto · best available</option><option value="cpu">CPU</option><option value="cuda">NVIDIA GPU</option></select></label><button id="split-run" class="primary">Split stem</button><button id="split-dismiss">Keep current layer</button></div>
+    </section>
+    <section class="layer-navigation panel" aria-label="Stem layers">
+      <div><label class="overline" for="layer-view">EXPLORE YOUR LAYERS</label><select id="layer-view"><option value="">Layer 1 · Original stems</option></select><p id="layer-description">Split any stem again to explore a deeper layer.</p></div>
+      <div class="layer-actions"><button id="layer-back" hidden>↑ Parent layer</button><button id="layer-original" hidden>Listen to parent</button><button id="layer-toggle" hidden>Use parent in mix</button></div>
     </section>
     <div class="console">
       <section class="reference panel"><div class="panel-title"><span>01 / REFERENCE</span><label><input id="show-video" type="checkbox" checked> Video</label></div>

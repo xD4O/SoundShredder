@@ -53,3 +53,17 @@ test('reserved output headroom stays fixed when a timed edit or channel selectio
   state.tracks.music.asset=null;
   assert.equal(M.protection(state),trim);
 });
+
+test('nested layers play and export leaves without their parent being counted again',()=>{
+  const track=asset=>({asset,regions:[]});
+  const state={tracks:{speech:track('a'),music:track('b'),effects:track('c'),ambience:track(null),child:track('d'),rest:track('e'),deep:track('f')},
+    assets:Object.fromEntries(['speech','music','effects','child','rest','deep'].map((name,i)=>[String.fromCharCode(97+i),{track:name,role:'split',peak:.1}])),
+    layers:{L2:{id:'L2',parent_track:'effects',children:['child','rest'],active:true},L3:{id:'L3',parent_track:'child',children:['deep'],active:true}}};
+  assert.deepEqual(Object.keys(M.activeTracks(state)),['speech','music','deep','rest']);
+  assert.deepEqual(M.leafNames(state,'effects'),['deep','rest']);
+  const gain=M.protection(state);state.tracks.deep.regions=[{start:0,end:1,db:6}];assert.equal(M.protection(state),gain);
+  state.layers.L2.active=false;
+  assert.deepEqual(Object.keys(M.activeTracks(state)),['speech','music','effects']);
+  assert.equal(M.reachableTracks(state).has('deep'),false);
+  state.layers.L2.active=true;assert.equal(M.reachableTracks(state).has('deep'),true);
+});

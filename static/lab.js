@@ -8,7 +8,13 @@
   let time=0, mode='second', pending=false, active=false, timer=null, undo=[], audition=null, canvasRows={};
   let lastTask=null, sessionGeneration=0, busyLabel='', auditionEnd=null, auditionStart=0, labTask=null;
   let sessionsRequest=0;
+  let visibleLayer=null, splitTrack=null;
   const viewWrites=new Map(), closingSessions=new Set();
+  const info=name=>state?.track_info?.[name]||{label:labels[name],kind:name,depth:1};
+  const trackLabel=name=>labels[info(name).kind]||(info(name).kind==='remainder'?'Remainder':info(name).label);
+  const trackColor=name=>colors[info(name).kind]||'#b8aecb';
+  const visibleTracks=()=>visibleLayer&&state.layers?.[visibleLayer]?state.layers[visibleLayer].children:Object.keys(labels);
+  function trackPath(name){const meta=info(name);return meta.parent_track?`${trackPath(meta.parent_track)} → ${trackLabel(name)}`:trackLabel(name);}
   const endpoint=()=>`/api/jobs/${job}/lab`;
   const fmt=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${(t%60).toFixed(3).padStart(6,'0')}`;
   function notice(text) { $('notice').textContent=text; $('notice').hidden=!text; }
@@ -53,7 +59,8 @@
     for (const [name,t] of Object.entries(state.tracks)) {
       const gain=M.valueAt(t.regions,Math.min(time,state.duration-1e-9));
       const fader=$(`fader-${name}`);
-      if(fader) fader.value=gain===null?-60:gain;
+      if(!fader)continue;
+      fader.value=gain===null?-60:gain;
       $(`gain-${name}`).textContent=gain===null?'Muted':`${gain>0?'+':''}${gain.toFixed(1)} dB`;
       $(`mute-${name}`).setAttribute('aria-pressed',String(gain===null));
       let peak=0;
@@ -65,8 +72,9 @@
         if (audition&&asset.id!==audition || player?.solo&&player.solo!==name&&!audition) peak=0;
       }
       const db=M.dbfs(peak);
-      $(`peak-${name}`).textContent=db<=-100?'−∞ dBFS':`${db.toFixed(1)} dBFS`;
-      $(`meter-${name}`).style.height=`${Math.max(0,Math.min(100,(db+60)/60*100))}%`;
+      const grouped=!player?.playing&&M.activeLayer(state,name);
+      $(`peak-${name}`).textContent=grouped?`Layer ${grouped.depth} active`:db<=-100?'−∞ dBFS':`${db.toFixed(1)} dBFS`;
+      $(`meter-${name}`).style.height=grouped?'0%':`${Math.max(0,Math.min(100,(db+60)/60*100))}%`;
     }
     const master=player?.playing?M.dbfs(player.peak('master')):-120;
     $('master-db').textContent=master<=-100?'−∞':`${master.toFixed(1)} dBFS`;
@@ -77,13 +85,21 @@
   function setBusy() {
     const locked=pending||active;
     $('source-file').disabled=locked;
-    for (const id of ['preview','apply','export','extract','stem-file','undo']) $(id).disabled=locked||!state;
+    for (const id of ['preview','apply','export','extract','stem-file','undo','split-run','layer-toggle']) $(id).disabled=locked||!state;
+    $('split-device').disabled=locked;
     $('undo').disabled=locked||!undo.length;
     for(const node of document.querySelectorAll('.channel select,.channel input,.channel .reset,.channel [id^="mute-"]')) node.disabled=locked||!state;
     if(state) {
       for(const [name,t] of Object.entries(state.tracks)) for(const suffix of ['fader','mute','solo','reset']) {
-        const node=$(`${suffix}-${name}`); if(node)node.disabled=locked||!t.asset;
+        const node=$(`${suffix}-${name}`); if(node)node.disabled=locked||!t.asset||(suffix!=='solo'&&Boolean(M.activeLayer(state,name)));
       }
+      const leaves=M.activeTracks(state),reachable=M.reachableTracks(state);
+      for(const name of visibleTracks()){
+        $(`version-${name}`).disabled=locked||Boolean(M.activeLayer(state,name));
+        $(`split-${name}`).disabled=locked||!leaves[name]||state.assets[state.tracks[name].asset]?.role==='preview'||info(name).depth>=8;
+      }
+      $('split-run').disabled=locked||!leaves[splitTrack];
+      if(visibleLayer)$('layer-toggle').disabled=locked||!reachable.has(state.layers[visibleLayer].parent_track);
     }
     $('saved').textContent=pending?'Saving…':active?'Processing…':state?`Saved · revision ${state.revision}`:'';
     showExtraction();
@@ -94,7 +110,7 @@
     const missing=stemNames.filter(name=>!state.tracks[name].asset);
     const extracting=active&&labTask?.operation==='extract';
     const stopped=!active&&labTask?.operation==='extract'&&['failed','cancelled'].includes(labTask.status);
-    const ready=!missing.length, playable=Object.values(state.tracks).some(track=>track.asset);
+    const ready=!missing.length, playable=Object.keys(M.activeTracks(state)).length>0;
     $('stem-extraction').dataset.state=extracting?'running':ready?'ready':stopped?'stopped':'empty';
     $('extraction-title').textContent=extracting?'Extracting your stems…':ready?'Your stems are ready.':
       stopped?(labTask.status==='cancelled'?'Extraction cancelled.':'Extraction stopped.'):
@@ -140,14 +156,63 @@
       saveTracks(next);
     } catch(error) {notice(error.message);}
   }
+  function renderLayers() {
+    if(visibleLayer&&!state.layers?.[visibleLayer])visibleLayer=null;
+    const select=$('layer-view');select.replaceChildren(new Option('Layer 1 · Original stems',''));
+    for(const layer of Object.values(state.layers||{})){
+      select.add(new Option(`Layer ${layer.depth} · ${trackPath(layer.parent_track)}${layer.active?'':' · saved'}`,layer.id));
+    }
+    select.value=visibleLayer||'';
+    const layer=state.layers?.[visibleLayer],reachable=M.reachableTracks(state);
+    $('layer-back').hidden=$('layer-original').hidden=$('layer-toggle').hidden=!layer;
+    if(layer){
+      const used=layer.active&&reachable.has(layer.parent_track);
+      $('layer-description').textContent=`${trackPath(layer.parent_track)} → Dialogue / Music / Effects / Remainder. ${used?'These tracks replace their parent in the master mix.':'Saved layer; currently outside the master mix.'}`;
+      $('layer-toggle').textContent=layer.active?'Use parent in mix':'Use this split in mix';
+    }else $('layer-description').textContent='Layer 1 is your original set of stems. Split again creates a deeper layer from one stem. Play always follows the full active mix.';
+    history.replaceState({},'',`/lab?session=${job}${visibleLayer?`&layer=${visibleLayer}`:''}`);
+    const choices=Object.keys(state.tracks).filter(name=>reachable.has(name)&&!M.activeLayer(state,name));
+    for(const id of ['target-track','import-track']){
+      const menu=$(id),selected=menu.value;menu.replaceChildren();
+      for(const name of choices)menu.add(new Option(info(name).depth===1?trackLabel(name):`Layer ${info(name).depth} · ${trackPath(name)}`,name));
+      menu.value=choices.includes(selected)?selected:choices.find(name=>state.tracks[name].asset)||choices[0];
+    }
+  }
+  function chooseLayer(id) {
+    if(!state)return;
+    visibleLayer=id;splitTrack=null;$('split-panel').hidden=true;
+    renderLayers();makeChannels();renderResult();setBusy();showTime();
+  }
+  function showSplit(name) {
+    if(pending||active||!M.activeTracks(state)[name])return;
+    splitTrack=name;$('split-panel').hidden=false;
+    $('split-heading').textContent=`Create Layer ${info(name).depth+1}.`;
+    $('split-description').textContent=`Split ${trackPath(name)} again with Bandit. The current stem stays available as the parent, and the four new tracks become the active mix for this branch.`;
+    $('split-run').textContent=`Split into Layer ${info(name).depth+1}`;
+    setBusy();$('split-panel').scrollIntoView({behavior:'smooth',block:'center'});$('split-run').focus({preventScroll:true});
+  }
+  async function toggleLayer() {
+    if(pending||active||!visibleLayer)return;
+    const generation=sessionGeneration,layer=state.layers[visibleLayer];
+    stop();pending=true;setBusy();notice('');
+    try {const data=await api(`${endpoint()}/layer`,json('PUT',{revision:state.revision,layer:layer.id,enabled:!layer.active}));if(generation===sessionGeneration)accept(data);}
+    catch(error){if(generation===sessionGeneration)notice(error.message);}
+    finally{if(generation===sessionGeneration){pending=false;setBusy();}}
+  }
   function makeChannels() {
     $('channels').replaceChildren(); $('lanes').replaceChildren(); canvasRows={};
-    for(const [name,label] of Object.entries(labels)) {
+    for(const name of visibleTracks()) {
+      const label=trackLabel(name);
       const t=state.tracks[name], channel=document.createElement('div');
-      channel.className=`channel${t.asset?'':' empty'}`; channel.style.setProperty('--color',colors[name]);
+      channel.className=`channel${t.asset?'':' empty'}`; channel.style.setProperty('--color',trackColor(name));
       // All interpolated values below are fixed local channel identifiers and labels.
       channel.innerHTML=`<h3>${label}</h3><select id="version-${name}" aria-label="${label} stem version"></select><div class="level"><div class="meter"><i id="meter-${name}"></i></div><input id="fader-${name}" aria-label="${label} gain in selected interval" type="range" min="-60" max="6" step="0.5" value="0"><div class="scale"><span>+6</span><span>0</span><span>−18</span><span>−36</span><span>−60</span></div></div><output id="gain-${name}">0.0 dB</output><div id="peak-${name}" class="peak">−∞ dBFS</div><div class="channel-actions"><button id="mute-${name}" title="Mute only the selected interval" aria-label="Mute ${label} in selected interval" aria-pressed="false">M</button><button id="solo-${name}" title="Solo for listening; does not affect export" aria-label="Solo ${label}" aria-pressed="false">S</button><a id="download-${name}" title="Download selected source stem before fader edits" aria-label="Download ${label} source stem">↓</a></div><button id="reset-${name}" class="reset">Reset interval</button>`;
       $('channels').append(channel);
+      const badge=document.createElement('small');badge.className='layer-badge';badge.textContent=`LAYER ${info(name).depth}`;channel.prepend(badge);
+      const split=document.createElement('button');split.id=`split-${name}`;split.className='split-stem';split.textContent='Split again ↗';
+      split.title=`Split ${label} into Layer ${info(name).depth+1}`;split.onclick=()=>showSplit(name);channel.append(split);
+      const deeper=M.activeLayer(state,name);
+      if(deeper){const button=document.createElement('button');button.className='open-layer';button.textContent=`Open Layer ${deeper.depth} →`;button.onclick=()=>chooseLayer(deeper.id);channel.append(button);}
       const select=$(`version-${name}`), empty=new Option('No track', ''); select.add(empty);
       for(const asset of Object.values(state.assets).filter(a=>a.track===name&&a.role!=='removed')) select.add(new Option(asset.label,asset.id));
       select.value=t.asset||'';
@@ -160,12 +225,12 @@
       $(`reset-${name}`).onclick=()=>gainEdit(name,0);
       $(`solo-${name}`).onclick=()=>{
         const solo=player.solo===name?null:name; player.setSolo(solo);
-        for(const k of Object.keys(labels))$(`solo-${k}`).setAttribute('aria-pressed',String(k===solo));
+        for(const k of visibleTracks())$(`solo-${k}`).setAttribute('aria-pressed',String(k===solo));
         showTime();
       };
       $(`solo-${name}`).setAttribute('aria-pressed',String(player?.solo===name));
       const link=$(`download-${name}`);if(t.asset)link.href=`${endpoint()}/assets/${t.asset}`;else link.hidden=true;
-      const lane=document.createElement('div'); lane.className='lane';lane.style.setProperty('--color',colors[name]);
+      const lane=document.createElement('div'); lane.className='lane';lane.style.setProperty('--color',trackColor(name));
       const title=document.createElement('span'); title.textContent=label;
       const canvas=document.createElement('canvas');canvas.setAttribute('aria-label',`${label} waveform and timed volume edits`);
       canvas.tabIndex=0;canvas.setAttribute('role','slider');canvas.setAttribute('aria-valuemin','0');canvas.setAttribute('aria-valuemax',String(state.duration));
@@ -191,7 +256,7 @@
       const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);
       const x=t=>t/state.duration*width, track=state.tracks[name], asset=state.assets[track.asset];
       ctx.fillStyle='#77efc91a';ctx.fillRect(x(start),0,x(end)-x(start),height);
-      ctx.strokeStyle=colors[name];ctx.globalAlpha=.45;ctx.lineWidth=1;
+      ctx.strokeStyle=trackColor(name);ctx.globalAlpha=.45;ctx.lineWidth=1;
       if(asset) {
         const peaks=asset.peaks, norm=Math.max(.05,asset.peak);
         ctx.beginPath();for(let px=1;px<width;px+=3) {const index=Math.min(peaks.length-1,Math.floor(px/width*peaks.length));const h=Math.min(20,peaks[index]/norm*20);ctx.moveTo(px,24-h);ctx.lineTo(px,24+h);}ctx.stroke();
@@ -226,7 +291,7 @@
     const out=$('downloads'), ex=state.export;out.replaceChildren();out.hidden=!ex;if(!ex)return;
     const p=document.createElement('p');p.textContent=ex.revision===state.revision?'Export matches the saved mix.':`Export is from revision ${ex.revision}. Export again to include newer edits.`;out.append(p);
     const names={'mix.wav':'WAV mix','mixing-lab.zip':'All stems + mix ZIP','mixed-video.mp4':'Video + new sound','mix-report.json':'Edit report'};
-    for(const filename of ex.files) {const a=document.createElement('a');a.textContent=names[filename]||`${labels[filename.split('.')[0]]} WAV`;a.href=`${endpoint()}/exports/${ex.id}/${filename}`;out.append(a);}
+    for(const filename of ex.files) {const a=document.createElement('a');a.textContent=names[filename]||ex.file_labels?.[filename]||`${labels[filename.split('.')[0]]||filename} WAV`;a.href=`${endpoint()}/exports/${ex.id}/${filename}`;out.append(a);}
     if(ex.video_error){const error=document.createElement('p');error.textContent=ex.video_error;out.append(error);}
   }
   function renderState() {
@@ -246,17 +311,22 @@
     if(!state.fps&&mode==='frame')mode='second';
     $('frame-note').textContent=state.fps?'Drag a lane for a range · frame steps use nominal FPS (VFR may differ)':'Drag a lane for a range · use seconds when video FPS is unavailable';
     $('trim').textContent=`Output protection: ${M.dbfs(M.protection(state)).toFixed(1)} dB · reserves +6 dB headroom · same trim on export`;
-    makeChannels();setScope(mode);renderResult();renderDownloads();setBusy();showTime();
+    renderLayers();makeChannels();setScope(mode);renderResult();renderDownloads();setBusy();showTime();
     if(focus?.match(/^(fader|version|mute|reset)-/))$(focus)?.focus({preventScroll:true});
   }
   function accept(data) {
     labTask=data.task;
     active=Boolean(data.task?.active);
     if(data.state && (!state||state.revision<data.state.revision)) {
+      const changedLayers=JSON.stringify(state?.layers||{})!==JSON.stringify(data.state.layers||{});
+      if(data.task?.operation==='split'&&data.state.last_layer!==state?.last_layer){visibleLayer=data.state.last_layer;splitTrack=null;$('split-panel').hidden=true;}
+      if(changedLayers)undo=[];
       if(state&&state.last_task!==data.state.last_task&&['import','extract','cleanup'].includes(data.task?.operation)){
         undo.push(structuredClone(state.tracks));undo=undo.slice(-30);
       }
-      stop();state=data.state;audition=null;auditionEnd=null;renderState();setAuditionLabel();
+      stop();state=data.state;audition=null;auditionEnd=null;
+      if(player?.solo&&(!M.reachableTracks(state).has(player.solo)||!M.leafNames(state,player.solo).length))player.solo=null;
+      renderState();setAuditionLabel();
     } else if(data.state&&state.revision===data.state.revision){state=data.state;renderDownloads();}
     $('job-progress').hidden=!active||(labTask?.operation==='extract'&&Boolean(state));
     if(data.task){$('progress-label').textContent=data.task.message;$('progress').value=data.task.progress||0;}
@@ -294,8 +364,10 @@
   }
   function listen(asset,start,end) {stop();audition=asset;time=start;auditionStart=start;auditionEnd=end;setAuditionLabel();player.start(time,state,audition);}
   async function openSession(id) {
+    const requestedLayer=id===job?new URLSearchParams(location.search).get('layer'):null;
     ++sessionGeneration;const generation=sessionGeneration;clearTimeout(timer);stop();player?.dispose();player=null;
     state=null;job=id;undo=[];audition=null;auditionEnd=null;lastTask=null;labTask=null;active=false;pending=false;canvasRows={};
+    visibleLayer=requestedLayer;splitTrack=null;$('split-panel').hidden=true;
     history.replaceState({},'',id?`/lab?session=${id}`:'/lab');
     $('separator-link').href=id?`/?session=${id}`:'/';
     $('work').hidden=true;$('welcome').hidden=false;$('job-progress').hidden=true;notice('');time=0;
@@ -396,8 +468,15 @@
     catch(error){notice(error.message);}
   };
   $('extract').onclick=()=>action('extract',{device:$('extract-device').value});$('export').onclick=()=>action('export',{video:state.video&&$('export-video').checked});
-  $('extract-device').onchange=()=>{$('device').value=$('extract-device').value;};
-  $('device').onchange=()=>{$('extract-device').value=$('device').value;};
+  for(const id of ['device','extract-device','split-device'])$(id).onchange=()=>{
+    for(const other of ['device','extract-device','split-device'])$(other).value=$(id).value;
+  };
+  $('layer-view').onchange=()=>chooseLayer($('layer-view').value||null);
+  $('layer-back').onclick=()=>chooseLayer(info(state.layers[visibleLayer].parent_track).layer||null);
+  $('layer-original').onclick=()=>{const layer=state.layers[visibleLayer];listen(layer.source_track.asset,0,state.duration);};
+  $('layer-toggle').onclick=toggleLayer;
+  $('split-dismiss').onclick=()=>{$('split-panel').hidden=true;splitTrack=null;};
+  $('split-run').onclick=()=>{if(splitTrack)action('split',{track:splitTrack,device:$('split-device').value});};
   $('cancel').onclick=async()=>{const generation=sessionGeneration;try{const data=await api(`${endpoint()}/cancel`,{method:'POST'});if(generation===sessionGeneration)accept(data);}catch(error){if(generation===sessionGeneration)notice(error.message);}};
   $('cancel-extract').onclick=()=>$('cancel').click();
   $('stem-file').onchange=async e=>{
@@ -414,6 +493,6 @@
   };
   window.addEventListener('resize',()=>drawLanes());
   window.addEventListener('pagehide',()=>{stop();player?.dispose();clearTimeout(timer);});
-  api('/api/system').then(info=>{$('version').textContent=`v${info.version}`;for(const id of ['device','extract-device'])$(id).querySelector('[value="cuda"]').disabled=!info.gpu_available;}).catch(error=>notice(error.message));
+  api('/api/system').then(info=>{$('version').textContent=`v${info.version}`;for(const id of ['device','extract-device','split-device'])$(id).querySelector('[value="cuda"]').disabled=!info.gpu_available;}).catch(error=>notice(error.message));
   openSession(job);
 })();

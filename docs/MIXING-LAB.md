@@ -47,9 +47,27 @@ The channel meters show **peak level in dBFS**, separate from fader gain in dB. 
 
 **S** solos a channel for audition only; solo does not affect exports. Each channel's version selector changes which complete asset feeds the channel. Its existing time edits still apply. **No track** removes that channel from the whole mix until a version is selected again.
 
-The displayed **Output protection** trim reserves headroom for the full +6 dB fader range. It is shared across tracks and used identically in mix playback and export. Volume edits do not recalculate that trim, so a boost in one interval does not turn down the rest of the timeline. Adding/replacing assets can change the reserved headroom. Before/Cleaned/Removed auditions play the asset itself, before fader automation and shared output trim.
+The displayed **Output protection** trim reserves headroom for the full +6 dB fader range. It is shared across tracks and used identically in mix playback and export. Volume edits do not recalculate that trim, so a boost in one interval does not turn down the rest of the timeline. Adding/replacing assets or changing which split branches are active can change the reserved headroom. Before/Cleaned/Removed auditions play the asset itself, before fader automation and shared output trim.
 
 Bandit's estimates can contain leakage or missing detail. A mixer changes their balance; it cannot recover detail that separation failed to capture. The Lab does not claim perfect reconstruction of the original recording.
+
+## Split a stem into deeper layers
+
+**Layer 1** is the original set of Dialogue, Music, Effects and optional Ambience. Each channel has **Split again**. This reruns Bandit on that channel's selected full stem, rather than on the original video again.
+
+1. Click **Split again** on the stem you want to explore.
+2. Choose Auto, CPU or NVIDIA GPU, then **Split into Layer 2**. This processes the whole stem; the frame/second/range selection controls later volume edits.
+3. The new layer contains **Dialogue, Music, Effects and Remainder**. Remainder retains the difference between the parent and the three model estimates, so their combined unedited audio preserves the parent signal within floating-point precision. It can contain useful sound, artifacts or very little audio; audition it before muting it.
+4. Mix, solo, download, import into or target-clean the child tracks. Their starting time edits are copied from the parent. Each child has its own controls after that.
+5. Click **Split again** on a child to create **Layer 3**, and continue from an active child when needed. Layer numbers count depth, not removal strength or a guaranteed quality improvement.
+
+Use **Explore your layers** to move between branches. Changing the viewed layer does not change what plays: the master includes all active branches. Once a split is active, its children replace its parent in playback and export; the parent is not added a second time. The parent's faders and version selector are locked while its split is in use. **Open Layer** takes you to its child controls. During playback the parent meter/solo follows its active descendants; while paused its meter label points to the child layer.
+
+**Listen to parent** auditions the saved source before time edits and output protection. **Use parent in mix** restores the parent with its saved time edits. The deeper tracks and their edits remain saved; **Use this split in mix** restores that branch. Activate an ancestor before reactivating a deeper saved branch. If you change the parent's source or time edits after returning to it, split that changed parent again; an older split retains the settings it was made from.
+
+Higher layers still use the same dialogue/music/effects model. They do not introduce instrument-specific models or guarantee cleaner isolation. Repeated separation can add leakage or artifacts. Compare the parent and children with your footage. Normal prompt cleanup remains available for individual active children through **Target a sound**.
+
+The development build allows up to **Layer 8**, **16 active tracks** and **64 stored track slots** per session. Each split adds four stored child tracks. These limits bound playback and project growth; saved parent layers and source audio remain available. Each split is an explicit processing job, with the usual progress, cancellation and retry behavior. Gain Undo history restarts when the layer structure or active branch changes; use the parent/split controls to change branches.
 
 ## Target a sound inside one stem
 
@@ -77,7 +95,7 @@ Imports are resampled to the session rate. Mono is duplicated for a stereo sessi
 
 ## Export
 
-**Export mix & stems** produces full-length 24-bit WAVs for the master and each active automated channel, an edit/provenance report, and a ZIP containing those files. The source-stem download arrow on a channel instead downloads the selected asset **before** fader edits. Use the exported channel WAV for a track with its automation applied.
+**Export mix & stems** produces full-length 24-bit WAVs for the master and each active automated channel, an edit/provenance report, and a ZIP containing those files. With deeper layers, exports include active child tracks instead of their parent; child filenames include the layer, stem type and a short unique identifier. The report records the layer tree and active selections. The source-stem download arrow on a channel instead downloads the selected asset **before** fader edits. Use the exported channel WAV for a track with its automation applied.
 
 For video sources, **Include footage with the new soundtrack** also creates an MP4. The picture stream is copied without re-encoding, and the replacement audio is encoded as AAC. If the original picture cannot be copied into MP4, the WAV mix remains the editor-friendly alternative; read the export status. The original embedded soundtrack is replaced, not layered underneath the new mix.
 
@@ -87,6 +105,6 @@ Exports keep their revision. After further edits, the download area marks the ol
 
 Processing runs in an owned worker process. Cancellation stops that worker and its child processes and keeps the previous saved state. Failed or partial worker outputs do not become selected versions. Retrying is explicit. Concurrent processing is blocked, and stale edits from another tab are rejected rather than overwriting a newer saved mix.
 
-Playback buffers up to two 20-second chunks per active channel, instead of decoding all four full-length tracks into browser memory. If buffering falls behind, playback pauses with a retry message. All stems use one Web Audio clock; video follows that playhead. Backend inference still has the existing model and memory requirements.
+Playback buffers up to two 20-second chunks per active channel, instead of decoding every full-length track into browser memory. If buffering falls behind, playback pauses with a retry message. All stems use one Web Audio clock; video follows that playhead. Backend inference still has the existing model and memory requirements.
 
 No EQ, compression, stereo panning, instrument-specific stems, automatic ambience separation, or automatic update installation is included. Windows/Mac installer and native lifecycle tests remain release gates. See [verification](../VERIFICATION.md), [release plan](NEXT-RELEASE-PLAN.md) and [future work](../ROADMAP.md).

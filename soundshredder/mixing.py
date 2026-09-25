@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import contextlib
+import copy
 import io
 import math
 import shutil
@@ -21,6 +22,85 @@ TRACKS = {"speech": "Dialogue", "music": "Music", "effects": "Effects", "ambienc
 FADE = .005
 PEAK_HZ = 10
 CHUNK_SECONDS = 20
+MAX_LAYER_DEPTH = 8
+MAX_ACTIVE_TRACKS = 16
+MAX_TRACKS = 64
+
+
+def track_info(state, name):
+    return state.get("track_info", {}).get(name, dict(label=TRACKS.get(name, name), depth=1))
+
+
+def active_layer(state, name):
+    return next((layer for layer in state.get("layers", {}).values()
+                 if layer["parent_track"] == name and layer["active"]), None)
+
+
+def active_tracks(state):
+    selected = {}
+
+    def visit(name):
+        track = state["tracks"][name]
+        if not track["asset"]:
+            return
+        layer = active_layer(state, name)
+        if layer:
+            for child in layer["children"]:
+                visit(child)
+        else:
+            selected[name] = track
+
+    for name in TRACKS:
+        visit(name)
+    return selected
+
+
+def reachable_tracks(state):
+    names = set()
+
+    def visit(name):
+        names.add(name)
+        layer = active_layer(state, name)
+        if layer:
+            for child in layer["children"]:
+                visit(child)
+
+    for name in TRACKS:
+        visit(name)
+    return names
+
+
+def split_source(state, name):
+    if name not in active_tracks(state):
+        raise ValueError("Choose a playing stem from an active layer to split.")
+    asset = state["tracks"][name]["asset"]
+    if state["assets"][asset]["role"] == "preview":
+        raise ValueError("Apply cleanup or choose a full stem version before splitting.")
+    if track_info(state, name)["depth"] >= MAX_LAYER_DEPTH:
+        raise ValueError(f"This session supports up to Layer {MAX_LAYER_DEPTH}.")
+    if len(active_tracks(state)) + 3 > MAX_ACTIVE_TRACKS or len(state["tracks"]) + 4 > MAX_TRACKS:
+        raise ValueError("This session has reached its split-track limit. Use a parent layer or start a new session.")
+    return asset
+
+
+def use_layer(state, layer_id, enabled):
+    layer = state.get("layers", {}).get(layer_id)
+    if not layer:
+        raise ValueError("That layer is unavailable.")
+    if layer["parent_track"] not in reachable_tracks(state):
+        raise ValueError("Use this branch's parent layer in the mix first.")
+    parent = state["tracks"][layer["parent_track"]]
+    if enabled and parent != layer["source_track"]:
+        raise ValueError("The parent stem or its time edits changed. Split it again to use those changes.")
+    result = copy.deepcopy(state)
+    if enabled:
+        for other in result["layers"].values():
+            if other["parent_track"] == layer["parent_track"]:
+                other["active"] = False
+    result["layers"][layer_id]["active"] = enabled
+    if len(active_tracks(result)) > MAX_ACTIVE_TRACKS:
+        raise ValueError(f"Keep the mix within {MAX_ACTIVE_TRACKS} active tracks.")
+    return result
 
 
 def validate_regions(regions, duration):
@@ -59,7 +139,8 @@ def envelope(regions, times):
 
 def protection(state):
     bound = 0
-    for name in state["tracks"]:
+    # Keep the original fixed headroom convention for sessions without layers.
+    for name in (active_tracks(state) if state.get("layers") else state["tracks"]):
         assets = [a for a in state["assets"].values() if a["track"] == name and a["role"] != "removed"]
         if assets:
             # Reserve the full +6 dB fader range, independent of time edits. An
@@ -70,12 +151,14 @@ def protection(state):
 
 
 def validate_edit(state, tracks):
-    if not isinstance(tracks, dict) or set(tracks) != set(TRACKS):
-        raise ValueError("Save all four Lab channels together.")
+    if not isinstance(tracks, dict) or set(tracks) != set(state["tracks"]):
+        raise ValueError("Save all Lab channels together.")
     result = {}
     for name, track in tracks.items():
         if not isinstance(track, dict) or set(track) != {"asset", "regions"}:
             raise ValueError("Invalid track settings.")
+        if active_layer(state, name) and track != state["tracks"][name]:
+            raise ValueError("Use the parent layer before changing a stem that has been split.")
         asset = track["asset"]
         if asset is not None:
             if not isinstance(asset, str) or asset not in state["assets"]:
@@ -169,7 +252,7 @@ def segment(lab, state, asset_id, start, seconds):
 
 
 def render(lab, state, target, progress, video=None):
-    selected = {name: t for name, t in state["tracks"].items() if t["asset"]}
+    selected = active_tracks(state)
     if not selected:
         raise ValueError("Add at least one stem before exporting.")
     if any(state["assets"][t["asset"]]["role"] == "preview" for t in selected.values()):
@@ -177,10 +260,16 @@ def render(lab, state, target, progress, video=None):
     target.mkdir(exist_ok=True)
     trim = protection(state)
     rate, frames, channels = state["rate"], state["frames"], state["channels"]
-    files = [f"{name}.wav" for name in selected] + ["mix.wav", "mix-report.json"]
+    filenames = {name: f"{name}.wav" if name in TRACKS else
+                 f"layer-{track_info(state, name)['depth']}-{track_info(state, name)['kind']}-{name[:8]}.wav"
+                 for name in selected}
+    file_labels = {filename: f"Layer {track_info(state, name)['depth']} · {track_info(state, name)['label']} WAV"
+                   for name, filename in filenames.items()}
+    files = list(filenames.values()) + ["mix.wav", "mix-report.json"]
+    filenames["mix"] = "mix.wav"
     with contextlib.ExitStack() as stack:
         readers = {name: stack.enter_context(sf.SoundFile(asset_path(lab, t["asset"]))) for name, t in selected.items()}
-        writers = {name: stack.enter_context(sf.SoundFile(target / f"{name}.wav", "w", rate, channels,
+        writers = {name: stack.enter_context(sf.SoundFile(target / filenames[name], "w", rate, channels,
                                                            subtype="PCM_24")) for name in [*selected, "mix"]}
         for offset in range(0, frames, rate):
             size = min(rate, frames - offset)
@@ -199,7 +288,8 @@ def render(lab, state, target, progress, video=None):
               "duration": state["duration"], "output_gain": trim, "edge_fade_seconds": FADE,
               "tracks": selected, "assets": {t["asset"]: {k: v for k, v in state["assets"][t["asset"]].items()
                                                           if k != "peaks"} for t in selected.values()},
-              "solo_is_audition_only": True, "format": "24-bit PCM WAV", "video": None}
+              "layers": state.get("layers", {}), "track_info": state.get("track_info", {}),
+              "track_files": filenames, "solo_is_audition_only": True, "format": "24-bit PCM WAV", "video": None}
     if video:
         import imageio_ffmpeg
 
@@ -225,7 +315,7 @@ def render(lab, state, target, progress, video=None):
         for filename in files:
             bundle.write(target / filename, filename)
     return dict(files=[*files, "mixing-lab.zip"], revision=state["revision"],
-                output_gain=trim, video_error=report.get("video_error"))
+                file_labels=file_labels, output_gain=trim, video_error=report.get("video_error"))
 
 
 def tidy_scratch(task):
@@ -273,6 +363,55 @@ def work(task):
             if path.is_file() and not state["tracks"][track]["asset"]:
                 asset = add_asset(lab, state, path, track, "Separated stem", "original")
                 state["tracks"][track]["asset"] = asset
+    elif operation == "split":
+        from .worker import process
+
+        name = request["track"]
+        base = split_source(state, name)
+        parent = state["tracks"][name]
+        depth = track_info(state, name)["depth"] + 1
+        inner = task / "separation"
+        inner.mkdir()
+        shutil.copyfile(asset_path(lab, base), inner / "source.wav")
+        write_json(inner / "request.json", dict(source="source.wav", filename=f"Layer {depth} stem split",
+                                                 mode="stems", device=request["device"], cpu_fallback=True,
+                                                 gains=dict(speech=1, music=1, effects=1)))
+        process(inner)
+        source_dir = inner / "output"
+        progress(.91, f"Preserving remaining audio and saving Layer {depth}…")
+        # Keep the full parent signal available: model estimates may not sum to
+        # their input. A separate residual prevents silently dropping that audio.
+        with contextlib.ExitStack() as stack:
+            source = stack.enter_context(sf.SoundFile(asset_path(lab, base)))
+            readers = [stack.enter_context(sf.SoundFile(source_dir / f"{kind}.wav"))
+                       for kind in ("speech", "music", "effects")]
+            for reader in readers:
+                if (reader.frames, reader.samplerate, reader.channels) != (state["frames"], state["rate"], state["channels"]):
+                    raise ValueError("The deeper split did not preserve the stem's timing.")
+            residual = stack.enter_context(sf.SoundFile(source_dir / "remainder.wav", "w", state["rate"],
+                                                        state["channels"], subtype="FLOAT"))
+            while len(block := source.read(state["rate"], dtype="float64", always_2d=True)):
+                for reader in readers:
+                    block -= reader.read(len(block), dtype="float64", always_2d=True)
+                residual.write(block)
+        layer_id = uuid.uuid4().hex
+        children = []
+        for kind, label in (("speech", "Dialogue"), ("music", "Music"), ("effects", "Effects"), ("remainder", "Remainder")):
+            child = uuid.uuid4().hex
+            asset = add_asset(lab, state, source_dir / f"{kind}.wav", child, f"Layer {depth} · {label}", "split",
+                              parent=base, layer=layer_id, depth=depth, kind=kind)
+            state["tracks"][child] = dict(asset=asset, regions=copy.deepcopy(parent["regions"]))
+            state.setdefault("track_info", {})[child] = dict(label=label, kind=kind, depth=depth,
+                                                             parent_track=name, layer=layer_id)
+            children.append(child)
+        state.setdefault("layers", {})[layer_id] = dict(id=layer_id, depth=depth, parent_track=name,
+                                                        source_track=copy.deepcopy(parent), children=children,
+                                                        active=True, method="Bandit v2")
+        # Earlier alternatives stay available without being mixed twice.
+        for key, layer in state["layers"].items():
+            if key != layer_id and layer["parent_track"] == name:
+                layer["active"] = False
+        state["last_layer"] = layer_id
     elif operation == "import":
         audio, rate = decode(task / request["upload"], task)
         original_seconds = len(audio) / rate

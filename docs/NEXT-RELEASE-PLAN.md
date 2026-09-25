@@ -37,6 +37,8 @@ If multiple targets are selected, define how each is processed, previewed and un
 
 ## Added scope: Mixing Lab
 
+September 25 addition: the owner chose recursive **dialogue/music/effects** separation for deeper stems. **Split again** now creates numbered layers from the selected stem, retains a Remainder channel and the parent, and supports nested mixing, time edits, targeted cleanup and exports. This uses the existing Bandit model, not a new instrument or prompt-splitting model. Perceptual quality across content and packaged-platform validation remain release checks.
+
 Following the initial targeted-cleanup prototype, the owner approved a dedicated Mixing Lab. It now has a source implementation: reference video and one audio clock, stem peak meters, frame/second/range automation, per-stem prompt cleanup and saved versions, imported replacements and optional Ambience, and mix/stem/video exports. The [Lab guide](MIXING-LAB.md) describes the actual controls and limitations.
 
 This extends the earlier scope table's video-export deferral **for the Lab**: its export can copy the source picture into an MP4 and replace the soundtrack, with WAV delivery retained if the picture format is incompatible. The earlier Target a Sound workspace continues to export WAV/ZIP. Automatic ambience extraction remains research, not a shipped model capability.

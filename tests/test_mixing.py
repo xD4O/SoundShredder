@@ -175,6 +175,106 @@ def test_closed_lab_sessions_remain_accessible_beyond_recent_history_limit(clien
     assert next(item for item in sessions if item["id"] == folder.name)["closed"] is True
 
 
+@pytest.fixture
+def layer_separator(monkeypatch):
+    from soundshredder import worker
+
+    inputs = []
+
+    def separate(directory):
+        audio, rate = sf.read(directory / "source.wav", dtype="float32", always_2d=True)
+        inputs.append(audio.copy())
+        output = directory / "output"
+        output.mkdir()
+        for kind, fraction in (("speech", .2), ("music", .35), ("effects", .3)):
+            sf.write(output / f"{kind}.wav", audio * fraction, rate, subtype="FLOAT")
+
+    monkeypatch.setattr(worker, "process", separate)
+    return inputs
+
+
+def test_recursive_layers_keep_parent_audio_edits_and_export_only_active_leaves(client, layer_separator):
+    api, folder, state = client
+    url = f"/api/jobs/{folder.name}/lab"
+    state["tracks"]["effects"]["regions"] = [dict(start=1, end=2, db=-9)]
+    write_json(folder / "lab/state.json", state)
+    parent_id = state["tracks"]["effects"]["asset"]
+    parent_path = mixing.asset_path(folder / "lab", parent_id)
+    original_bytes = parent_path.read_bytes()
+    original, rate = sf.read(parent_path, dtype="float32", always_2d=True)
+    assert api.post(url + "/actions/split", json=dict(revision=1, track="effects", device="cpu")).status_code == 202
+    second = finish(api, folder)["state"]
+    layer2 = second["layers"][second["last_layer"]]
+    assert layer2["depth"] == 2 and len(layer2["children"]) == 4
+    assert second["tracks"]["effects"] == state["tracks"]["effects"]
+    assert second["tracks"]["speech"] == state["tracks"]["speech"]
+    assert second["tracks"]["music"] == state["tracks"]["music"]
+    children = [sf.read(mixing.asset_path(folder / "lab", second["tracks"][name]["asset"]),
+                        dtype="float64", always_2d=True)[0] for name in layer2["children"]]
+    np.testing.assert_allclose(sum(children), original, atol=3e-8)
+    np.testing.assert_array_equal(layer_separator[0], original)
+    for name in layer2["children"]:
+        assert second["tracks"][name]["regions"] == state["tracks"]["effects"]["regions"]
+    child = layer2["children"][1]
+    assert api.post(url + "/actions/split", json=dict(revision=2, track=child, device="cpu")).status_code == 202
+    third = finish(api, folder)["state"]
+    layer3 = third["layers"][third["last_layer"]]
+    assert layer3["depth"] == 3 and layer3["parent_track"] == child
+    np.testing.assert_array_equal(layer_separator[1], children[1].astype(np.float32))
+    leaves = mixing.active_tracks(third)
+    assert "effects" not in leaves and child not in leaves and len(leaves) == 9
+    assert parent_path.read_bytes() == original_bytes
+    target = folder / "lab/test-export"
+    result = mixing.render(folder / "lab", third, target, lambda *_: None)
+    report = read_json(target / "mix-report.json")
+    assert set(report["tracks"]) == set(leaves) and report["layers"] == third["layers"]
+    assert all(result["file_labels"][name].startswith("Layer ") for name in result["file_labels"])
+    total = sum(sf.read(target / report["track_files"][name], always_2d=True)[0] for name in leaves)
+    master, exported_rate = sf.read(target / "mix.wav", always_2d=True)
+    assert exported_rate == rate and master.shape == original.shape
+    np.testing.assert_allclose(total, master, atol=2e-6)
+    expected_effects = original * mixing.envelope(state["tracks"]["effects"]["regions"], np.arange(len(original))/rate)[:, None]
+    expected = (expected_effects + layer_separator[0]/3 + layer_separator[0]*2/3) * result["output_gain"]
+    np.testing.assert_allclose(master, expected, atol=3e-7)
+    restore = dict(revision=3, layer=layer2["id"], enabled=False)
+    assert api.put(url + "/layer", json={**restore, "revision": 1}).status_code == 409
+    response = api.put(url + "/layer", json=restore)
+    assert response.status_code == 200
+    restored = response.json()["state"]
+    assert set(mixing.active_tracks(restored)) == {"speech", "music", "effects"}
+    assert restored["tracks"] == third["tracks"]
+    assert api.put(url + "/layer", json=dict(revision=4, layer=layer3["id"], enabled=True)).status_code == 400
+    reused = api.put(url + "/layer", json={**restore, "revision": 4, "enabled": True}).json()["state"]
+    assert set(mixing.active_tracks(reused)) == set(leaves)
+
+
+def test_layer_cancel_and_invalid_operations_preserve_saved_mix(client, layer_separator):
+    api, folder, state = client
+    url = f"/api/jobs/{folder.name}/lab"
+    assert api.post(url + "/actions/split", json=dict(revision=1, track="ambience")).status_code == 400
+    assert api.post(url + "/actions/split", json=dict(revision=1, track="effects")).status_code == 202
+    assert api.post(url + "/cancel").json()["state"] == state
+    assert api.post(url + "/actions/split", json=dict(revision=1, track="effects")).status_code == 202
+    deeper = finish(api, folder)["state"]
+    assert api.post(url + "/actions/split", json=dict(revision=2, track="effects")).status_code == 400
+    changed = deepcopy(deeper["tracks"])
+    changed["effects"]["regions"] = [dict(start=1, end=2, db=-6)]
+    assert api.put(url, json=dict(revision=2, tracks=changed)).status_code == 400
+    layer = deeper["layers"][deeper["last_layer"]]
+    restored = api.put(url + "/layer", json=dict(revision=2, layer=layer["id"], enabled=False)).json()["state"]
+    restored["tracks"]["effects"]["regions"] = [dict(start=1, end=2, db=-3)]
+    assert api.put(url, json=dict(revision=3, tracks=restored["tracks"])).status_code == 200
+    assert api.put(url + "/layer", json=dict(revision=4, layer=layer["id"], enabled=True)).status_code == 400
+    asset = state["tracks"]["speech"]["asset"]
+    state["assets"][asset]["role"] = "preview"
+    with pytest.raises(ValueError, match="full stem"):
+        mixing.split_source(state, "speech")
+    state["assets"][asset]["role"] = "original"
+    state["track_info"] = {"speech": dict(label="Dialogue", depth=8)}
+    with pytest.raises(ValueError, match="Layer 8"):
+        mixing.split_source(state, "speech")
+
+
 def test_import_fit_exact_and_cancellation_preserve_saved_state(client):
     api, folder, state = client
     url = f"/api/jobs/{folder.name}/lab"
