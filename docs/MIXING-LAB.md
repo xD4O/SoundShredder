@@ -14,7 +14,9 @@ The reference video shares a playhead with all active stems. Use Play, the scrub
 
 The Lab starts from the session's saved **input** audio. For a Bubble FX or Target a Sound session, that means the input before that session's cleanup, which is labeled in the Lab. To mix its already-cleaned result instead, export the cleaned audio and open it as a new source or import it into the appropriate channel.
 
-**Close session** returns to the Lab's start screen and retains your saved mix. Reopen it from the session list. Closing a session view does not cancel processing; use **Cancel processing** first if you want to stop a job. To delete its local data, use the existing session-delete control in Audio separator.
+**Close session** returns to the Lab's start screen and removes that session from the active sidebar list. You can also use the **×** beside a session to close it without opening it first. Your source, extracted tracks, edits and exports are retained. Expand **Closed sessions** in the sidebar and select a saved mix to reopen it; it returns to the active list. Closed sessions stay closed after refreshing or restarting the app.
+
+Closing a session view stops its playback and leaves the upload control ready for another file. It does not cancel background processing; use **Cancel extraction** or **Cancel processing** first if you want to stop a job. The engine still processes one job at a time. To delete local session data, use the separate session-delete control in Audio separator.
 
 ## Change one moment
 

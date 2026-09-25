@@ -22,7 +22,8 @@ function fixture(initial=[]) {
   return {data,requests,async route(route){
     const request=route.request(), url=new URL(request.url()), method=request.method();let response;
     if(url.pathname==='/api/system')response={version:'1.2.2',gpu_available:false};
-    else if(url.pathname==='/api/jobs')response=[];
+    else if(url.pathname==='/api/lab/sessions')response=[];
+    else if(url.pathname.endsWith('/lab/view'))response={id,...request.postDataJSON()};
     else if(url.pathname===`/api/jobs/${id}`)response={id,status:'complete',worker_active:false};
     else if(url.pathname.endsWith('/actions/extract')){
       requests.push(request.postDataJSON());

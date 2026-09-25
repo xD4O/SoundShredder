@@ -136,6 +136,45 @@ def test_api_stale_tabs_origin_validation_and_asset_paths(client):
     assert api.get(url + f"/assets/{asset}?start=0&seconds=1").headers["content-type"] == "audio/wav"
 
 
+def test_close_and_reopen_persist_without_touching_audio_mix_or_workers(client):
+    api, folder, state = client
+    url = f"/api/jobs/{folder.name}/lab/view"
+    before = {str(p.relative_to(folder)): p.read_bytes() for p in folder.rglob("*") if p.is_file()}
+    process = Process()
+    server.LAB_PROCESSES[folder.name] = process
+    assert api.get("/api/lab/sessions").json()[0]["closed"] is False
+    assert api.put(url, json={"closed": True}).status_code == 200
+    assert api.put(url, json={"closed": True}).status_code == 200
+    # Another client (or a restarted browser) reads the same on-disk view state.
+    reopened = TestClient(server.app)
+    item = reopened.get("/api/lab/sessions").json()[0]
+    assert item["closed"] is True and item["lab_running"] is True
+    reopened.close()
+    assert process.poll() is None
+    for name, content in before.items():
+        assert (folder / name).read_bytes() == content
+    assert api.put(url, json={"closed": False}).status_code == 200
+    assert api.get("/api/lab/sessions").json()[0]["closed"] is False
+    assert read_json(folder / "lab/state.json") == state
+    assert api.put(url, json={"closed": "yes"}).status_code == 422
+    assert api.put(url, json={"closed": True}, headers={"Origin": "https://elsewhere.test"}).status_code == 403
+    assert api.put("/api/jobs/missing/lab/view", json={"closed": True}).status_code == 404
+
+
+def test_closed_lab_sessions_remain_accessible_beyond_recent_history_limit(client):
+    api, folder, _ = client
+    assert api.put(f"/api/jobs/{folder.name}/lab/view", json={"closed": True}).status_code == 200
+    for number in range(21):
+        other = folder.parent / f"{number:032x}"
+        other.mkdir()
+        for filename in ("request.json", "progress.json"):
+            (other / filename).write_bytes((folder / filename).read_bytes())
+    assert len(api.get("/api/jobs").json()) == 20
+    sessions = api.get("/api/lab/sessions").json()
+    assert len(sessions) == 22
+    assert next(item for item in sessions if item["id"] == folder.name)["closed"] is True
+
+
 def test_import_fit_exact_and_cancellation_preserve_saved_state(client):
     api, folder, state = client
     url = f"/api/jobs/{folder.name}/lab"

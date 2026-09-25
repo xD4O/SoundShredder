@@ -1,6 +1,24 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const M=require('../../static/lab-math.js');
+const fs=require('node:fs');
+const path=require('node:path');
+const vm=require('node:vm');
+
+test('closing while audio is waking up releases its context without a late playback error',async()=>{
+  let context,rejectResume;const statuses=[];
+  class AudioContext {
+    constructor(){this.state='suspended';context=this;}
+    resume(){return new Promise((_,reject)=>{rejectResume=reject;});}
+    close(){this.state='closed';rejectResume(new Error('Audio context closed'));return Promise.resolve();}
+  }
+  const sandbox={window:{},AudioContext,LabMath:M,clearInterval,cancelAnimationFrame(){}};
+  vm.runInNewContext(fs.readFileSync(path.resolve(__dirname,'../../static/lab-player.js'),'utf8'),sandbox);
+  const player=new sandbox.window.LabPlayer('/qa',()=>{},status=>statuses.push(status));
+  const starting=player.start(0,{duration:3});player.dispose();await starting;
+  assert.equal(context.state,'closed');assert.equal(player.ctx,null);
+  assert.equal(player.playing,false);assert.deepEqual(statuses,[]);
+});
 
 test('time edits restore baseline and preserve previous non-overlapping edits',()=>{
   let regions=M.insert([],7,8,-9);

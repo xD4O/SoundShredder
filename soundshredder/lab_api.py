@@ -24,6 +24,11 @@ class Edit(BaseModel):
     tracks: dict
 
 
+class SessionView(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    closed: bool = Field(strict=True)
+
+
 class Action(BaseModel):
     model_config = ConfigDict(extra="forbid")
     revision: int = Field(default=0, ge=0, strict=True)
@@ -165,6 +170,38 @@ def register(app, service):
     @app.get("/lab")
     def page():
         return FileResponse(service.ROOT / "static" / "lab.html")
+
+    @app.get("/api/lab/sessions")
+    def sessions():
+        # Keep closed sessions discoverable even after the main recent list's
+        # 20-session limit. View metadata never changes audio or mix revisions.
+        with service.GUARD:
+            directories = sorted(
+                (p for p in service.DATA.iterdir() if p.is_dir() and service.JOB_ID.fullmatch(p.name)),
+                key=lambda p: p.stat().st_mtime, reverse=True,
+            )
+            items = []
+            for folder in directories:
+                with contextlib.suppress(OSError, ValueError, HTTPException):
+                    source = service.snapshot(folder.name)
+                    view = folder / "lab" / "view.json"
+                    closed = read_json(view).get("closed") is True if view.is_file() else False
+                    process = service.LAB_PROCESSES.get(folder.name)
+                    running = process is not None and process.poll() is None
+                    items.append(dict(id=folder.name, filename=source["filename"], status=source["status"],
+                                      closed=closed, lab_running=running))
+            return items
+
+    @app.put("/api/jobs/{job_id}/lab/view")
+    def session_view(job_id: str, body: SessionView):
+        with service.GUARD:
+            folder = manager.folder(job_id)
+            folder.mkdir(exist_ok=True)
+            path = folder / "view.json"
+            value = body.model_dump()
+            if not path.is_file() or read_json(path) != value:
+                write_json(path, value)
+            return dict(id=job_id, **value)
 
     @app.get("/api/jobs/{job_id}/lab")
     def status(job_id: str):

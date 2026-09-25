@@ -7,8 +7,10 @@ class LabPlayer {
   current() { return this.playing ? Math.max(this.first,Math.min(this.state.duration,this.first+this.ctx.currentTime-this.clock)) : this.time; }
   async start(time,state,audition=null) {
     this.stop(time); const serial=++this.serial;
-    this.ctx ||= new AudioContext({sampleRate:48000});
-    await this.ctx.resume();
+    try {
+      this.ctx ||= new AudioContext({sampleRate:48000});
+      await this.ctx.resume();
+    } catch(error) {if(serial===this.serial)this.fail(error);return;}
     if(serial!==this.serial)return;
     this.state=structuredClone(state); this.audition=audition;
     this.abort=new AbortController(); this.onStatus('buffering');
@@ -84,6 +86,11 @@ class LabPlayer {
     for (const [key,channel] of Object.entries(this.channels)) channel.gate.gain.value=this.audition||!name||key===name?1:0;
   }
   fail(error) { const time=this.current(); this.stop(time); if (error.name!=='AbortError') this.onStatus('error',error.message); }
+  dispose() {
+    this.stop();
+    const ctx=this.ctx;this.ctx=null;
+    if(ctx&&ctx.state!=='closed')ctx.close().catch(()=>{});
+  }
   stop(time) {
     this.time=time??this.current(); this.playing=false; ++this.serial;
     this.abort?.abort(); clearInterval(this.timer); cancelAnimationFrame(this.animation); this.fetching=false;

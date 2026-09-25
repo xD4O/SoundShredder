@@ -1,5 +1,12 @@
 # Verification record
 
+## Mixing Lab session closing — September 24, 2026
+
+- **Close session** and each sidebar **×** now move the session out of the active list into **Closed sessions**. Closing/reopening is saved separately from audio and mix revisions in the session's Lab view metadata, so it survives refreshes and application restarts. The Lab list includes saved sessions beyond the main workspace's 20-item recent-history limit.
+- **34 selected Python tests and 26 Electron/DOM tests passed.** API checks covered persisted close/reopen, strict input/origin validation, history beyond 20 sessions, retained source/mix bytes and no cancellation of an active worker. Audio lifecycle checks covered closing while the audio context was waking up. Ruff, JavaScript syntax and diff whitespace checks passed.
+- Rendered headless Edge checks passed for closing from the workspace/sidebar, reopening with saved edits, storage failures, late responses, closing during playback/buffering/extraction, released audio contexts and an enabled upload control afterward. The stem-extraction browser regression also passed with the new session API.
+- After restarting the idle local server on port 7863, a separate browser tested the owned synthetic `upload-check.mp4` session against the real API: close during playback, removal from active sessions, persistence across reload, reopen, and close from the sidebar. The saved mix was unchanged and no renderer errors occurred. Existing user sessions were not closed or edited. Evidence is under ignored `artifacts/mixing-lab/session-ui/`.
+
 ## Mixing Lab extraction area — September 24, 2026
 
 - Moved manual stem extraction above the reference video and mixer, with a dedicated device selector, per-stem availability, progress, cancel and retry controls. Uploads still require an explicit **Extract stems** action. Imported or existing tracks remain playable without extracting again.

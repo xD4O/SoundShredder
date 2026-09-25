@@ -5,8 +5,8 @@
   <meta name="theme-color" content="#090e15"><meta name="author" content="cyr4x">
   <title>Mixing Lab — SoundShredder</title>
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/lab.css?v=2">
-  <script defer src="/static/lab-math.js"></script><script defer src="/static/lab-player.js"></script><script defer src="/static/lab.js?v=2"></script>
+  <link rel="stylesheet" href="/static/lab.css?v=3">
+  <script defer src="/static/lab-math.js"></script><script defer src="/static/lab-player.js?v=3"></script><script defer src="/static/lab.js?v=3"></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to Mixing Lab</a>
@@ -16,7 +16,10 @@
   <a class="nav" id="separator-link" href="/">⌁ <span>Audio separator</span> ↗</a>
   <a class="nav selected" href="/lab">☷ <span>Mixing Lab</span><i></i></a>
   <div class="rail-title"><span class="overline">YOUR SESSIONS</span><button id="new-session" title="Start a new Lab session">＋</button></div>
-  <div id="sessions" class="sessions"></div>
+  <div class="session-library">
+    <div id="sessions" class="sessions" aria-label="Open sessions"></div>
+    <details id="closed-sessions" hidden><summary>Closed sessions <span id="closed-count">0</span></summary><p>Your saved mixes are kept here. Select one to reopen it.</p><div id="closed-session-list" class="sessions"></div></details>
+  </div>
   <div class="rail-bottom">
     <div class="version"><span>SoundShredder</span><b id="version">—</b></div>
     <a href="https://github.com/xD4O/SoundShredder" target="_blank" rel="noopener noreferrer">GitHub project ↗</a>

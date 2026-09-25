@@ -7,6 +7,8 @@
   let job=new URLSearchParams(location.search).get('session'), state=null, player=null;
   let time=0, mode='second', pending=false, active=false, timer=null, undo=[], audition=null, canvasRows={};
   let lastTask=null, sessionGeneration=0, busyLabel='', auditionEnd=null, auditionStart=0, labTask=null;
+  let sessionsRequest=0;
+  const viewWrites=new Map(), closingSessions=new Set();
   const endpoint=()=>`/api/jobs/${job}/lab`;
   const fmt=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${(t%60).toFixed(3).padStart(6,'0')}`;
   function notice(text) { $('notice').textContent=text; $('notice').hidden=!text; }
@@ -292,14 +294,18 @@
   }
   function listen(asset,start,end) {stop();audition=asset;time=start;auditionStart=start;auditionEnd=end;setAuditionLabel();player.start(time,state,audition);}
   async function openSession(id) {
-    ++sessionGeneration;const generation=sessionGeneration;clearTimeout(timer);stop();state=null;job=id;undo=[];audition=null;auditionEnd=null;lastTask=null;labTask=null;active=false;pending=false;
+    ++sessionGeneration;const generation=sessionGeneration;clearTimeout(timer);stop();player?.dispose();player=null;
+    state=null;job=id;undo=[];audition=null;auditionEnd=null;lastTask=null;labTask=null;active=false;pending=false;canvasRows={};
     history.replaceState({},'',id?`/lab?session=${id}`:'/lab');
     $('separator-link').href=id?`/?session=${id}`:'/';
     $('work').hidden=true;$('welcome').hidden=false;$('job-progress').hidden=true;notice('');time=0;
     $('video').removeAttribute('src');$('video').load();
+    $('source-file').value='';setBusy();
+    if(!id)$('source-file').focus({preventScroll:true});
     if(!id){await loadSessions();return;}
-    player=new LabPlayer(endpoint(),t=>{time=t;if(audition&&auditionEnd!==null&&t>=auditionEnd){player.stop(auditionEnd);time=auditionEnd;$('video').pause();playbackStatus('paused');}showTime();},playbackStatus);
+    player=new LabPlayer(endpoint(),t=>{if(generation!==sessionGeneration)return;time=t;if(audition&&auditionEnd!==null&&t>=auditionEnd){player.stop(auditionEnd);time=auditionEnd;$('video').pause();playbackStatus('paused');}showTime();},(status,message)=>{if(generation===sessionGeneration)playbackStatus(status,message);});
     try {
+      await setSessionView(id,false);if(generation!==sessionGeneration)return;
       let source=await api(`/api/jobs/${id}`);
       if(generation!==sessionGeneration)return;
       if(source.status!=='complete'||source.worker_active){
@@ -307,16 +313,47 @@
       }
       const data=await api(endpoint());if(generation!==sessionGeneration)return;accept(data);
       if(!data.state&&!data.task?.active)await action('prepare');
+      if(generation!==sessionGeneration)return;
       poll(generation);loadSessions();
-    } catch(error){notice(error.message);$('welcome').hidden=false;}
+    } catch(error){if(generation===sessionGeneration){notice(error.message);$('welcome').hidden=false;}}
+  }
+  function setSessionView(id,closed) {
+    // A slow reopen must finish before a later close of the same session.
+    const request=(viewWrites.get(id)||Promise.resolve()).catch(()=>{}).then(()=>
+      api(`/api/jobs/${id}/lab/view`,json('PUT',{closed})));
+    viewWrites.set(id,request);
+    const release=()=>{if(viewWrites.get(id)===request)viewWrites.delete(id);};
+    request.then(release,release);return request;
+  }
+  async function closeSession(id=job) {
+    if(!id||closingSessions.has(id))return;
+    closingSessions.add(id);
+    const closing=setSessionView(id,true);
+    if(id===job)openSession(null);
+    const generation=sessionGeneration;
+    try {await closing;if(generation===sessionGeneration)notice('Session closed. Reopen it from Closed sessions in the sidebar.');}
+    catch(error){if(generation===sessionGeneration)notice(`Could not close this saved session: ${error.message}`);}
+    finally {closingSessions.delete(id);loadSessions();}
   }
   async function loadSessions() {
+    const request=++sessionsRequest;
     try {
-      const jobs=await api('/api/jobs');$('sessions').replaceChildren();
+      const jobs=await api('/api/lab/sessions');if(request!==sessionsRequest)return;
+      $('sessions').replaceChildren();$('closed-session-list').replaceChildren();
+      let openCount=0,closedCount=0;
       for(const item of jobs){const a=document.createElement('a');a.href=`/lab?session=${item.id}`;a.textContent=item.filename;
-        if(item.id===job)a.setAttribute('aria-current','page');const s=document.createElement('small');s.textContent=item.status==='complete'?'Open in Mixing Lab':item.status;a.append(s);
-        a.onclick=e=>{e.preventDefault();openSession(item.id);};$('sessions').append(a);}
-    } catch(error){notice(error.message);}
+        if(item.id===job)a.setAttribute('aria-current','page');const s=document.createElement('small');
+        s.textContent=item.lab_running?'Processing…':item.closed?'Reopen saved mix':item.status==='complete'?'Open in Mixing Lab':item.status;a.append(s);
+        a.onclick=e=>{e.preventDefault();openSession(item.id);};
+        if(item.closed){closedCount++;$('closed-session-list').append(a);continue;}
+        openCount++;const row=document.createElement('div');row.className='session-row';row.dataset.session=item.id;
+        const close=document.createElement('button');close.textContent='×';close.title=`Close ${item.filename}`;
+        close.setAttribute('aria-label',`Close session ${item.filename}`);close.disabled=closingSessions.has(item.id);
+        close.onclick=()=>closeSession(item.id);row.append(a,close);$('sessions').append(row);
+      }
+      if(!openCount){const empty=document.createElement('p');empty.className='sessions-empty';empty.textContent='No open sessions. Upload a file or reopen a saved mix.';$('sessions').append(empty);}
+      $('closed-count').textContent=closedCount;$('closed-sessions').hidden=!closedCount;
+    } catch(error){if(request===sessionsRequest)notice(error.message);}
   }
   async function upload(file) {
     if(!file)return;if(file.size>500*1024*1024){notice('Choose a file smaller than 500 MB.');return;}
@@ -340,7 +377,7 @@
   }
   $('source-file').onchange=e=>upload(e.target.files[0]);
   $('welcome').ondragover=e=>{e.preventDefault();};$('welcome').ondrop=e=>{e.preventDefault();upload(e.dataTransfer.files[0]);};
-  $('new-session').onclick=()=>openSession(null);$('close-session').onclick=()=>openSession(null);
+  $('new-session').onclick=()=>openSession(null);$('close-session').onclick=()=>closeSession();
   $('play').onclick=()=>{if(!state)return;if(player.playing||busyLabel==='buffering'){stop();busyLabel='paused';return;}const start=audition&&time>=auditionEnd?auditionStart:time>=state.duration?0:time;player.start(start,state,audition);};
   $('scrub').oninput=e=>seek(+e.target.value);
   $('back').onclick=()=>seek(Math.max(0,(Math.round(time*state.fps)-1)/state.fps));
@@ -376,7 +413,7 @@
     catch(error){$('update-info').textContent=error.message;}finally{$('updates').disabled=false;}
   };
   window.addEventListener('resize',()=>drawLanes());
-  window.addEventListener('pagehide',()=>{stop();clearTimeout(timer);});
+  window.addEventListener('pagehide',()=>{stop();player?.dispose();clearTimeout(timer);});
   api('/api/system').then(info=>{$('version').textContent=`v${info.version}`;for(const id of ['device','extract-device'])$(id).querySelector('[value="cuda"]').disabled=!info.gpu_available;}).catch(error=>notice(error.message));
   openSession(job);
 })();
