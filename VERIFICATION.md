@@ -1,5 +1,15 @@
 # Verification record
 
+## Split deeper paused — September 25, 2026
+
+At the owner's request, recursive split processing, its controls and layer-specific listening views have been removed for now. The original four-channel mixer is restored. The layer entries below document earlier development, not the current controls.
+
+- Previously split sessions expose only their four main tracks to playback, editing and export. Loading leaves the stored session untouched. On a later save, the previous split tree, track settings and export metadata travel in a retained archive; audio assets remain in place. Old deeper-mix exports are not presented as matching the restored mix.
+- **19 Mixing Lab Python tests and 26 Electron/DOM tests passed**, as did both rendered Lab browser suites. New regression coverage checks saved split compatibility, retained audio bytes and child edits after a main-track save, main-stem-only export, and rejection of removed split actions. Ruff, JavaScript syntax and whitespace checks passed.
+- A private browser reopened the existing synthetic split-video session on the restarted local server at port 7863. Four channels appeared, the split controls were absent, the saved −6 dB main Music edit remained, and only Dialogue/Music/Effects entered playback. Closing the session worked and its stored state bytes were unchanged. The previous sidebar closed state was restored. The rendered mixer was visually inspected with no renderer errors.
+
+Evidence is under ignored `artifacts/mixing-lab/retired-splits/`. Standard extraction, targeted cleanup, repeated passes and persistent session closing remain available. Published installers are unchanged.
+
 ## Layer listening and Master routing — September 25, 2026
 
 - Opening a layer now scopes playback to that branch's selected leaves, including any active descendants. Master displays all active leaf channels with depth/path labels and plays the complete mix with deeper edits. Switching views stops the prior audio, cancels pending buffers, clears listening-only Solo/source auditions and resumes at the same position when appropriate. Empty layers never fall back to unrelated stems. Exports continue to use the complete Master.

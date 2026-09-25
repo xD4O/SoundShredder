@@ -2,6 +2,8 @@
 
 The Mixing Lab is an **unreleased source feature**, approved during planning for the next major SoundShredder release. Published 1.2.2 installers do not contain it. It uses the existing local Python server and the same interface inside Electron; new installers still need platform testing before release.
 
+**Split deeper is paused.** The Lab uses the four main channels: Dialogue, Music, Effects and optional imported Ambience. Recursive split controls and layer navigation are removed. Sessions made with the experiment reopen on their saved main stems; split audio, child edits and older exports are retained locally but are excluded from playback and new exports. A new export is needed for the restored main-stem mix. Stem extraction, timed mixing, targeted cleanup and repeated cleanup passes remain available.
+
 ## Open a scene
 
 Choose **Mixing Lab** in the left panel. Upload a video/audio file, or open a completed session. The source upload is preserved. Uploading prepares the file; it does not start stem extraction automatically.
@@ -10,7 +12,7 @@ Use the **Stem Extraction** area directly above the reference video and mixer. C
 
 If stems are already available, the Lab reuses copies of them and the area shows **Your stems are ready**. Partial sessions offer **Extract missing stems**, preserving existing tracks. Extraction uses Bandit; ordinary fader changes do not run a model again.
 
-The reference video shares a playhead with the stems in your selected listening view. **Master** plays the full mix; opening a deeper layer plays only that branch. The badge above Play identifies what you are hearing. Use Play, the scrubber or the waveform lanes to navigate. The Video checkbox hides the picture when you want more focus on audio. For audio-only sources, the transport and channels work without a picture.
+The reference video shares a playhead with all active stems. Use Play, the scrubber or the waveform lanes to navigate. The Video checkbox hides the picture when you want more focus on audio. For audio-only sources, the transport and channels work without a picture.
 
 The Lab starts from the session's saved **input** audio. For a Bubble FX or Target a Sound session, that means the input before that session's cleanup, which is labeled in the Lab. To mix its already-cleaned result instead, export the cleaned audio and open it as a new source or import it into the appropriate channel.
 
@@ -47,34 +49,9 @@ The channel meters show **peak level in dBFS**, separate from fader gain in dB. 
 
 **S** solos a channel for audition only; solo does not affect exports. Each channel's version selector changes which complete asset feeds the channel. Its existing time edits still apply. **No track** removes that channel from the whole mix until a version is selected again.
 
-The displayed **Output protection** trim reserves headroom for the full +6 dB fader range. Master playback and export use the same trim. An active layer plays at its Master reference level, so switching to that layer does not boost its loudness. An inactive saved branch may need extra protection when previewed by itself. Volume edits do not recalculate that trim, so a boost in one interval does not turn down the rest of the timeline. Adding/replacing assets or changing which split branches are active can change the reserved headroom. Before/Cleaned/Removed auditions play the asset itself, before fader automation and shared output trim.
+The displayed **Output protection** trim reserves headroom for the full +6 dB fader range. It is shared across tracks and used identically in mix playback and export. Volume edits do not recalculate that trim, so a boost in one interval does not turn down the rest of the timeline. Adding/replacing assets can change the reserved headroom. Before/Cleaned/Removed auditions play the asset itself, before fader automation and shared output trim.
 
 Bandit's estimates can contain leakage or missing detail. A mixer changes their balance; it cannot recover detail that separation failed to capture. The Lab does not claim perfect reconstruction of the original recording.
-
-## Split a stem into deeper layers
-
-**Layer 1** is the original set of Dialogue, Music, Effects and optional Ambience. Each channel has **Split again**. This reruns Bandit on that channel's selected full stem, rather than on the original video again.
-
-1. Click **Split again** on the stem you want to explore.
-2. Choose Auto, CPU or NVIDIA GPU, then **Split into Layer 2**. This processes the whole stem; the frame/second/range selection controls later volume edits.
-3. The new layer contains **Dialogue, Music, Effects and Remainder**. Remainder retains the difference between the parent and the three model estimates, so their combined unedited audio preserves the parent signal within floating-point precision. It can contain useful sound, artifacts or very little audio; audition it before muting it.
-4. Mix, solo, download, import into or target-clean the child tracks. Their starting time edits are copied from the parent. Each child has its own controls after that.
-5. Click **Split again** on a child to create **Layer 3**, and continue from an active child when needed. Layer numbers count depth, not removal strength or a guaranteed quality improvement.
-
-Use **Mixer / Listening view** to choose a branch, or click **Master** to hear the complete scene:
-
-- **Layer 2, Layer 3, etc.:** Play includes only that branch's selected tracks, following any active deeper splits within it. Other Layer 1 stems and unrelated branches are excluded. Volume edits, time-scoped mutes, No track and listening-only Solo still apply.
-- **Master:** Play includes all active branches with their saved deeper edits. The mixer and waveform lanes show the active leaf tracks from every depth, labeled with their layer and path (for example, **Music → Dialogue**). A split parent is replaced by its children, not added a second time.
-
-For example, split **Music** into Layer 2, then mute its Effects and Remainder for the desired time range. While viewing that layer you hear only its Dialogue and Music. Click **Master** to hear those edits together with the scene's original Dialogue and Effects. Changing views keeps your position and saved edits, clears listening-only Solo/source auditions, and switches the audio if playback is already running. An empty layer stays silent and asks you to select a track; it never falls back to the full mix.
-
-Within a layer view, a child with its own active split has locked parent faders and a locked version selector. **Open Layer** takes you to its deeper controls. During playback its meter/solo follows its active descendants; while paused its meter label points to the child layer. You can edit those descendants directly from Master as well.
-
-**Listen to parent** auditions the saved source before time edits and output protection. **Use parent in mix** restores the parent with its saved time edits. The deeper tracks and their edits remain saved; **Use this split in mix** restores that branch. Opening an inactive saved layer lets you preview it alone without activating it in Master. Activate an ancestor before reactivating a deeper saved branch. If you change the parent's source or time edits after returning to it, split that changed parent again; an older split retains the settings it was made from.
-
-Higher layers still use the same dialogue/music/effects model. They do not introduce instrument-specific models or guarantee cleaner isolation. Repeated separation can add leakage or artifacts. Compare the parent and children with your footage. Normal prompt cleanup remains available for individual active children through **Target a sound**.
-
-The development build allows up to **Layer 8**, **16 active tracks** and **64 stored track slots** per session. Each split adds four stored child tracks. These limits bound playback and project growth; saved parent layers and source audio remain available. Each split is an explicit processing job, with the usual progress, cancellation and retry behavior. Gain Undo history restarts when the layer structure or active branch changes; use the parent/split controls to change branches.
 
 ## Target a sound inside one stem
 
@@ -102,7 +79,7 @@ Imports are resampled to the session rate. Mono is duplicated for a stereo sessi
 
 ## Export
 
-**Export Master & stems** always exports the complete Master, regardless of the listening view or Solo. It produces full-length 24-bit WAVs for the master and each active automated channel, an edit/provenance report, and a ZIP containing those files. With deeper layers, exports include active child tracks instead of their parent; child filenames include the layer, stem type and a short unique identifier. The report records the layer tree and active selections. The source-stem download arrow on a channel instead downloads the selected asset **before** fader edits. Use the exported channel WAV for a track with its automation applied.
+**Export mix & stems** produces full-length 24-bit WAVs for the master and each active automated channel, an edit/provenance report, and a ZIP containing those files. The source-stem download arrow on a channel instead downloads the selected asset **before** fader edits. Use the exported channel WAV for a track with its automation applied.
 
 For video sources, **Include footage with the new soundtrack** also creates an MP4. The picture stream is copied without re-encoding, and the replacement audio is encoded as AAC. If the original picture cannot be copied into MP4, the WAV mix remains the editor-friendly alternative; read the export status. The original embedded soundtrack is replaced, not layered underneath the new mix.
 
@@ -112,6 +89,6 @@ Exports keep their revision. After further edits, the download area marks the ol
 
 Processing runs in an owned worker process. Cancellation stops that worker and its child processes and keeps the previous saved state. Failed or partial worker outputs do not become selected versions. Retrying is explicit. Concurrent processing is blocked, and stale edits from another tab are rejected rather than overwriting a newer saved mix.
 
-Playback buffers up to two 20-second chunks per active channel, instead of decoding every full-length track into browser memory. If buffering falls behind, playback pauses with a retry message. All stems use one Web Audio clock; video follows that playhead. Backend inference still has the existing model and memory requirements.
+Playback buffers up to two 20-second chunks per active channel, instead of decoding all four full-length tracks into browser memory. If buffering falls behind, playback pauses with a retry message. All stems use one Web Audio clock; video follows that playhead. Backend inference still has the existing model and memory requirements.
 
 No EQ, compression, stereo panning, instrument-specific stems, automatic ambience separation, or automatic update installation is included. Windows/Mac installer and native lifecycle tests remain release gates. See [verification](../VERIFICATION.md), [release plan](NEXT-RELEASE-PLAN.md) and [future work](../ROADMAP.md).

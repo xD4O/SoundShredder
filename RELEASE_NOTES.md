@@ -2,9 +2,7 @@
 
 ## Unreleased: Mixing Lab prototype
 
-Layer playback now follows the selected listening view: opening a deeper layer plays only that branch. **Master** shows and plays active stems from all depths with their saved edits. Switching views retains the playhead, clears listening-only Solo/source auditions and replaces any audio already playing or buffering. Exports explicitly use the complete Master.
-
-**Split again** reruns Bandit on one selected stem to create Layer 2, Layer 3 and deeper branches. Each split has Dialogue, Music, Effects and Remainder tracks, inherited time edits, parent audition/restore controls, independent cleanup and downloads. The mix uses active children in place of their parent. Layer depth is not a guarantee of better isolation. Session closing now moves saved work into a persistent Closed sessions section.
+Paused the experimental **Split deeper** feature and restored the four-channel mixer. Previously split sessions retain their saved child audio/settings while playback, editing and new exports use the main stems. Stem extraction, targeted cleanup, repeated passes and persistent session closing remain available.
 
 The source app now includes a dedicated Mixing Lab with synchronized reference video and stem playback, actual peak meters, time-scoped volume/mute edits, saved automation and optional imported Ambience. Targeted cleanup creates versions of one selected stem with independent strength and 1–4 passes; removed sounds remain separate from the mix. Exports include automated channel WAVs, a master WAV, an edit report, a ZIP and optional MP4 with replaced audio. Source assets remain available. See the [Lab guide](docs/MIXING-LAB.md).
 
