@@ -14,7 +14,7 @@ class FakeUpdater extends EventEmitter {
 }
 function fixture(extra = {}) {
   const updater = new FakeUpdater();
-  const service = new Updates({ updater, enabled: true, version: '1.2.2', platform: 'win32',
+  const service = new Updates({ updater, enabled: true, version: '1.2.2', platform: 'win32', arch: 'x64',
     prepareInstall: async () => {}, ...extra });
   return { service, updater };
 }
