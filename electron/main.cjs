@@ -2,10 +2,12 @@
 const { app, BrowserWindow, Menu, dialog, ipcMain, shell, session, nativeTheme } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
+const { randomUUID } = require('node:crypto');
 const { pathToFileURL } = require('node:url');
 const { Backend } = require('./backend.cjs');
 const { sameOrigin, external, loopback } = require('./security.cjs');
 const { readSelection, saveSelection, prepareLocation, contains } = require('./storage.cjs');
+const { Updates } = require('./updates.cjs');
 
 const controlHome = path.resolve(process.env.SOUNDSHREDDER_DESKTOP_HOME || (process.platform === 'darwin'
   ? path.join(app.getPath('appData'), 'SoundShredder')
@@ -19,25 +21,82 @@ const root = app.isPackaged ? path.join(process.resourcesPath, 'backend')
   : path.resolve(__dirname, '../artifacts/electron/backend');
 const backend = new Backend(root, home);
 const welcomeURL = pathToFileURL(path.join(__dirname, 'welcome.html')).href;
+const updatesURL = pathToFileURL(path.join(__dirname, 'updates.html')).href;
+let updates, updateWindow, updateCheckTimer;
+const activeDownloads = new Set();
 let win, workspace = null, mode = 'workspace', starting = null, changingStorage = false, pendingQuit = false, quitting = false, permittedExit = false, timer;
 let welcomeStatus = 'Opening your sound workspace…';
 
 function trusted(url) { return sameOrigin(url, backend.base) || sameOrigin(url, workspace); }
 function alive() { return win && !win.isDestroyed(); }
 function focus() { if (alive()) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); } }
+function showUpdates() {
+  if (updateWindow && !updateWindow.isDestroyed()) { updateWindow.show(); updateWindow.focus(); return; }
+  updateWindow = new BrowserWindow({ width: 620, height: 690, minWidth: 450, minHeight: 560,
+    parent: alive() ? win : undefined, title: 'SoundShredder updates', backgroundColor: '#090e15', show: false,
+    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), sandbox: true, contextIsolation: true, nodeIntegration: false } });
+  updateWindow.setMenu(null);
+  updateWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  updateWindow.webContents.on('will-navigate', event => event.preventDefault());
+  updateWindow.webContents.on('will-attach-webview', event => event.preventDefault());
+  updateWindow.once('ready-to-show', () => updateWindow?.show());
+  updateWindow.on('closed', () => { updateWindow = null; });
+  void updateWindow.loadURL(updatesURL);
+  if (['idle', 'current', 'error'].includes(updates?.state.status)) void updates.check();
+}
+function rendererReady() {
+  if (!alive()) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const requestId = randomUUID();
+    const done = ready => {
+      clearTimeout(timeout);ipcMain.removeListener('desktop:update-ready', reply);
+      ready ? resolve() : reject(Error('An upload, save or interface operation is still in progress.'));
+    };
+    const reply = (event, id, ready) => {
+      if (id === requestId && alive() && event.sender === win.webContents && event.senderFrame === win.webContents.mainFrame) done(ready === true);
+    };
+    const timeout = setTimeout(() => done(false), 3000);
+    ipcMain.on('desktop:update-ready', reply);
+    win.webContents.send('desktop:prepare-update', requestId);
+  });
+}
+async function prepareUpdate() {
+  if (starting || changingStorage || quitting) throw Error('The desktop is busy.');
+  quitting = true;
+  if (alive()) win.setEnabled(false);
+  try {
+    if (activeDownloads.size) throw Error('A file download is still in progress.');
+    await rendererReady();
+    // The engine checks setup and all active audio/export jobs before stopping.
+    // Never force-close or cancel processing as a side effect of an update.
+    if (backend.child?.exitCode === null && !backend.child.signalCode) {
+      if (!backend.base) throw Error('The engine is not ready.');
+      await backend.api('/api/stop', {});
+    }
+    await backend.detach();
+    permittedExit = true;
+  } catch (error) {
+    quitting = false;if (alive()) win.setEnabled(true);throw error;
+  }
+}
+async function recoverUpdate() {
+  permittedExit = false;quitting = false;
+  if (alive()) win.setEnabled(true);
+  if (!backend.child || backend.child.exitCode !== null || backend.child.signalCode) await start();
+}
 function fail(message) {
   welcomeStatus = message;
   if (!alive()) return;
   win.loadURL(welcomeURL).then(() => win.webContents.send('desktop:status', message)).catch(() => {});
 }
 async function showSetup() {
-  if (changingStorage) return;
+  if (changingStorage || quitting) return;
   mode = 'setup';
   if (backend.base && alive()) await win.loadURL(backend.setupURL());
   focus();
 }
 async function showWorkspace() {
-  if (changingStorage) return;
+  if (changingStorage || quitting) return;
   mode = 'workspace';
   if (!backend.base) return start();
   const base = backend.base;
@@ -50,7 +109,7 @@ async function showWorkspace() {
   focus();
 }
 async function start() {
-  if (changingStorage) return;
+  if (changingStorage || quitting) return;
   if (starting) return starting;
   welcomeStatus = 'Opening your sound workspace…';
   starting = (async () => {
@@ -226,7 +285,7 @@ function menu() {
     { label: 'Help', submenu: [
       { label: 'Installation and troubleshooting', click: () => void shell.openPath(path.join(root, 'INSTALLATION.html')) },
       { label: 'GitHub project', click: () => handleExternal('https://github.com/xD4O/SoundShredder') },
-      { label: 'Check for Electron updates', click: () => handleExternal('https://github.com/xD4O/SoundShredder/releases') },
+      { label: 'Check for Electron updates', click: showUpdates },
       { label: 'About SoundShredder', click: () => dialog.showMessageBox(win, { message: `SoundShredder ${app.getVersion()}`, detail: 'Made by cyr4x · Made for the Higgsfield Community\nLocal audio processing · Electron desktop preview', buttons: ['OK'] }) }
     ] }];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
@@ -237,6 +296,7 @@ function secureSession() {
   ses.setPermissionCheckHandler((_wc, permission, origin) => permission === 'clipboard-sanitized-write' && trusted(origin));
   ses.on('will-download', (_event, item) => {
     if (!trusted(item.getURL())) { item.cancel(); return; }
+    activeDownloads.add(item);item.once('done', () => activeDownloads.delete(item));
     item.setSaveDialogOptions({ defaultPath: path.join(app.getPath('downloads'), path.basename(item.getFilename())) });
   });
   ses.webRequest.onBeforeRequest((details, callback) => {
@@ -251,6 +311,7 @@ function secureSession() {
   });
 }
 for (const [name, handler] of Object.entries({ status: () => welcomeStatus, workspace: showWorkspace, setup: showSetup, storage: chooseStorage,
+  updates: showUpdates,
   retry: async () => { if (backend.base && backend.child?.exitCode === null && !backend.child.signalCode) await showWorkspace(); else await start(); }, quit: requestQuit })) {
   ipcMain.handle('desktop:' + name, (event) => {
     if (!alive() || event.sender !== win.webContents || event.senderFrame !== win.webContents.mainFrame ||
@@ -258,6 +319,19 @@ for (const [name, handler] of Object.entries({ status: () => welcomeStatus, work
     return handler();
   });
 }
+ipcMain.handle('desktop:update-action', (event, action) => {
+  const main = alive() && event.sender === win.webContents && event.senderFrame === win.webContents.mainFrame &&
+    (trusted(event.senderFrame.url) || event.senderFrame.url === welcomeURL);
+  const panel = updateWindow && !updateWindow.isDestroyed() && event.sender === updateWindow.webContents &&
+    event.senderFrame === updateWindow.webContents.mainFrame && event.senderFrame.url === updatesURL;
+  if ((!main && !panel) || !updates) throw Error('Untrusted update request.');
+  if (action === 'state') return updates.snapshot();
+  if (action === 'releases') { handleExternal(updates.state.releaseURL || 'https://github.com/xD4O/SoundShredder/releases'); return; }
+  if (!panel || !['check', 'download', 'cancel', 'install'].includes(action)) throw Error('Unsupported update request.');
+  // Return immediately; state events keep the controls responsive while work runs.
+  void Promise.resolve(updates[action]()).catch(() => {});
+  return updates.snapshot();
+});
 backend.on('exit', ({ code }) => {
   workspace = null;
   if (starting || changingStorage || quitting) return;
@@ -272,7 +346,18 @@ else {
   app.on('activate', focus);
   app.on('before-quit', event => { if (!permittedExit) { event.preventDefault(); void requestQuit(); } });
   app.whenReady().then(async () => {
-    secureSession(); createWindow(); menu(); await start();
+    const { autoUpdater } = require('electron-updater');
+    autoUpdater.logger = null; // Do not log signed download URLs or release contents.
+    updates = new Updates({ updater: autoUpdater, version: app.getVersion(), enabled: app.isPackaged,
+      arch: process.platform === 'darwin' && app.runningUnderARM64Translation ? 'arm64' : process.arch,
+      prepareInstall: prepareUpdate, recoverInstall: recoverUpdate });
+    updates.on('change', state => {
+      for (const window of [win, updateWindow]) if (window && !window.isDestroyed()) window.webContents.send('desktop:update-state', state);
+    });
+    secureSession(); createWindow(); menu();
+    updateCheckTimer = setTimeout(() => void updates.check(), 8000);
+    updateCheckTimer.unref();
+    await start();
     let polling = false;
     timer = setInterval(async () => {
       if (polling || quitting || starting || changingStorage || !backend.base || !alive() || backend.child?.exitCode !== null || backend.child?.signalCode) return;

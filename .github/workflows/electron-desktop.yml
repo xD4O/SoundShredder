@@ -64,6 +64,7 @@ jobs:
         run: |
           npm test
           npm run test:setup-ui
+          npm run test:updates-ui
       - name: Package desktop application
         if: matrix.platform != 'mac' || inputs.mac_signing != 'developer-id'
         working-directory: electron
@@ -88,6 +89,10 @@ jobs:
         if: matrix.platform == 'win'
         shell: pwsh
         run: ./scripts/test_windows_installer.ps1
+      - name: Verify native Windows update download, replacement and relaunch
+        if: matrix.platform == 'win'
+        working-directory: electron
+        run: npm run test:updates-native
       - name: Verify DMG and ZIP signatures and install a copy for lifecycle testing
         if: matrix.platform == 'mac'
         run: python scripts/verify_mac_distribution.py ${{ inputs.mac_signing == 'developer-id' && '--require-notarized' || '' }}
@@ -110,12 +115,37 @@ jobs:
             artifacts/electron/dist/*.exe
             artifacts/electron/dist/*.dmg
             artifacts/electron/dist/*.zip
+            artifacts/electron/dist/*.blockmap
+            artifacts/electron/dist/latest*.yml
             artifacts/electron/dist/*-INSTALL.md
             artifacts/electron/dist/SHA256SUMS.txt
             artifacts/electron/verification/*
+            artifacts/electron/update-ui/*.png
+            artifacts/electron/update-native/verification.json
             artifacts/electron/QA profile with spaces/*.log
             artifacts/electron/QA profile with spaces/data/*/worker.log
             artifacts/electron/QA profile with spaces/data/*/progress.json
             artifacts/electron/Chosen engine storage/SoundShredder/*.log
             artifacts/electron/Chosen engine storage/SoundShredder/data/*/worker.log
             artifacts/electron/Chosen engine storage/SoundShredder/data/*/progress.json
+  update-metadata:
+    needs: desktop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Electron-*
+          path: artifacts/electron/collected
+      - name: Install metadata tools without downloading Electron
+        working-directory: electron
+        run: npm ci --ignore-scripts --no-fund
+      - name: Verify release hashes and combine both Mac architectures
+        run: node electron/build/merge-updates.cjs artifacts/electron/collected artifacts/electron/update-metadata
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Electron-update-metadata
+          path: artifacts/electron/update-metadata/*.yml

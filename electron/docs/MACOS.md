@@ -62,7 +62,9 @@ Use the left panel to return to saved sessions or start a new one. Closing/remov
 
 ## Updates, storage and uninstall
 
-**Help > Check for Electron updates** opens GitHub releases. Quit the app, download the matching newer Mac build and replace the app in Applications. Updates are manual; no automatic app replacement is enabled. The workspace sidebar's update checker checks the latest numbered release, including 1.2.2. It ignores prereleases and does not install updates.
+In published **1.2.2**, **Help > Check for Electron updates** opens GitHub releases. Quit, download the matching newer Mac build and replace the app in Applications. The sidebar checker follows numbered releases and ignores prereleases; it does not install updates.
+
+The upcoming updater adds automatic checks, **Download update** with progress/cancel, and **Restart & update** or **Later**. It blocks restarts during processing, uploads, saves, downloads or setup and retains sessions/storage choices. Normal Quit does not install. Mac updates require signed ZIPs and signed-to-signed upgrade validation on both architectures before release. This is not yet published: 1.2.2 needs one manual upgrade first. [Update guide and validation status](UPDATES.md).
 
 Without a folder choice, engines and sessions remain in `~/Library/Application Support/SoundShredder`, and models use the existing user caches. After choosing a folder, that folder holds `data` (sessions), `runtimes` (engines), `models`, `cache`, `temp` and diagnostic logs. Small preferences and the `electron` browser profile remain in the default Application Support folder. Replacing the app preserves these separate locations.
 

@@ -1,6 +1,6 @@
 # SoundShredder guides
 
-Current release: **1.2.2**. Development documentation refreshed September 24, 2026.
+Current release: **1.2.2**. Development documentation refreshed September 26, 2026.
 
 - [Install on Windows](../electron/docs/WINDOWS.md) and [understand unsigned-download warnings](WINDOWS-DOWNLOADS.md).
 - [Install on Mac](../electron/docs/MACOS.md): current Apple Silicon and Intel builds are signed and notarized.
@@ -12,6 +12,8 @@ Current release: **1.2.2**. Development documentation refreshed September 24, 20
 - [Verification record](../VERIFICATION.md) and [future work](../ROADMAP.md).
 
 Use the [official GitHub release](https://github.com/xD4O/SoundShredder/releases/latest) for installers. Windows publisher signing is pending. Updates are manual; the app does not silently install updates.
+
+The [upcoming desktop updater](../electron/docs/UPDATES.md) is implemented in source, with automatic checks, cancellable downloads and an explicit restart choice. It is not yet in the published installers or community PDF; 1.2.2 users need one manual upgrade first.
 
 The `desktop/` guides describe the earlier browser-based standalones. Older versioned PDFs and release entries are historical snapshots, not instructions for the current Electron download. The unversioned PDF and HTML links above are the maintained community guide.
 

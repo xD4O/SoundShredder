@@ -1,5 +1,16 @@
 # Verification record
 
+## Desktop updater source implementation — September 26, 2026
+
+- Added automatic stable GitHub checks, a sandboxed update panel, background download/progress/cancel, and an explicit **Restart & update** action. **Later** and ordinary Quit do not install updates. The restart requires the renderer to confirm that uploads/saves are idle, checks ongoing file downloads, then uses the engine's existing protected stop endpoint for setup, processing and exports.
+- **37 Electron/DOM tests and 25 Python desktop lifecycle/responsiveness tests passed.** Checks cover deadlines, cancelled/stalled downloads, verification failures, wrong-architecture manifests, readable untrusted release notes, concurrent actions, active-work restart rejection, native-install-error recovery and release metadata integrity.
+- The real Electron main/preload/update-panel test passed with a simulated engine and release transport. It checked sidebar status, progress, Later/reopen, cancellation, renderer save protection, engine job protection, IPC restrictions and recovery. Screenshots were visually inspected; no renderer errors were reported. Both rendered Mixing Lab extraction/session suites also passed against private API fixtures.
+- A separate **Windows x64 NSIS QA application** upgraded from 0.0.1 to 0.0.2 through the real electron-updater library and a local HTTP feed. Actual metadata/download/SHA-512 verification, blocked restart while busy, silent installation to a custom location, automatic relaunch and a retained saved-profile marker passed. The QA app used a distinct app ID, contained no Python audio engine, and was uninstalled afterward. Production installations and user sessions were not replaced.
+- The native harness initially exposed two test setup problems: inherited production publish settings and an environment variable lost when NSIS relaunched through Explorer. Its explicit build configuration and persistent private-profile fallback resolved those failures. Neither was a failure of an existing user installation.
+- JavaScript syntax, workflow YAML parsing, Ruff and whitespace checks passed. CI now collects blockmaps/manifests and verifies payload hashes before combining both Mac architectures. Those new CI jobs have not been run remotely in this task.
+
+Evidence is under ignored `artifacts/electron/update-ui/` and `artifacts/electron/update-native/`. The feature is implemented locally, **not published**. Full packaged SoundShredder upgrades with real saved sessions/custom storage on Windows, and signed-to-signed upgrades on both Mac architectures, remain release gates. The isolated Windows harness does not establish native Mac behavior or recovery from every OS/power-loss failure. The published 1.2.2 app still needs manual updating once; source/browser updates remain manual. See the [updater guide](electron/docs/UPDATES.md).
+
 ## Split deeper paused — September 25, 2026
 
 At the owner's request, recursive split processing, its controls and layer-specific listening views have been removed for now. The original four-channel mixer is restored. The layer entries below document earlier development, not the current controls.

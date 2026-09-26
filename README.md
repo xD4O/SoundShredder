@@ -150,7 +150,9 @@ Normal separation prepares the tracks automatically. In a Bubble FX session, use
 | Update Electron | **Help → Check for Electron updates**. Quit, install the newer EXE or replace the Mac app, then reopen. Sessions and compatible engines are retained. |
 | Update the browser version | Download a fresh source ZIP. With both apps stopped, copy the old `data` folder into the new folder and run its launcher. Keep the old folder until checked. |
 
-The sidebar **Check for updates** follows the latest numbered release, currently **1.2.2**, for desktop and source users. It does not announce prereleases or every change on `main`. Updates are downloaded and installed manually. Desktop setup and diagnostics are under the **SoundShredder** application menu.
+In the published **1.2.2** app, the sidebar **Check for updates** follows the latest numbered release. Downloads and installation are manual. Desktop setup and diagnostics are under the **SoundShredder** application menu.
+
+**In development:** Electron now has automatic release checks, background downloads with progress/cancel, and an explicit **Restart & update** choice. Active processing, uploads and saves block the restart. Existing users will need one manual upgrade to the first release containing this feature; the browser edition stays manual. [Desktop update guide and release status](electron/docs/UPDATES.md).
 
 <a id="community-guide"></a>
 

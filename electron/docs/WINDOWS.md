@@ -50,7 +50,9 @@ Network requests have timeouts and limited retries. An installer command with no
 
 The normal Electron app location is `%LOCALAPPDATA%\Programs\SoundShredder` (or your chosen installer folder). Without a folder choice, engines and sessions keep using `%LOCALAPPDATA%\SoundShredder`, and models use existing user caches. After choosing a folder, it holds `data` (sessions), `runtimes` (engines), `models`, `cache`, `temp` and logs. Small app preferences and the `electron` browser profile remain in `%LOCALAPPDATA%\SoundShredder` so the app remembers your choice. Older standalone launchers may remain in versioned subfolders such as `1.1.1`; the new Start menu shortcut opens Electron.
 
-**Help > Check for Electron updates** opens GitHub releases. Install the matching newer Windows Electron release after quitting. Updates are manual; no background update installation is enabled. The workspace's update checker checks the latest numbered release, including 1.2.2. It ignores prereleases and does not install updates.
+In published **1.2.2**, **Help > Check for Electron updates** opens GitHub releases. Install the matching newer Windows Electron release after quitting. The sidebar checker follows numbered releases and ignores prereleases; it does not install updates.
+
+The upcoming updater adds automatic checks, **Download update** with progress/cancel, and **Restart & update** or **Later**. It blocks restarts during processing, uploads, saves, downloads or setup and retains sessions/storage choices. Normal Quit does not install. This is not yet published: 1.2.2 needs one manual upgrade first. [Update guide and validation status](UPDATES.md).
 
 ### Uninstall the Windows app
 

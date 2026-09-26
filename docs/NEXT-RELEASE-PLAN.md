@@ -30,7 +30,7 @@ The first wording should guide users toward naming the sound, such as "water bub
 | Companion features | Visual interval selection and short previews first | Accepted; implemented |
 | Cleaned-video export | Separate follow-up; current exports are WAV/ZIP | Outside this prototype |
 | Batch processing | Separate follow-up after single-clip cleanup is proven | Outside this prototype |
-| Automatic update installation | Separate delivery work; retain manual updates meanwhile | Outside this prototype |
+| Desktop updates | Automatic checks, background download/cancel, explicit restart after idle checks | Implemented in source; full packaged upgrades on Windows and both Mac architectures remain release gates. [Guide](../electron/docs/UPDATES.md) |
 | Release number and date | Choose after prototype results and scope agreement | Open |
 
 If multiple targets are selected, define how each is processed, previewed and undone. A single combined text description must not be assumed equivalent to reliably removing every named sound. Any later cleanup applied to a previous result must make that source choice visible.

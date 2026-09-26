@@ -19,7 +19,9 @@ def main():
         mac = sys.platform == "darwin"
         guide = "MACOS" if mac else "WINDOWS"
         shutil.copy2(ROOT / f"electron/docs/{guide}.md", DIST / f"{guide}-INSTALL.md")
-        files = sorted(p for p in DIST.iterdir() if p.is_file() and (p.suffix in ({".dmg", ".zip"} if mac else {".exe"}) or p.name == f"{guide}-INSTALL.md"))
+        manifest = "latest-mac.yml" if mac else "latest.yml"
+        assert (DIST / manifest).is_file(), "The updater manifest must accompany the release."
+        files = sorted(p for p in DIST.iterdir() if p.is_file() and (p.suffix in ({".dmg", ".zip", ".blockmap"} if mac else {".exe", ".blockmap"}) or p.name in {f"{guide}-INSTALL.md", manifest}))
         assert len(files) >= 2
         (DIST / "SHA256SUMS.txt").write_text("".join(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n" for p in files), encoding="utf-8")
     else:

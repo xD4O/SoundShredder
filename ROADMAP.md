@@ -22,7 +22,7 @@ Automatic ambience separation remains a research item. First evaluate a separate
 - Remembered engine/model/session storage choices, download progress, setup cancellation and disconnected-drive recovery.
 - Developer ID signing and Apple notarization for both Mac architectures.
 
-See the [Windows release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-windows-preview.1), [Mac release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1) and [Electron documentation](electron/README.md). Windows publisher signing, automatic updates and broader GPU validation remain future work.
+See the [Windows release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-windows-preview.1), [Mac release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1) and [Electron documentation](electron/README.md). Windows publisher signing and broader GPU validation remain future work. Desktop updates are now implemented in source; see the [update guide](electron/docs/UPDATES.md) for native upgrade release gates.
 
 ## Implemented in the standalone previews
 
@@ -44,7 +44,7 @@ Next work across the Windows and Mac apps:
 - Validate NVIDIA setup on additional clean PCs to extend validation beyond the verified CPU workflow.
 - Expand consumer Mac testing across macOS versions, chip types, Applications/Dock launch and Bubble FX. Signing, notarization, Gatekeeper and CPU layer-separation/reopening checks already pass on both native architectures.
 - Expand single-instance protection to cover legacy source launchers as well as standalone launches.
-- Add guided app updates that install after active processing finishes.
+- Complete packaged upgrade validation for the implemented automatic checks, cancellable downloads and explicit restart flow. Existing 1.2.2 users will need one manual upgrade; normal Quit never installs an update.
 - Preserve the existing local-processing workflow and familiar interface.
 
 The Windows app includes the first setup screen and diagnostics; keep improving recovery and usability with feedback from clean-machine testing.

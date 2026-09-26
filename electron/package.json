@@ -13,6 +13,8 @@
     "test:app": "node tests/lifecycle.cjs",
     "test:setup-ui": "node tests/setup-ui.cjs",
     "test:storage-ui": "node tests/storage-ui.cjs",
+    "test:updates-ui": "node tests/updates-ui.cjs",
+    "test:updates-native": "node tests/update-native.cjs",
     "test:lab-ui": "node tests/lab-extraction-ui.cjs && node tests/lab-session-ui.cjs",
     "build": "electron-builder --publish never"
   },
@@ -21,5 +23,8 @@
     "electron-builder": "26.15.3",
     "linkedom": "0.18.13",
     "playwright": "1.63.0"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.9"
   }
 }

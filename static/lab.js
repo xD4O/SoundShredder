@@ -8,11 +8,15 @@
   let time=0, mode='second', pending=false, active=false, timer=null, undo=[], audition=null, canvasRows={};
   let lastTask=null, sessionGeneration=0, busyLabel='', auditionEnd=null, auditionStart=0, labTask=null;
   let sessionsRequest=0;
+  let pendingWrites=0;
+  window.soundshredderDesktop?.beforeUpdate?.(()=>!pending&&!active&&!pendingWrites);
   const viewWrites=new Map(), closingSessions=new Set();
   const endpoint=()=>`/api/jobs/${job}/lab`;
   const fmt=t=>`${String(Math.floor(t/60)).padStart(2,'0')}:${(t%60).toFixed(3).padStart(6,'0')}`;
   function notice(text) { $('notice').textContent=text; $('notice').hidden=!text; }
   async function api(url,options={}) {
+    const write=options.method&&!['GET','HEAD'].includes(options.method.toUpperCase());
+    if(write)pendingWrites++;
     const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),options.body instanceof FormData?120000:20000);
     try {
       const response=await fetch(url,{...options,signal:controller.signal});
@@ -20,7 +24,7 @@
       if (!response.ok) throw new Error(typeof data.detail==='string'?data.detail:'Check the time range and settings, then retry.');
       return data;
     } catch(error) {if(error.name==='AbortError')throw new Error('The local server took too long to respond. Reopen this session to check whether work finished before retrying.');throw error;}
-    finally {clearTimeout(timeout);}
+    finally {clearTimeout(timeout);if(write)pendingWrites--;}
   }
   const json=(method,data)=>({method,headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
   function interval() {
@@ -409,6 +413,7 @@
     catch(error){if(generation===sessionGeneration)notice(error.message);}finally{if(generation===sessionGeneration){pending=false;e.target.value='';setBusy();}}
   };
   $('updates').onclick=async()=>{
+    if(window.soundshredderDesktop?.openUpdates){await window.soundshredderDesktop.openUpdates();return;}
     $('updates').disabled=true;
     try {const result=await api('/api/updates/check',{method:'POST'});$('update-info').textContent=(result.message||'Checked GitHub.')+' This Lab is an unreleased development preview.';}
     catch(error){$('update-info').textContent=error.message;}finally{$('updates').disabled=false;}

@@ -6,6 +6,8 @@ const presets = {
   "no-effects": [1, 1, 0], "no-dialogue": [0, 1, 1],
 };
 let selectedFile = null, currentJob = null, jobData = null, busy = false;
+let pendingWrites = 0;
+window.soundshredderDesktop?.beforeUpdate?.(() => !busy && !pendingWrites && !listeningBusy);
 let sourceURL = null, pollTimer = null, startedAt = null, lastMix = null;
 let sourcePeaks = null, mixPeaks = null, mode = "stems", bubbleAvailable = false;
 let multipassAvailable = false, rerunAvailable = false;
@@ -37,10 +39,14 @@ $("hero-signal").setAttribute("d", Array.from({length: 47}, (_, i) => {
 function showError(message) { $("error").textContent = message; $("error").hidden = false; }
 function clearError() { $("error").hidden = true; }
 async function api(path, options = {}) {
-  const response = await fetch(path, options);
-  const data = await response.json();
-  if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Please check the selected settings and try again.");
-  return data;
+  const write = options.method && !['GET', 'HEAD'].includes(options.method.toUpperCase());
+  if (write) pendingWrites++;
+  try {
+    const response = await fetch(path, options);
+    const data = await response.json();
+    if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "Please check the selected settings and try again.");
+    return data;
+  } finally { if (write) pendingWrites--; }
 }
 function gains() { return Object.fromEntries(stems.map(s => [s, Number($("level-" + s).value) / 100])); }
 function canRerun() { return rerunAvailable && currentJob && ["complete", "failed", "cancelled"].includes(jobData?.status); }
@@ -508,6 +514,7 @@ function placeProjectTools() {
 compactProjectLayout.addEventListener("change", placeProjectTools);
 placeProjectTools();
 $("check-updates").addEventListener("click", async () => {
+  if (window.soundshredderDesktop?.openUpdates) { await window.soundshredderDesktop.openUpdates(); return; }
   if (!updatesAvailable || $("check-updates").disabled) return;
   const button = $("check-updates"); button.disabled = true; button.setAttribute("aria-busy", "true");
   button.querySelector("span").textContent = "Checking…";

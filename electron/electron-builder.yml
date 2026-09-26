@@ -13,7 +13,11 @@ extraResources:
     to: backend
     filter: ['**/*', '!**/__pycache__/**', '!**/*.pyc']
 asar: true
-publish: null
+publish:
+  provider: github
+  owner: xD4O
+  repo: SoundShredder
+  releaseType: release
 win:
   icon: ../desktop/icon.ico
   target: [nsis]

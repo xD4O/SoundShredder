@@ -1,5 +1,11 @@
 # SoundShredder releases
 
+## Unreleased: desktop updates
+
+Electron now checks stable GitHub releases automatically and shows update status in both workspace sidebars. A dedicated panel provides release notes, download size, progress/cancel and **Restart & update** or **Later**. Restarts are blocked during engine setup, processing, exports, uploads, saves and file downloads. Normal Quit does not install a downloaded update. Saved sessions, storage selection and compatible engines/models are retained.
+
+The build produces updater metadata, verifies payload hashes and combines both Mac architectures into one manifest. This remains local development work; full packaged SoundShredder upgrades on Windows and signed-to-signed Mac upgrades are release gates. Existing 1.2.2 users will need one manual upgrade, and source/browser updates remain manual. [Update guide](electron/docs/UPDATES.md).
+
 ## Unreleased: Mixing Lab prototype
 
 Paused the experimental **Split deeper** feature and restored the four-channel mixer. Previously split sessions retain their saved child audio/settings while playback, editing and new exports use the main stems. Stem extraction, targeted cleanup, repeated passes and persistent session closing remain available.
