@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 GUIDE_FILES = [
     "output/html/SoundShredder-Higgsfield-Community-Guide.html",
-    "output/pdf/SoundShredder-Higgsfield-Community-Guide-v1.2.0.pdf",
+    "output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf",
 ]
 FILES = [
     "README.md",
@@ -18,6 +18,7 @@ FILES = [
     "electron/README.md",
     "electron/docs/WINDOWS.md",
     "electron/docs/MACOS.md",
+    "electron/docs/UPDATES.md",
     "app.py",
     "setup_runtime.py",
     "pyproject.toml",

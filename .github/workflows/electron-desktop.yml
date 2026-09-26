@@ -105,6 +105,21 @@ jobs:
       - name: Verify installed app remains sealed after processing and relaunch
         if: matrix.platform == 'mac'
         run: python scripts/verify_mac_distribution.py --after-lifecycle ${{ inputs.mac_signing == 'developer-id' && '--require-notarized' || '' }}
+      - name: Test full Windows update, retained work and automatic relaunch
+        if: matrix.platform == 'win'
+        working-directory: electron
+        run: npm run test:upgrade
+      - name: Test signed Mac update, retained work and automatic relaunch
+        if: matrix.platform == 'mac' && inputs.mac_signing == 'developer-id'
+        working-directory: electron
+        env:
+          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          CSC_NAME: ${{ secrets.MAC_CSC_NAME }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: npm run test:upgrade
       - name: Collect matching platform guide and checksums
         run: python scripts/electron_artifacts.py collect
       - uses: actions/upload-artifact@v4

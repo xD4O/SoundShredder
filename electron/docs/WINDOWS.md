@@ -1,10 +1,10 @@
-# SoundShredder 1.2.2 — Windows Electron guide
+# SoundShredder 1.3.0 — Windows Electron guide
 
 Made by cyr4x. Made for the Higgsfield Community.
 
 ## Install and open
 
-1. Use Windows 10/11 **64-bit (x64)**. Download [SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe) from the official **xD4O/SoundShredder** release. Before running it, read the unsigned-download notice below.
+1. Use Windows 10/11 **64-bit (x64)**. Download [SoundShredder-Electron-1.3.0-Windows-x64-Setup.exe](https://github.com/xD4O/SoundShredder/releases/download/v1.3.0/SoundShredder-Electron-1.3.0-Windows-x64-Setup.exe) from the official **xD4O/SoundShredder** release. Before running it, read the unsigned-download notice below.
 2. Quit any earlier standalone using its setup page's **Close SoundShredder** control. Keep its engine/data folders to reuse your setup and sessions.
 3. Run the installer. It installs for your user, lets you choose the app folder, and creates Start menu and desktop shortcuts, including **Uninstall SoundShredder** in Start. No administrator rights, separate Python, terminal commands or browser are required.
 4. Open **SoundShredder**. Setup appears inside its own dark/mint application window. Use **Choose folder…** to select a drive for engines, models and sessions, or keep the existing location. Choose **CPU** or **NVIDIA GPU**, then **Set up SoundShredder**. Existing compatible engines are reused.
@@ -33,7 +33,7 @@ Keep external drives connected. If the saved folder is unavailable, the app offe
 
 ## Follow or cancel first setup
 
-Version 1.2.2 shows the current package, downloaded bytes, average speed and elapsed time. The main bar shows **setup stages**; the second bar shows the current download. Installing or checking downloaded packages can take time without moving either bar.
+Version 1.3.0 shows the current package, downloaded bytes, average speed and elapsed time. The main bar shows **setup stages**; the second bar shows the current download. Installing or checking downloaded packages can take time without moving either bar.
 
 **Setup details** opens live diagnostics. **Cancel setup** stops installation safely and keeps your sessions. Closing the window during setup offers **Continue setup** or **Cancel setup and quit**. Reopen and select **Set up SoundShredder** to repair an interrupted engine; some packages may download again. A completed compatible engine is reused on normal launches.
 
@@ -50,9 +50,9 @@ Network requests have timeouts and limited retries. An installer command with no
 
 The normal Electron app location is `%LOCALAPPDATA%\Programs\SoundShredder` (or your chosen installer folder). Without a folder choice, engines and sessions keep using `%LOCALAPPDATA%\SoundShredder`, and models use existing user caches. After choosing a folder, it holds `data` (sessions), `runtimes` (engines), `models`, `cache`, `temp` and logs. Small app preferences and the `electron` browser profile remain in `%LOCALAPPDATA%\SoundShredder` so the app remembers your choice. Older standalone launchers may remain in versioned subfolders such as `1.1.1`; the new Start menu shortcut opens Electron.
 
-In published **1.2.2**, **Help > Check for Electron updates** opens GitHub releases. Install the matching newer Windows Electron release after quitting. The sidebar checker follows numbered releases and ignores prereleases; it does not install updates.
+Electron checks official stable GitHub releases automatically. Open **Help > Check for Electron updates** or the sidebar, review the version, size and notes, then choose **Download update**. Downloads have progress and **Cancel**. Choose **Restart & update** when ready, or **Later**. Normal Quit does not install. Processing, uploads, saves, file downloads and setup block restarting; sessions and storage choices are retained.
 
-The upcoming updater adds automatic checks, **Download update** with progress/cancel, and **Restart & update** or **Later**. It blocks restarts during processing, uploads, saves, downloads or setup and retains sessions/storage choices. Normal Quit does not install. This is not yet published: 1.2.2 needs one manual upgrade first. [Update guide and validation status](UPDATES.md).
+Users of **1.2.2** need one manual upgrade to 1.3.0 first. Browser/source updates remain manual. [Update guide](https://github.com/xD4O/SoundShredder/blob/main/electron/docs/UPDATES.md).
 
 ### Uninstall the Windows app
 
@@ -73,4 +73,10 @@ For complete profile removal, first note the location shown in Setup and diagnos
 - **App files missing:** reinstall the Electron installer; retain the separate profile folder.
 - **Details for support:** use Setup details or SoundShredder > Open logs folder. Review paths before sharing `electron-engine.log`, `setup.log`, or `app.log`.
 
-The current Windows **1.2.2 release is unsigned**. Installation, reinstallation, uninstallation and CPU processing/reopening have passed native CI checks; broader clean-PC and NVIDIA installer testing continues. Functional testing does not replace a security audit. See the [verification record](https://github.com/xD4O/SoundShredder/blob/main/VERIFICATION.md).
+The current Windows **1.3.0 release is unsigned**. Installation, reinstallation, uninstallation and CPU processing/reopening have passed native CI checks; broader clean-PC and NVIDIA installer testing continues. Functional testing does not replace a security audit. See the [verification record](https://github.com/xD4O/SoundShredder/blob/main/VERIFICATION.md).
+
+## Targeted cleanup and Mixing Lab
+
+Use **Target a Sound > Guided** to describe one unwanted sound, select an interval, preview removal and save a version with 1–4 passes. More passes are more aggressive and can affect wanted audio; compare the removed track before accepting.
+
+In **Mixing Lab**, upload a video/audio file, choose a device and click **Extract stems** above the video. Mix Dialogue, Music and Effects against the reference picture; Ambience is an optional imported track. Faders affect the selected frame, second or range and return to saved levels outside it. You can target one stem, audition removed sounds, and export channel WAVs, a master, a ZIP or a mixed MP4. Close/reopen sessions from the sidebar. See the [Lab guide](https://github.com/xD4O/SoundShredder/blob/main/docs/MIXING-LAB.md).

@@ -1,8 +1,8 @@
-# SoundShredder 1.2.2 — macOS Electron guide
+# SoundShredder 1.3.0 — macOS Electron guide
 
 Made by cyr4x. Made for the Higgsfield Community.
 
-> **The 1.2.2 Mac Electron release is Developer ID signed and Apple-notarized.** Use the [current release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2) for downloads and completed verification. The older 1.2.0 preview remains unsigned and unnotarized and has a known Finder launch issue; a newer release does not change those older files.
+> **The 1.3.0 Mac Electron release is Developer ID signed and Apple-notarized.** Use the [current release](https://github.com/xD4O/SoundShredder/releases/tag/v1.3.0) for downloads and completed verification. The older 1.2.0 preview remains unsigned and unnotarized and has a known Finder launch issue; a newer release does not change those older files.
 
 SoundShredder opens the familiar dark/mint workspace in its own Mac application window. Python is bundled. The audio engine and models download when needed; you do not need Homebrew, a separate Python installation, or an Apple developer account to use it.
 
@@ -12,8 +12,8 @@ Use **macOS 13 Ventura or newer**. Open **Apple menu > About This Mac** to check
 
 | Your Mac | Download |
 | --- | --- |
-| Apple Silicon — M1, M2, M3, M4 or newer M-series | [SoundShredder-Electron-1.2.2-macOS-arm64.dmg](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-macOS-arm64.dmg) |
-| Intel processor | [SoundShredder-Electron-1.2.2-macOS-x64.dmg](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-macOS-x64.dmg) |
+| Apple Silicon — M1, M2, M3, M4 or newer M-series | [SoundShredder-Electron-1.3.0-macOS-arm64.dmg](https://github.com/xD4O/SoundShredder/releases/download/v1.3.0/SoundShredder-Electron-1.3.0-macOS-arm64.dmg) |
+| Intel processor | [SoundShredder-Electron-1.3.0-macOS-x64.dmg](https://github.com/xD4O/SoundShredder/releases/download/v1.3.0/SoundShredder-Electron-1.3.0-macOS-x64.dmg) |
 
 Matching ZIP files are alternatives to the DMGs. Use the native build for your chip. This release processes audio on the **CPU**; Apple Metal/MPS and NVIDIA acceleration are not enabled. Processing speed depends on your Mac, clip length and chosen cleanup settings.
 
@@ -49,9 +49,9 @@ Network requests have timeouts and limited retries. An installer command stops a
 
 Drop a supported audio or video file, including MP3 or MP4, into the workspace. Choose a preset to reduce unwanted dialogue, music or sound effects. The **Water bubbles** preset targets unwanted bubble sounds; optional aggressive multi-pass cleanup can catch more of them, but may also remove wanted sounds. Start with fewer passes and compare the **Original**, **Cleaned** and **Removed sounds** previews.
 
-The optional video player helps compare the sound against your footage; hide or show it as needed. The listening tracks provide separate dialogue, music, sound-effects and removed-sound previews. In bubble sessions, prepare the additional tracks when offered. Download the cleaned mix or isolated tracks through the native Save dialog. These exports are audio files; the player does not render a replacement video.
+The optional video player helps compare the sound against your footage; hide or show it as needed. The listening tracks provide separate dialogue, music, sound-effects and removed-sound previews. In bubble sessions, prepare the additional tracks when offered. Download the cleaned mix or isolated tracks through the native Save dialog. The main separator exports audio; Mixing Lab can also export an MP4 with the mixed soundtrack.
 
-Use the left panel to return to saved sessions or start a new one. Closing/removing a session there removes that session; **quitting the app preserves sessions**. Export wanted audio before deleting a session.
+Use the left panel to return to saved sessions or start a new one. In Mixing Lab, Close session moves a session to Closed sessions, where it can be reopened. In the main separator, Delete removes its local files; export wanted audio before deleting. Quitting the app preserves saved sessions.
 
 ## Quit and reopen
 
@@ -62,9 +62,9 @@ Use the left panel to return to saved sessions or start a new one. Closing/remov
 
 ## Updates, storage and uninstall
 
-In published **1.2.2**, **Help > Check for Electron updates** opens GitHub releases. Quit, download the matching newer Mac build and replace the app in Applications. The sidebar checker follows numbered releases and ignores prereleases; it does not install updates.
+Electron checks official stable GitHub releases automatically. Open **Help > Check for Electron updates** or the sidebar, review the version, size and notes, then choose **Download update**. Downloads have progress and **Cancel**. Choose **Restart & update** when ready, or **Later**. Normal Quit does not install. Processing, uploads, saves, file downloads and setup block restarting; sessions and storage choices are retained.
 
-The upcoming updater adds automatic checks, **Download update** with progress/cancel, and **Restart & update** or **Later**. It blocks restarts during processing, uploads, saves, downloads or setup and retains sessions/storage choices. Normal Quit does not install. Mac updates require signed ZIPs and signed-to-signed upgrade validation on both architectures before release. This is not yet published: 1.2.2 needs one manual upgrade first. [Update guide and validation status](UPDATES.md).
+Users of **1.2.2** need one manual upgrade to 1.3.0 first. Browser/source updates remain manual. [Update guide](https://github.com/xD4O/SoundShredder/blob/main/electron/docs/UPDATES.md).
 
 Without a folder choice, engines and sessions remain in `~/Library/Application Support/SoundShredder`, and models use the existing user caches. After choosing a folder, that folder holds `data` (sessions), `runtimes` (engines), `models`, `cache`, `temp` and diagnostic logs. Small preferences and the `electron` browser profile remain in the default Application Support folder. Replacing the app preserves these separate locations.
 
@@ -80,7 +80,7 @@ For complete data removal, first note the storage location shown in **Setup and 
 
 The **older `v1.2.0-electron-macos-preview.1` download** skipped signing and notarization and has a known Finder launch issue. Its DMG and ZIP contain the same app; changing archive formats does not repair its trust status. A newer release does not alter those old downloads.
 
-Version 1.2.2 passed signing, notarization, Gatekeeper and installed-app checks on native Apple Silicon and Intel CI. A user also confirmed the browser-download/Finder installation and reopening test on their Mac; its chip type was not recorded. This is not exhaustive testing of every Mac. Use the [current release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2), not the old unsigned preview.
+Version 1.3.0 passed signing, notarization, Gatekeeper and installed-app checks on native Apple Silicon and Intel CI. A user also confirmed the browser-download/Finder installation and reopening test on their Mac; its chip type was not recorded. This is not exhaustive testing of every Mac. Use the [current release](https://github.com/xD4O/SoundShredder/releases/tag/v1.3.0), not the old unsigned preview.
 
 If the disk image itself will not mount, download it again and compare its SHA-256 with the release's checksum file. If the image mounts but the app is blocked, confirm the version and chip type, quit old copies, copy the app into Applications and eject the image before retrying. Report the exact warning if the problem persists. Do not disable Gatekeeper or remove quarantine as an installation step.
 
@@ -107,3 +107,9 @@ Follow the [Akira walkthrough](https://github.com/xD4O/SoundShredder/blob/main/d
 - **Logs for support:** use **SoundShredder > Open logs folder** or copy **Setup details**. Include the release filename, macOS version, chip type and exact error. Review private paths before sharing logs; do not send private audio unnecessarily.
 
 Community-created; not an official Higgsfield product.
+
+## Targeted cleanup and Mixing Lab
+
+Use **Target a Sound > Guided** to describe one unwanted sound, select an interval, preview removal and save a version with 1–4 passes. More passes are more aggressive and can affect wanted audio; compare the removed track before accepting.
+
+In **Mixing Lab**, upload a video/audio file, choose a device and click **Extract stems** above the video. Mix Dialogue, Music and Effects against the reference picture; Ambience is an optional imported track. Faders affect the selected frame, second or range and return to saved levels outside it. You can target one stem, audition removed sounds, and export channel WAVs, a master, a ZIP or a mixed MP4. Close/reopen sessions from the sidebar. See the [Lab guide](https://github.com/xD4O/SoundShredder/blob/main/docs/MIXING-LAB.md).
