@@ -1,12 +1,12 @@
 # Windows download warnings
 
-Applies to the **unsigned SoundShredder 1.2.2 Windows Electron installer**. Updated September 22, 2026.
+Applies to the **unsigned SoundShredder 1.3.0 Windows Electron installer**. Updated September 26, 2026.
 
 ## Get the official download
 
 Use **[github.com/xD4O/SoundShredder/releases/latest](https://github.com/xD4O/SoundShredder/releases/latest)**. This is the project's official distribution page. Choose the Windows EXE from its Assets list; avoid reuploaded installers or similarly named repositories.
 
-The current file is [SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe). Windows publisher signing is planned and has **not** been completed. Mac Developer ID signing and notarization do not sign this Windows EXE.
+The current file is [SoundShredder-Electron-1.3.0-Windows-x64-Setup.exe](https://github.com/xD4O/SoundShredder/releases/download/v1.3.0/SoundShredder-Electron-1.3.0-Windows-x64-Setup.exe). Windows publisher signing is planned and has **not** been completed. Mac Developer ID signing and notarization do not sign this Windows EXE.
 
 ## Why Edge or Windows shows a warning
 
@@ -16,11 +16,11 @@ The official release has passed installation, reinstallation, uninstallation, CP
 
 ## Check that your download matches the release
 
-1. Download the EXE and [SHA256SUMS.txt](https://github.com/xD4O/SoundShredder/releases/download/v1.2.2/SHA256SUMS.txt) from the **same release**.
+1. Download the EXE and [SHA256SUMS.txt](https://github.com/xD4O/SoundShredder/releases/download/v1.3.0/SHA256SUMS.txt) from the **same release**.
 2. In PowerShell, run the following, replacing the path if you saved the EXE elsewhere:
 
    ```powershell
-   Get-FileHash -Algorithm SHA256 -LiteralPath "$env:USERPROFILE\Downloads\SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe"
+   Get-FileHash -Algorithm SHA256 -LiteralPath "$env:USERPROFILE\Downloads\SoundShredder-Electron-1.3.0-Windows-x64-Setup.exe"
    ```
 
 3. Compare the entire Hash value with the checksum line for that exact filename. Letter case does not matter. A match verifies that the bytes match the published checksum; it is not a malware scan or a publisher certificate.

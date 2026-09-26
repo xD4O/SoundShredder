@@ -1,26 +1,27 @@
 # SoundShredder releases
 
-## Unreleased: desktop updates
+## v1.3.0 — Target a sound. Mix the scene.
 
-Electron now checks stable GitHub releases automatically and shows update status in both workspace sidebars. A dedicated panel provides release notes, download size, progress/cancel and **Restart & update** or **Later**. Restarts are blocked during engine setup, processing, exports, uploads, saves and file downloads. Normal Quit does not install a downloaded update. Saved sessions, storage selection and compatible engines/models are retained.
+### Desktop updates
 
-The build produces updater metadata, verifies payload hashes and combines both Mac architectures into one manifest. This remains local development work; full packaged SoundShredder upgrades on Windows and signed-to-signed Mac upgrades are release gates. Existing 1.2.2 users will need one manual upgrade, and source/browser updates remain manual. [Update guide](electron/docs/UPDATES.md).
+The Electron app checks stable GitHub releases automatically. Review release notes and download size, download while working with progress/cancel, then choose **Restart & update** or **Later**. Ordinary Quit never installs a downloaded update. Pending uploads/saves, downloads, setup, processing and exports block restart. Sessions, storage selection and compatible engines/models are retained. [Update guide](electron/docs/UPDATES.md).
 
-## Unreleased: Mixing Lab prototype
+**Coming from 1.2.2 or an older standalone? Install 1.3.0 manually once.** This adds the updater for future compatible releases. The browser/source edition still updates manually.
 
-Paused the experimental **Split deeper** feature and restored the four-channel mixer. Previously split sessions retain their saved child audio/settings while playback, editing and new exports use the main stems. Stem extraction, targeted cleanup, repeated passes and persistent session closing remain available.
+### Targeted cleanup and Mixing Lab
 
-The source app now includes a dedicated Mixing Lab with synchronized reference video and stem playback, actual peak meters, time-scoped volume/mute edits, saved automation and optional imported Ambience. Targeted cleanup creates versions of one selected stem with independent strength and 1–4 passes; removed sounds remain separate from the mix. Exports include automated channel WAVs, a master WAV, an edit report, a ZIP and optional MP4 with replaced audio. Source assets remain available. See the [Lab guide](docs/MIXING-LAB.md).
+- **Quick Cleanup · Easy** keeps familiar presets; **Target a Sound · Guided** adds a local sound description, waveform interval, short preview and independent strength / 1–4 passes. Compare Original, Cleaned and Removed, then save a new version. Original uploads and earlier versions remain available.
+- **Mixing Lab** puts reference footage beside Dialogue, Music, Effects and optional imported Ambience. The visible extraction area prepares stems. Edit one nominal frame, one second or a selected range; levels return to their saved values outside it. Mute/solo, clean a selected stem with a prompt, import replacements and export channel WAVs, a master, ZIP or an MP4 with the new soundtrack.
+- **Close session** in the Lab moves it to **Closed sessions** and persists across restarts. This differs from deleting a separator session. Recursive **Split deeper** remains paused; older experimental child assets/settings are retained but do not enter the four-channel mix.
+- The illustrated community HTML/PDF and Windows/Mac guides cover installation, the Akira walkthrough, prompt cleanup, Lab extraction, exports and updating. Direct installer links are clickable.
 
-This is local development work, not a published installer update. Automatic ambience separation and native Windows/macOS package validation remain future work. Downloads remain 1.2.2.
+Prompt cleanup is experimental. More passes may remove wanted detail; preview and listen to Removed sounds. Ambience extraction, instrument stems, EQ/compression and recursive splits are not included. The models are unchanged pretrained models, not newly trained separation models.
 
-## Unreleased: targeted cleanup prototype
+### Installation and validation
 
-Source development adds **Quick Cleanup · Easy** and **Target a Sound · Guided**, with local text prompts, waveform intervals, up-to-ten-second previews, independent strength/1–4-pass controls and saved versions. A completed cleaned version can explicitly become another step's input. Original uploads and earlier results are preserved. Custom prompts reuse AudioSep's text weights with a separately verified tokenizer.
+Windows uses the per-user EXE with a selectable application folder and a separate remembered engine/model/session location. It remains **unsigned**; read the [download warning guide](docs/WINDOWS-DOWNLOADS.md). Apple Silicon and Intel Mac releases use Developer ID signing and Apple notarization. Each platform includes its own installation guide.
 
-This is not a new installer release. Listening review, rendered UI checks and packaged Windows/Mac validation are pending. See the [development guide](docs/TARGETED-CLEANUP.md) and [release gates](docs/NEXT-RELEASE-PLAN.md). Published downloads remain 1.2.2.
-
-Documentation refreshed September 22, 2026: [Akira walkthrough](docs/AKIRA-EXAMPLE.md), [Windows unsigned-download guidance](docs/WINDOWS-DOWNLOADS.md) and the current [community PDF](output/pdf/SoundShredder-Higgsfield-Community-Guide.pdf). Application version remains 1.2.2; this documentation update does not change installer binaries. Entries below retain their original release context.
+See [verification](VERIFICATION.md) for native build/upgrade evidence and limitations. Broader consumer hardware, perceptual separation quality and Windows publisher signing remain separate work. Historical versions below retain their original context.
 
 ## v1.2.2 - Current Windows and Mac downloads
 

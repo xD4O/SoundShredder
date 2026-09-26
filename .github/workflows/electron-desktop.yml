@@ -28,7 +28,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     # Apple's review may consume most of the old 45-minute job budget. Leave
     # a separate window for the installed-app processing and relaunch checks.
-    timeout-minutes: ${{ matrix.platform == 'mac' && inputs.mac_signing == 'developer-id' && 120 || 45 }}
+    timeout-minutes: ${{ matrix.platform == 'mac' && inputs.mac_signing == 'developer-id' && 120 || 75 }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -99,6 +99,9 @@ jobs:
       - name: Test real CPU separation, export, close and relaunch
         working-directory: electron
         run: npm run test:app
+      - name: Test packaged prompt cleanup and Mixing Lab exports
+        working-directory: electron
+        run: node tests/creative-flows.cjs
       - name: Test folder selection, retained profiles and disconnected-drive recovery
         working-directory: electron
         run: npm run test:storage-ui

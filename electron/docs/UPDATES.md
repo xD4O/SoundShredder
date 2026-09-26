@@ -1,6 +1,6 @@
 # Desktop updates
 
-**Development feature, not yet published.** The published 1.2.2 installers still use manual updates. Users will need to install the first updater-enabled release once. No version or release date is committed yet.
+**Available from SoundShredder 1.3.0.** Install 1.3.0 manually once if you are coming from 1.2.2 or an older standalone. Future compatible stable desktop releases can be downloaded and installed through this panel.
 
 ## Using the updater
 
@@ -39,7 +39,7 @@ The browser/source edition keeps its manual update checker. Development Electron
 
 Existing 1.2.2 clients cannot acquire this updater without one manual upgrade. Keep the manual GitHub download path available for recovery and older clients.
 
-## Verification and remaining release gates
+## Verification
 
 From `electron/`:
 
@@ -52,4 +52,4 @@ npm run test:updates-native
 
 The first two cover update state transitions, stalled/cancelled downloads, verification rejection, metadata integrity, IPC boundaries, rendered controls and active-work protection. The native Windows check uses a distinct app ID and an installation/profile under `artifacts/electron/update-native`; it exercises real HTTP metadata, checksum verification, NSIS replacement, relaunch and retained profile data. It uses a small harness rather than the Python audio engine and uninstalls that QA app afterward.
 
-Before release, validate the complete packaged SoundShredder upgrade on Windows and both native Mac architectures, with saved sessions and a custom storage location. Check playback/export after relaunch, a busy job blocking restart, offline recovery, normal Quit after **Later**, and an interrupted download. Mac needs a signed-to-signed upgrade from Applications. The isolated Windows test and mocked error tests are not evidence that all native Mac failures or every power-loss stage recover correctly. See the [verification record](../../VERIFICATION.md).
+The CI-only `npm run test:upgrade` builds a full test baseline with the candidate code and a lower app version, then updates it to the final payload on Windows and both Mac architectures. This first updater release cannot use 1.2.2 as an automatic-update baseline because that version lacks an updater. It retains real saved media and custom storage, checks Later plus ordinary Quit, blocks a pending-save restart, verifies automatic relaunch and reopens a completed result. Mac baselines and replacements must pass Developer ID, Gatekeeper and stapling checks in Applications. Subsequent releases should also upgrade from the previously published updater-enabled version. Check playback/export after relaunch, a busy job blocking restart, offline recovery, normal Quit after **Later**, and an interrupted download. Mac needs a signed-to-signed upgrade from Applications. The isolated Windows test and mocked error tests are not evidence that all native Mac failures or every power-loss stage recover correctly. See the [verification record](../../VERIFICATION.md).

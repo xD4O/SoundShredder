@@ -1,12 +1,12 @@
 # Future updates
 
-No release date is committed for the remaining work. The latest release is v1.2.2, with Windows, Apple Silicon and Intel Mac installers together and source available separately. Earlier platform previews remain available for their verification history. Both Mac builds are Developer ID signed and Apple-notarized; native CI passed Gatekeeper, real CPU separation, export, close/reopen and crash recovery. A user confirmed the Finder installation test worked on their Mac. Broader hardware and Windows signing/SmartScreen validation remain separate work.
+No release date is committed for the remaining work. The 1.3.0 release adds prompt cleanup, Mixing Lab and guarded desktop updates; the earlier stable release was v1.2.2, with Windows, Apple Silicon and Intel Mac installers together and source available separately. Earlier platform previews remain available for their verification history. Both Mac builds are Developer ID signed and Apple-notarized; native CI passed Gatekeeper, real CPU separation, export, close/reopen and crash recovery. A user confirmed the Finder installation test worked on their Mac. Broader hardware and Windows signing/SmartScreen validation remain separate work.
 
-## Next major release: targeted cleanup with text prompts
+## Included in 1.3.0: targeted cleanup with text prompts
 
-The approved workflow is in source development: **Quick Cleanup · Easy** for presets and **Target a Sound · Guided** for local prompts, waveform intervals, short previews, independent strength/1–4-pass controls and saved versions. See the [accepted plan](docs/NEXT-RELEASE-PLAN.md), [development guide](docs/TARGETED-CLEANUP.md) and [AudioShake research](docs/AUDIOSHAKE-RESEARCH.md). Listening review, rendered UI checks and native installer validation remain before publication. No new version or date is committed; published installers remain 1.2.2.
+The approved workflow is included as an experimental feature: **Quick Cleanup · Easy** for presets and **Target a Sound · Guided** for local prompts, waveform intervals, short previews, independent strength/1–4-pass controls and saved versions. See the [accepted plan](docs/NEXT-RELEASE-PLAN.md), [development guide](docs/TARGETED-CLEANUP.md) and [AudioShake research](docs/AUDIOSHAKE-RESEARCH.md). Preview each result before applying it. Published functional checks do not establish perceptual quality for every sound or source.
 
-## Mixing Lab — accepted and in source development
+## Included in 1.3.0: Mixing Lab
 
 The approved Lab combines a shared video/audio playhead with Dialogue, Music, Effects and optional imported Ambience. Faders write edits for one nominal frame, one second or a selected interval, restoring the saved level outside it. It adds per-stem prompt cleanup with previews and 1–4 passes, source versions, removed-sound audition, imported replacements, WAV/stem ZIP export and optional video soundtrack replacement. See the [development guide](docs/MIXING-LAB.md).
 
@@ -22,7 +22,7 @@ Automatic ambience separation remains a research item. First evaluate a separate
 - Remembered engine/model/session storage choices, download progress, setup cancellation and disconnected-drive recovery.
 - Developer ID signing and Apple notarization for both Mac architectures.
 
-See the [Windows release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-windows-preview.1), [Mac release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1) and [Electron documentation](electron/README.md). Windows publisher signing and broader GPU validation remain future work. Desktop updates are now implemented in source; see the [update guide](electron/docs/UPDATES.md) for native upgrade release gates.
+See the [Windows release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-windows-preview.1), [Mac release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2-electron-macos-preview.1) and [Electron documentation](electron/README.md). Windows publisher signing and broader GPU validation remain future work. Desktop update controls ship in 1.3.0; see the [update guide](electron/docs/UPDATES.md).
 
 ## Implemented in the standalone previews
 
@@ -44,7 +44,7 @@ Next work across the Windows and Mac apps:
 - Validate NVIDIA setup on additional clean PCs to extend validation beyond the verified CPU workflow.
 - Expand consumer Mac testing across macOS versions, chip types, Applications/Dock launch and Bubble FX. Signing, notarization, Gatekeeper and CPU layer-separation/reopening checks already pass on both native architectures.
 - Expand single-instance protection to cover legacy source launchers as well as standalone launches.
-- Complete packaged upgrade validation for the implemented automatic checks, cancellable downloads and explicit restart flow. Existing 1.2.2 users will need one manual upgrade; normal Quit never installs an update.
+- Continue upgrade regression testing with each future release. Existing 1.2.2 users need one manual upgrade to 1.3.0; normal Quit never installs an update.
 - Preserve the existing local-processing workflow and familiar interface.
 
 The Windows app includes the first setup screen and diagnostics; keep improving recovery and usability with feedback from clean-machine testing.

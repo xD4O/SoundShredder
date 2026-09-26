@@ -1,6 +1,6 @@
 # Mixing Lab — development guide
 
-The Mixing Lab is an **unreleased source feature**, approved during planning for the next major SoundShredder release. Published 1.2.2 installers do not contain it. It uses the existing local Python server and the same interface inside Electron; new installers still need platform testing before release.
+The Mixing Lab is included in **SoundShredder 1.3.0** as a preview workflow. It uses the local Python server and the same interface inside Electron. Upload, extract stems, mix against the reference picture and export; see the [installation guide](../README.md).
 
 **Split deeper is paused.** The Lab uses the four main channels: Dialogue, Music, Effects and optional imported Ambience. Recursive split controls and layer navigation are removed. Sessions made with the experiment reopen on their saved main stems; split audio, child edits and older exports are retained locally but are excluded from playback and new exports. A new export is needed for the restored main-stem mix. Stem extraction, timed mixing, targeted cleanup and repeated cleanup passes remain available.
 
@@ -91,4 +91,4 @@ Processing runs in an owned worker process. Cancellation stops that worker and i
 
 Playback buffers up to two 20-second chunks per active channel, instead of decoding all four full-length tracks into browser memory. If buffering falls behind, playback pauses with a retry message. All stems use one Web Audio clock; video follows that playhead. Backend inference still has the existing model and memory requirements.
 
-No EQ, compression, stereo panning, instrument-specific stems, automatic ambience separation, or automatic update installation is included. Windows/Mac installer and native lifecycle tests remain release gates. See [verification](../VERIFICATION.md), [release plan](NEXT-RELEASE-PLAN.md) and [future work](../ROADMAP.md).
+No EQ, compression, stereo panning, instrument-specific stems, automatic ambience separation, or automatic update installation is included. The release workflow exercises packaged CPU cleanup, playback/export and native lifecycle behavior; see the verification record for the completed evidence and its limits. See [verification](../VERIFICATION.md), [release plan](NEXT-RELEASE-PLAN.md) and [future work](../ROADMAP.md).

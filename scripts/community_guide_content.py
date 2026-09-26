@@ -1,8 +1,8 @@
 """Shared, versioned content for the community HTML and PDF guide."""
 
 REPO = 'https://github.com/xD4O/SoundShredder'
-RELEASE = REPO + '/releases/tag/v1.2.2'
-ASSETS = REPO + '/releases/download/v1.2.2/'
+RELEASE = REPO + '/releases/tag/v1.3.0'
+ASSETS = REPO + '/releases/download/v1.3.0/'
 
 def link(url, label): return f'<link href="{url}" color="#79f6d3">{label}</link>'
 def p(text): return {'type': 'p', 'text': text}
@@ -12,9 +12,9 @@ def cards(items): return {'type': 'cards', 'items': items}
 def steps(items): return {'type': 'steps', 'items': items}
 def page(id, title, blocks, cover=False): return {'id': id, 'label': 'SOUNDSHREDDER / COMMUNITY FIELD GUIDE', 'title': title, 'blocks': blocks, 'cover': cover}
 
-WINDOWS = link(ASSETS + 'SoundShredder-Electron-1.2.2-Windows-x64-Setup.exe', 'Download Windows EXE')
-ARM = link(ASSETS + 'SoundShredder-Electron-1.2.2-macOS-arm64.dmg', 'Download Apple Silicon DMG')
-INTEL = link(ASSETS + 'SoundShredder-Electron-1.2.2-macOS-x64.dmg', 'Download Intel Mac DMG')
+WINDOWS = link(ASSETS + 'SoundShredder-Electron-1.3.0-Windows-x64-Setup.exe', 'Download Windows EXE')
+ARM = link(ASSETS + 'SoundShredder-Electron-1.3.0-macOS-arm64.dmg', 'Download Apple Silicon DMG')
+INTEL = link(ASSETS + 'SoundShredder-Electron-1.3.0-macOS-x64.dmg', 'Download Intel Mac DMG')
 WARNINGS = link(REPO + '/blob/main/docs/WINDOWS-DOWNLOADS.md', 'Windows download verification and warning guide')
 
 PAGES = [
@@ -28,11 +28,11 @@ PAGES = [
             ('SEE AND HEAR THE RESULT', 'Toggle video preview, audition four tracks and save WAVs independently.'),
         ]),
         p(WINDOWS + ' / ' + ARM + ' / ' + INTEL),
-        p('<b>Made by cyr4x. Made for the Higgsfield Community.</b><br/>Version 1.2.2 / Documentation refreshed September 22, 2026.<br/>Community-created; not an official Higgsfield product.'),
+        p('<b>Made by cyr4x. Made for the Higgsfield Community.</b><br/>Version 1.3.0 / Documentation refreshed September 26, 2026.<br/>Community-created; not an official Higgsfield product.'),
     ], cover=True),
     page('windows-install', 'Install on Windows.', [
         p('<b>Windows 10/11 x64 / Electron desktop app.</b> Python is bundled. Engine and model downloads happen inside the app on first use.'),
-        note('WINDOWS SIGNING IS PENDING', 'The 1.2.2 EXE is unsigned. Edge may show an uncommon-download warning; Windows may show SmartScreen or an unknown publisher. Use the official xD4O/SoundShredder release and compare checksums. See the next page before running the installer.'),
+        note('WINDOWS SIGNING IS PENDING', 'The 1.3.0 EXE is unsigned. Edge may show an uncommon-download warning; Windows may show SmartScreen or an unknown publisher. Use the official xD4O/SoundShredder release and compare checksums. See the next page before running the installer.'),
         steps([
             ('Download the EXE', WINDOWS + ' from the official release. Read the Windows warning page and verify the downloaded file.'),
             ('Quit old copies, then install', 'Quit an older app or use Close SoundShredder on its standalone setup page. Run the EXE, choose the app installation folder, and finish. No separate Python, PATH edits or administrator rights are needed.'),
@@ -55,7 +55,7 @@ PAGES = [
         p(link('https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation', 'Microsoft: how SmartScreen reputation works') + ' / ' + link(REPO + '/blob/main/ROADMAP.md', 'Windows signing roadmap')),
     ]),
     page('mac-install', 'Install on your Mac.', [
-        p('<b>macOS 13 or newer / Electron desktop app.</b> Current 1.2.2 Apple Silicon and Intel builds are Developer ID signed and Apple-notarized. Mac audio processing uses CPU; Metal/MPS is not enabled.'),
+        p('<b>macOS 13 or newer / Electron desktop app.</b> Current 1.3.0 Apple Silicon and Intel builds are Developer ID signed and Apple-notarized. Mac audio processing uses CPU; Metal/MPS is not enabled.'),
         cards([('APPLE SILICON', ARM + '<br/>For M-series chips. Check Apple menu &gt; About This Mac.'), ('INTEL', INTEL + '<br/>For an Intel processor. Use the matching architecture.')]),
         steps([
             ('Quit any older SoundShredder copy', 'Use its Quit command or, for older browser standalones, Close SoundShredder on the setup page. Keep your saved engine and session folders.'),
@@ -63,7 +63,7 @@ PAGES = [
             ('Choose storage and set up', 'Optionally use <b>Choose folder...</b>, then <b>Set up SoundShredder</b>. Allow at least <b>3 GiB free</b>, plus the app, models and saved media. Internet is required initially. No Homebrew, separate Python or developer membership is needed to use the app.'),
             ('Quit and return', 'Finish or cancel audio work before quitting. During setup, Cancel setup and quit is available. Reopen from Applications or the Dock; completed sessions remain saved.'),
         ]),
-        note('IF FINDER REPORTS DAMAGE', 'The old 1.2.0 preview was unsigned and unnotarized. Download the current 1.2.2 build, check its checksum and architecture, then copy it into Applications. If the warning persists, report the exact message. Do not disable Gatekeeper or remove quarantine as an installation step.'),
+        note('IF FINDER REPORTS DAMAGE', 'The old 1.2.0 preview was unsigned and unnotarized. Download the current 1.3.0 build, check its checksum and architecture, then copy it into Applications. If the warning persists, report the exact message. Do not disable Gatekeeper or remove quarantine as an installation step.'),
         p('<b>Uninstall:</b> quit and move SoundShredder.app to Trash. Saved data remains in the chosen folder and the user profile. ' + link(REPO + '/blob/main/electron/docs/MACOS.md', 'Mac storage, removal and troubleshooting') + '.'),
     ]),
     page('source-install', 'Prefer your browser?', [
@@ -119,7 +119,7 @@ PAGES = [
             ('OTHER VIDEO OR MP3 SOURCES', 'Apply the same workflow to your existing media. Dialogue removal is not an individual-speaker selector, and Effects only can include ambience.'),
         ]),
         note('MODEL LIMITS', 'The layer model can confuse singing, breaths, rhythmic impacts and music. It cannot identify every arbitrary sound or preserve all overlapping detail. Audition the original, cleaned mix and removed material before editing.'),
-        p('<b>Custom text prompts:</b> Bubble FX currently uses four preset sound descriptions. Free-form prompts are not a control in this release.'),
+        p('<b>Custom text prompts:</b> Bubble FX currently uses four preset sound descriptions. Use Target a Sound - Guided for a free-form description, preview and saved cleanup version.'),
     ]),
     page('bubbles', 'Target stubborn bubbles.', [
         p('Use <b>Bubble FX</b> for a distracting bubble, pop or gurgle while trying to retain other effects. This uses AudioSep separately from the dialogue/music/effects model.'),
@@ -130,7 +130,43 @@ PAGES = [
             ('Check the combined removed sound', 'Compare Original, Cleaned mix and Removed sounds. The latter combines removal across all passes. Reduce strength, narrow the interval or use fewer passes if wanted effects are caught.'),
             ('Rerun when settings need fresh inference', 'Changing sound type, pass count or multi-pass strength/range needs <b>Clean up again</b>, which starts from the saved original in a new session. Single-pass strength/range changes can use <b>Update mix</b>.'),
         ]),
-        note('EXPERIMENTAL CLEANUP', 'Multi-pass is available for Water bubbles only. It can reduce persistent remnants, but cannot promise bubble-only removal. Decoded samples outside the chosen interval stay unchanged in the float WAV.'),
+        note('EXPERIMENTAL CLEANUP', 'The Bubble FX multi-pass switch applies to Water bubbles. Guided prompt cleanup also offers 1-4 passes for custom targets. It can reduce persistent remnants, but cannot promise bubble-only removal. Decoded samples outside the chosen interval stay unchanged in the float WAV.'),
+    ]),
+    page('targeted', 'Describe the distraction.', [
+        p('A generation has useful voices and impacts, but one repeated sound distracts. Use <b>Target a Sound - Guided</b> to describe that sound instead of removing the whole Effects layer.'),
+        steps([
+            ('Prepare your source', 'Drop the video or audio file into the separator. Switch to Target a Sound, then Prepare source. The original upload is retained.'),
+            ('Describe one sound', 'Try a short phrase such as <b>water bubbling</b>, <b>footsteps</b> or <b>a dog barking</b>. The prompt describes what to remove. It is not a guarantee that the model can isolate that sound in every recording.'),
+            ('Choose the interval and preview', 'Select where the distraction occurs, then create a short preview. Compare Before, Cleaned and Removed. If voices or wanted effects appear in Removed, narrow the interval, lower strength or rephrase.'),
+            ('Set strength and passes', 'Strength controls how much of the estimated target is subtracted. Passes repeat cleanup on the previous pass. Start with one; use 2-4 for stubborn remnants after checking the sound.'),
+            ('Save or continue in steps', 'Save a full cleanup version for export. To address another distraction afterward, explicitly use the cleaned version as the next input. Earlier versions and the original remain available.'),
+        ]),
+        note('LOCAL MODEL, NOT A PROMISE', 'Prompt interpretation and separation can be imperfect when sounds overlap. More passes can remove wanted detail or introduce artifacts. Audition Removed as carefully as Cleaned; a successful job alone does not mean a better soundtrack.'),
+        p(link(REPO + '/blob/main/docs/TARGETED-CLEANUP.md', 'Full targeted-cleanup guide')),
+    ]),
+    page('mixing-lab', 'Meet your Mixing Lab.', [
+        p('Use the Lab when you want to keep most of a scene and adjust individual moments. The reference picture and all playing stems share one playhead.'),
+        fig('mixing-lab-extraction', 'Mixing Lab demonstration: start with the Stem Extraction area above the reference monitor. This screenshot shows example UI data, not a separation-quality result.', 225),
+        steps([
+            ('Upload, then extract', 'Choose Mixing Lab, drop a video/audio file, choose CPU/Auto/NVIDIA where available, then click <b>Extract stems</b>. Uploading alone does not extract them. Progress, Cancel and Retry are in this area.'),
+            ('Shape one moment', 'Choose one second, one nominal frame or a range. Adjust Dialogue, Music or Effects at the playhead. The saved level returns outside the selected interval. 0 dB means unchanged gain; the moving meter shows signal level in dBFS.'),
+            ('Listen with the picture', 'Use the shared Play control, waveform or scrubber. Solo isolates a channel for listening; it does not change the exported mix. Toggle Video to hide the reference picture.'),
+        ]),
+        note('AMBIENCE', 'Ambience is an optional imported track, such as room tone or wind. It is not automatically separated from Effects. Recursive Split deeper is not included.'),
+    ]),
+    page('lab-finish', 'Clean a stem. Keep the scene.', [
+        p('If bubbles sit in Effects while dialogue and music already sound right, target the <b>Effects</b> stem in the Lab. This keeps the other selected channels out of that cleanup operation.'),
+        steps([
+            ('Choose a stem and interval', 'Select the stem and time range. Describe the unwanted sound, set strength and 1-4 passes, then preview. Compare Before, Cleaned and Removed before applying.'),
+            ('Keep versions available', 'Applying cleanup creates a new version for that channel. Removed audio is available to audition or download and does not automatically enter the master mix.'),
+            ('Import a replacement', 'Bring in an external stem or ambience track when useful. Confirm the import fitting option if its length or format differs; keep the original source as a reference.'),
+            ('Export the result', 'Export the automated channel WAVs, master WAV, edit report or bundle ZIP. For supported video sources, export an MP4 with the mixed soundtrack. Review the result in motion and check sync in your editor.'),
+        ]),
+        cards([
+            ('CLOSE A LAB SESSION', 'Close session and the sidebar x move it into <b>Closed sessions</b>. Audio and saved edits remain. Expand that list and select a session to reopen it.'),
+            ('CLOSE IS NOT CANCEL', 'Closing a session stops its playback but does not cancel a background job. Use Cancel extraction or Cancel processing to stop that work. Main-separator Delete is a separate destructive action.'),
+        ]),
+        p(link(REPO + '/blob/main/docs/MIXING-LAB.md', 'Complete Mixing Lab guide')),
     ]),
     page('export', 'Take it into your edit.', [
         p('Download a ready-to-use mix or separate layers for more control. Electron uses a native Save dialog; the source web app uses your browser\'s download behavior.'),
@@ -146,7 +182,7 @@ PAGES = [
             ('Save before deleting a session', 'Download the outputs to your project folder and keep the processing report. Deleting a SoundShredder session removes its local generated files.'),
         ]),
         note('AKIRA TIMING CHECK', 'The example exports preserve the decoded source: <b>2,052,096 frames / 48,000 Hz / 42.752 seconds / stereo</b>. Timing alignment was checked; these numbers do not measure audible separation quality.'),
-        p('<b>Audio exports, not a replacement MP4.</b> The footage monitor is for preview. Layer separation exports 24-bit PCM WAV; Bubble FX exports 32-bit float WAV. Original media is preserved.'),
+        p('<b>The main separator exports audio.</b> Mixing Lab can also export an MP4 with the mixed soundtrack. Layer separation exports 24-bit PCM WAV; Bubble FX exports 32-bit float WAV. Original media is preserved.'),
     ]),
     page('sessions', 'The left panel, explained.', [
         cards([
@@ -160,13 +196,13 @@ PAGES = [
             ('Quit Electron and reopen normally', 'Close its window or use <b>SoundShredder &gt; Quit SoundShredder</b>. Use the Start shortcut or Applications/Dock next time. Opening twice brings the existing window forward.'),
             ('Stop source and older browser launchers correctly', 'Closing a browser tab leaves the server running. Stop the source launcher with Ctrl+C / Control+C; older standalone apps have a Close SoundShredder setup control.'),
         ]),
-        note('VERSION, GITHUB AND UPDATES', 'The bottom-left card contains the version, GitHub project link and manual Check for updates button. It checks GitHub when clicked. Desktop Help &gt; Check for Electron updates opens releases.'),
+        note('VERSION, GITHUB AND UPDATES', 'The bottom-left card contains the version, GitHub link and update controls. Electron checks automatically; open the panel to download or choose Restart &amp; update. The browser version updates manually.'),
     ]),
     page('support', 'Storage, updates and help.', [
         cards([
             ('CHOOSE YOUR STORAGE', 'Use <b>SoundShredder &gt; Choose storage folder...</b>. The app remembers the choice. Files are not moved; choose your old folder again to return to its sessions. Keep external drives connected.'),
             ('SETUP FEELS SLOW', 'Open Setup details to see package activity. Download bars can pause while packages install. Cancel and retry are available; keep enough free space and an internet connection.'),
-            ('UPDATES ARE MANUAL', 'Quit and run a newer Windows EXE or replace the Mac app. Saved profiles and compatible engines remain. The sidebar follows numbered releases and ignores prereleases; no silent auto-install is enabled.'),
+            ('YOU CHOOSE WHEN TO RESTART', 'Electron checks automatically. Download with progress/cancel, then Restart &amp; update or Later. Normal Quit does not install. Active processing, uploads and saves block the restart. Coming from 1.2.2? Install 1.3.0 manually once.'),
             ('FILES AND DEVICES', 'One file at a time: up to <b>500 MB / 10 minutes / mono or stereo</b>. Windows supports CPU or compatible NVIDIA CUDA; Mac uses CPU. AMD GPU and Apple Metal/MPS acceleration are not implemented.'),
         ]),
         p('<b>Models:</b> first use downloads about 426 MB for Bandit layer separation or 1.2 GB for Bubble FX. Cached runs can work offline. CPU processing may take longer than the clip duration.'),

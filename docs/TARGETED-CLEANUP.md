@@ -1,6 +1,6 @@
 # Target a Sound: development guide
 
-**Unreleased source prototype.** These controls are not in the published 1.2.2 installers. See the [main guide](../README.md) for current installation. Developers running this branch should rerun their platform's normal setup to install the updated engine dependencies.
+**SoundShredder 1.3.0.** Guided prompt cleanup is available in the desktop and browser editions. See the [main guide](../README.md) for installation. Source users should rerun their platform setup for the updated dependencies. Targeted separation remains imperfect; preview before accepting a result.
 
 ## Choose a mode
 

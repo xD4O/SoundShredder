@@ -124,7 +124,7 @@ Both browser setups need internet for the first engine/model downloads. Run one 
 3. **Process and compare.** Toggle **Show video preview** and switch between the original, cleaned mix and available tracks.
 4. **Download your result.** Save the cleaned WAV, individual tracks or a ZIP. Import the audio into your editor and mute the original soundtrack.
 
-**Exports are audio, not a replacement MP4.** Inputs support up to **500 MB / 10 minutes / mono or stereo**. AI separation can affect wanted sounds too; audition the result before using it in your final edit.
+**The separator exports audio; Mixing Lab can also export an MP4 with your new mix.** Inputs support up to **500 MB / 10 minutes / mono or stereo**. AI separation can affect wanted sounds too; audition the result before using it in your final edit.
 
 ### Try it with the Akira example
 
@@ -136,7 +136,7 @@ Choose **Bubble FX → Water bubbles**, enable **Aggressive multi-pass**, and st
 
 ![Water bubbles cleanup with 85 percent reduction, two passes and a 7–11 second selection](docs/images/bubble-cleanup.png)
 
-More passes take longer and may reduce similar effects. Bubble FX is experimental and currently uses preset sound descriptions; custom text prompting is not yet available.
+More passes take longer and may reduce similar effects. Bubble FX uses preset sound descriptions. For your own description, use **Target a Sound · Guided** or a selected stem's cleanup controls in Mixing Lab. Prompt cleanup remains experimental; preview the removed audio before applying it.
 
 ### Every layer, its own track
 
@@ -152,7 +152,8 @@ Normal separation prepares the tracks automatically. In a Bubble FX session, use
 | :--- | :--- |
 | Start a new session | **Audio separator** in the left panel. Completed sessions remain saved. |
 | Reopen a result | Choose a filename under **Recent sessions**. |
-| Delete a session | Use its **×** or **Delete this session**. Save wanted downloads elsewhere first. |
+| Delete a separator session | Use its **×** or **Delete this session**. Save wanted downloads elsewhere first. |
+| Close a Mixing Lab session | **Close session** or its **×** moves it into **Closed sessions**, where you can reopen it. |
 | Update Electron | **Help → Check for Electron updates → Download update → Restart & update**. Choose Later while working. |
 | Update the browser version | Download a fresh source ZIP. With both apps stopped, copy the old `data` folder into the new folder and run its launcher. Keep the old folder until checked. |
 

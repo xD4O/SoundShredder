@@ -1,6 +1,6 @@
 # Next release plan: targeted cleanup with text prompts
 
-Development update, September 24, 2026. The owner approved the workflow below. A working source prototype is implemented; listening review, rendered UI checks and packaged-platform validation remain before release. No version number or date is committed. Published installers remain 1.2.2.
+Release update, September 26, 2026. This accepted plan led to 1.3.0. Prompt cleanup and Mixing Lab ship as experimental workflows alongside guarded desktop updates. The verification record distinguishes functional tests from listening-quality evaluation. The original scope decisions below remain useful design history.
 
 ## Agreed direction
 
@@ -31,7 +31,7 @@ The first wording should guide users toward naming the sound, such as "water bub
 | Cleaned-video export | Separate follow-up; current exports are WAV/ZIP | Outside this prototype |
 | Batch processing | Separate follow-up after single-clip cleanup is proven | Outside this prototype |
 | Desktop updates | Automatic checks, background download/cancel, explicit restart after idle checks | Implemented in source; full packaged upgrades on Windows and both Mac architectures remain release gates. [Guide](../electron/docs/UPDATES.md) |
-| Release number and date | Choose after prototype results and scope agreement | Open |
+| Release number and date | 1.3.0, September 2026 | Release candidate; publish after native checks |
 
 If multiple targets are selected, define how each is processed, previewed and undone. A single combined text description must not be assumed equivalent to reliably removing every named sound. Any later cleanup applied to a previous result must make that source choice visible.
 
@@ -58,7 +58,7 @@ Prototype checks and remaining measurements:
 - Process short previews with two seconds of surrounding context. Retain the full timeline in exports, changing only the displayed preview interval. Compare the audio samples with a full cleanup of the same interval.
 - Present listening-reviewed input, cleaned and removed examples before release. The interface is implemented, but a completed job is not evidence of perceptual quality.
 
-The encoder reproduced all four preset vectors with maximum absolute error below 1.1e-7. Real Windows CPU/CUDA processing and preview/full-interval sample parity passed. See the [verification record](../VERIFICATION.md), [development usage guide](TARGETED-CLEANUP.md) and [AudioShake research notes](AUDIOSHAKE-RESEARCH.md). New dependencies still need native packaged validation on both Mac architectures.
+The encoder reproduced all four preset vectors with maximum absolute error below 1.1e-7. Real Windows CPU/CUDA processing and preview/full-interval sample parity passed. See the [verification record](../VERIFICATION.md), [development usage guide](TARGETED-CLEANUP.md) and [AudioShake research notes](AUDIOSHAKE-RESEARCH.md). The release workflow additionally exercises real prompt encoding and two-pass cleanup with the packaged CPU engine on each platform.
 
 This extends the use of pretrained models. It is not a claim that Bandit or AudioSep has been retrained or improved.
 
@@ -99,4 +99,4 @@ Release checks must include:
 
 ## Release boundary
 
-The approved source prototype includes Easy/Guided modes, local prompts, waveform intervals, ten-second previews, one-to-four passes and saved versions. Each version owns its source copies; deleting a parent does not break a child, but retained versions use more disk space. A completed full cleanup can explicitly become another step's input; previews cannot. Listening quality, rendered UI review and native installer validation remain release gates. No installer builds, paid enrollment or GitHub release publication are included in this prototype. Current community HTML/PDF and platform guides continue documenting the published 1.2.2 installers until a new release is ready.
+The approved source prototype includes Easy/Guided modes, local prompts, waveform intervals, ten-second previews, one-to-four passes and saved versions. Each version owns its source copies; deleting a parent does not break a child, but retained versions use more disk space. A completed full cleanup can explicitly become another step's input; previews cannot. The owner subsequently authorized native installer validation and release publication. Current community HTML/PDF and platform guides document 1.3.0. Listening quality varies by source and remains an explicit experimental limitation; functional verification does not promise successful removal of every described sound.
