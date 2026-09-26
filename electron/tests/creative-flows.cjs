@@ -97,5 +97,12 @@ print(json.dumps({'frames':len(clean),'rate':rate,'channels':clean.shape[1],'out
   console.error(error);process.exitCode = 1;
   if (page) await page.screenshot({ path: path.join(output, 'creative-failure.png') }).catch(() => {});
 }).finally(async () => {
-  if (app) { try { const i = instance();await request(i.base + '/api/stop', i.token, {}); } catch {}await app.close().catch(() => {}); }
+  if (app) {
+    try { const i = instance();await request(i.base + '/api/stop', i.token, {}); } catch {}
+    // Failure teardown owns this disposable app. Do not wait on a native quit
+    // dialog after the engine has already stopped; its owner pipe handles exit.
+    await app.evaluate(({app}) => app.exit(1)).catch(() => {});
+    await Promise.race([app.close().catch(() => {}), delay(5000)]);
+  }
+  if (process.exitCode) process.exit(process.exitCode);
 });

@@ -73,7 +73,9 @@ def encode_text(text, checkpoint_path, tokenizer_path):
                           layer_norm_eps=1e-5, pad_token_id=1, bos_token_id=0, eos_token_id=2)
     config._attn_implementation = "eager"
     # mmap avoids allocating a second complete copy of the 1.2 GB sound checkpoint.
-    state = torch.load(checkpoint_path, map_location="cpu", weights_only=True, mmap=True)["state_dict"]
+    # PyTorch 2.2 (the last Intel Mac wheel) requires a string for mmap;
+    # newer Torch versions also accept pathlib.Path here.
+    state = torch.load(str(checkpoint_path), map_location="cpu", weights_only=True, mmap=True)["state_dict"]
     prefix = "query_encoder.model.text_branch."
     weights = {k.removeprefix(prefix): v for k, v in state.items()
                if k.startswith(prefix) and not k.endswith("position_ids")}

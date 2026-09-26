@@ -105,9 +105,12 @@ async function close() {
     if (mac) Object.assign(process.env, normalizedAppleCredentials(process.env));
     config.extraMetadata = { version: '1.2.99' };
     config.directories = { output: path.join(work, 'baseline') };
-    await build({ targets: (mac ? Platform.MAC : Platform.WINDOWS).createTarget(mac ? ['dir'] : ['nsis'], Arch[process.arch]), config, publish: 'never' });
+    // A dir-only Mac build omits app-update.yml. Build a normal ZIP target so
+    // the signed baseline contains exactly the updater config users receive.
+    await build({ targets: (mac ? Platform.MAC : Platform.WINDOWS).createTarget(mac ? ['zip'] : ['nsis'], Arch[process.arch]), config, publish: 'never' });
     if (mac) {
       const appDir = fs.readdirSync(config.directories.output).find(name => name === 'mac' || name.startsWith('mac-'));
+      assert.ok(fs.existsSync(path.join(config.directories.output, appDir, 'SoundShredder.app/Contents/Resources/app-update.yml')));
       await run('/usr/bin/ditto', [path.join(config.directories.output, appDir, 'SoundShredder.app'), installed]);
       await run('/usr/bin/codesign', ['--verify', '--deep', '--strict', installed]);
       await run('/usr/sbin/spctl', ['--assess', '--type', 'execute', installed]);
@@ -117,10 +120,17 @@ async function close() {
     }
     assert.equal(version(), '1.2.99');
     const saved = path.join(home, 'data', previous.session), before = {};
-    for (const name of ['request.json', 'source.wav', 'mix.wav']) {
+    const source = JSON.parse(fs.readFileSync(path.join(saved, 'request.json')));
+    const mix = JSON.parse(fs.readFileSync(path.join(saved, 'mix.json')));
+    const retained = ['request.json', source.source, 'mix.json', 'output/original.wav', 'output/' + mix.mix];
+    const lab = path.join(saved, 'lab');
+    if (fs.existsSync(path.join(lab, 'state.json'))) {
+      retained.push('lab/state.json', ...fs.readdirSync(path.join(lab, 'assets')).filter(name => name.endsWith('.wav')).map(name => 'lab/assets/' + name));
+    }
+    for (const name of retained) {
       const file = path.join(saved, name);if (fs.existsSync(file)) before[name] = digest(file);
     }
-    assert.ok(before['request.json']);
+    assert.ok(before[source.source] && before['output/original.wav'] && before['output/' + mix.mix], 'Retain and hash real source and output audio.');
     phase('launching the baseline and downloading the update');
     await launch();let update = await panel();
     phase('checking Later followed by ordinary Quit');
