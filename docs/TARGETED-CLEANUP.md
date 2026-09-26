@@ -1,4 +1,4 @@
-# Target a Sound: development guide
+# Target a Sound guide
 
 **SoundShredder 1.3.0.** Guided prompt cleanup is available in the desktop and browser editions. See the [main guide](../README.md) for installation. Source users should rerun their platform setup for the updated dependencies. Targeted separation remains imperfect; preview before accepting a result.
 
@@ -41,4 +41,4 @@ Targeted exports are full-length 32-bit float WAVs. A preview changes only its d
 
 Cancel stops the owned processing job. Retry from the saved source without uploading again. After audio is saved, a brief **Finishing up** state waits for the engine to exit before enabling another cleanup.
 
-The [development plan](NEXT-RELEASE-PLAN.md) lists listening, visual and packaged-platform checks still needed before release.
+See the [1.3.0 verification record](../VERIFICATION.md) for completed native Windows/Mac checks and the [accepted plan](NEXT-RELEASE-PLAN.md) for design history. Prompt cleanup remains experimental; functional tests do not promise successful removal of every described sound.

@@ -1,4 +1,4 @@
-# Mixing Lab — development guide
+# Mixing Lab guide
 
 The Mixing Lab is included in **SoundShredder 1.3.0** as a preview workflow. It uses the local Python server and the same interface inside Electron. Upload, extract stems, mix against the reference picture and export; see the [installation guide](../README.md).
 

@@ -23,9 +23,9 @@ Windows uses the per-user EXE with a selectable application folder and a separat
 
 See [verification](VERIFICATION.md) for native build/upgrade evidence and limitations. Broader consumer hardware, perceptual separation quality and Windows publisher signing remain separate work. Historical versions below retain their original context.
 
-## v1.2.2 - Current Windows and Mac downloads
+## v1.2.2 - Unified Windows and Mac downloads (historical)
 
-- [Latest release](https://github.com/xD4O/SoundShredder/releases/latest) now points to 1.2.2 with the Windows EXE, signed/notarized Apple Silicon and Intel Mac packages, platform guides and checksums together.
+- [The 1.2.2 release](https://github.com/xD4O/SoundShredder/releases/tag/v1.2.2) brought the Windows EXE, signed/notarized Apple Silicon and Intel Mac packages, platform guides and checksums together.
 - Installer bytes match the previously verified platform releases; existing 1.2.2 users do not need to reinstall.
 - The sidebar checker now recognizes 1.2.2 as the latest published version. Updates remain manual. Previous entries below describe their original release channels.
 
