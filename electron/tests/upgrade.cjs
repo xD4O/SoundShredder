@@ -25,10 +25,12 @@ const installed = mac ? '/Applications/SoundShredder.app' : path.join(work, 'ins
 const exe = mac ? path.join(installed, 'Contents/MacOS/SoundShredder') : path.join(installed, 'SoundShredder.exe');
 const env = { ...process.env };delete env.SOUNDSHREDDER_DESKTOP_HOME;delete env.ELECTRON_RUN_AS_NODE;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+let stage = 'starting', engineStatus = null;
+function phase(value) { stage = value;console.log('Upgrade check: ' + value); }
 async function until(fn, timeout = 90000) {
   const end = Date.now() + timeout;
   while (Date.now() < end) { const value = await fn();if (value) return value;await delay(350); }
-  throw Error('Native upgrade check timed out.');
+  throw Error(`Native upgrade check timed out during ${stage}${engineStatus ? ' (engine ' + engineStatus + ')' : ''}.`);
 }
 function run(file, args, timeout = 180000) {
   return new Promise((resolve, reject) => {
@@ -45,12 +47,15 @@ function instance() {
 }
 async function ready() {
   return until(async () => {
-    try { const i = instance(), s = await request(i.base + '/api/state', i.token);return s.status === 'ready' && s; }
+    try { const i = instance(), s = await request(i.base + '/api/state', i.token);engineStatus = s.status;return s.status === 'ready' && s; }
     catch { return false; }
   }, 180000);
 }
 function version() {
   const archive = mac ? path.join(installed, 'Contents/Resources/app.asar') : path.join(installed, 'resources/app.asar');
+  // Native replacement changes the archive header/offsets at the same path.
+  // asar caches that header; a stale one cannot verify the installed version.
+  asar.uncache(archive);
   return JSON.parse(asar.extractFile(archive, 'package.json').toString()).version;
 }
 function digest(file) { return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'); }
@@ -59,7 +64,7 @@ const server = http.createServer((req, res) => {
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) { res.writeHead(404);res.end();return; }
   res.setHeader('Content-Length', fs.statSync(file).size);fs.createReadStream(file).pipe(res);
 });
-let application, page;
+let application, page, updateView;
 async function launch() {
   application = await electron.launch({ executablePath: exe, env, timeout: 60000 });
   page = await application.firstWindow();
@@ -68,13 +73,19 @@ async function launch() {
   return s;
 }
 async function panel() {
-  await application.evaluate((_electron, url) => process.mainModule.require('electron-updater').autoUpdater.setFeedURL({ provider: 'generic', url }), `http://127.0.0.1:${server.address().port}`);
+  await application.evaluate((_electron, url) => {
+    const updater = process.mainModule.require('electron-updater').autoUpdater;
+    globalThis.qaUpdateErrors = [];
+    updater.on('error', error => globalThis.qaUpdateErrors.push(error.message));
+    updater.setFeedURL({ provider: 'generic', url });
+  }, `http://127.0.0.1:${server.address().port}`);
   const opened = application.waitForEvent('window');await page.evaluate(() => window.soundshredderDesktop.openUpdates());
-  const view = await opened;
+  const view = updateView = await opened;
   await view.waitForFunction(() => ['available','current','error'].includes(document.querySelector('#status').textContent), null, { timeout: 30000 });
   if (await view.locator('#status').textContent() !== 'available') await view.locator('#primary').click();
   await view.waitForFunction(() => document.querySelector('#status').textContent === 'available', null, { timeout: 30000 });
-  await view.locator('#primary').click();await view.waitForFunction(() => document.querySelector('#status').textContent === 'downloaded', null, { timeout: 180000 });
+  await view.locator('#primary').click();await view.waitForFunction(() => ['downloaded','error'].includes(document.querySelector('#status').textContent), null, { timeout: 180000 });
+  assert.equal(await view.locator('#status').textContent(), 'downloaded', JSON.stringify(await application.evaluate(() => globalThis.qaUpdateErrors)));
   return view;
 }
 async function close() {
@@ -89,6 +100,7 @@ async function close() {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   try {
     assert.ok(!fs.existsSync(installed), 'The native test installation must not already exist.');
+    phase('building and installing the test baseline');
     const config = mac ? releaseConfig(process.env) : { extends: path.resolve(__dirname, '../electron-builder.yml') };
     if (mac) Object.assign(process.env, normalizedAppleCredentials(process.env));
     config.extraMetadata = { version: '1.2.99' };
@@ -109,22 +121,28 @@ async function close() {
       const file = path.join(saved, name);if (fs.existsSync(file)) before[name] = digest(file);
     }
     assert.ok(before['request.json']);
+    phase('launching the baseline and downloading the update');
     await launch();let update = await panel();
+    phase('checking Later followed by ordinary Quit');
     await update.locator('#later').click();await close();
     assert.equal(version(), '1.2.99', 'Normal Quit after Later must not install.');
+    phase('reopening the baseline and checking pending-save protection');
     await launch();update = await panel();
     await page.evaluate(() => { window.qaAllowUpdate = false;window.soundshredderDesktop.beforeUpdate(() => window.qaAllowUpdate); });
     await update.locator('#primary').click();await update.waitForFunction(() => document.querySelector('#message').textContent.startsWith('Finish or cancel'));
     assert.equal(version(), '1.2.99');await page.evaluate(() => { window.qaAllowUpdate = true; });
+    phase('replacing the app and waiting for automatic relaunch');
     const oldManager = instance().pid;
     const closed = application.waitForEvent('close', { timeout: 180000 });await update.locator('#primary').click();await closed;application = null;
     await until(() => { try { return version() === '1.3.0' && instance().pid !== oldManager; } catch { return false; } }, 180000);
+    phase('checking the updated engine and retained media');
     const s = await ready();
     const jobs = await (await fetch(s.url + '/api/jobs')).json();assert.ok(jobs.some(job => job.id === previous.session));
     for (const [name, hash] of Object.entries(before)) assert.equal(digest(path.join(saved, name)), hash, name + ' must survive updating');
     assert.equal(fs.readFileSync(preference, 'utf8'), selection.toString());
     const auto = instance();await request(auto.base + '/api/stop', auto.token, {});
     await until(() => !fs.existsSync(path.join(home, 'desktop.json')));await delay(2500);
+    phase('reopening the updated application and saved result');
     await launch();assert.equal(await application.evaluate(({app}) => app.getVersion()), '1.3.0');
     const current = await ready();await page.goto(current.url + '/?session=' + previous.session);
     await page.locator('#results').waitFor({ state: 'visible', timeout: 30000 });
@@ -141,6 +159,10 @@ async function close() {
       saved_session: previous.session, retained_files: Object.keys(before), chosen_storage: home, reopened_result: true,
       signed_gatekeeper_after_upgrade: mac }, null, 2));
     console.log('Full packaged upgrade, Later/quit, pending-save protection, retained real session/storage and relaunch passed.');
+  } catch (error) {
+    if (page) await page.screenshot({ path: path.join(evidenceDir, 'upgrade-failure.png') }).catch(() => {});
+    if (updateView && !updateView.isClosed()) await updateView.screenshot({ path: path.join(evidenceDir, 'upgrade-panel-failure.png') }).catch(() => {});
+    throw error;
   } finally {
     await close().catch(() => {});server.closeAllConnections();server.close();
     if (savedPreference) fs.writeFileSync(preference, savedPreference);
