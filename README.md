@@ -25,9 +25,9 @@ Made by **cyr4x** for the **Higgsfield Community**.
 
 </div>
 
-![Akira footage in the video monitor with the cleaned mix selected](docs/images/akira-video-preview.png)
+![Mixing Lab with reference footage at 7.5 seconds, extracted dialogue, music and effects, and an imported ambience track](docs/images/readme-mixing-lab.png)
 
-<p align="center"><sub>Akira worked example: compare the cleaned soundtrack with your footage in the shared desktop and browser workspace.</sub></p>
+<p align="center"><sub>Mixing Lab: your footage, extracted stems and levels at the playhead, together. Ambience is an optional imported track.</sub></p>
 
 ## Your footage. Your soundtrack.
 
@@ -44,6 +44,10 @@ Audio stays on your computer. Initial engine/model downloads need internet; cach
 **Target a Sound · Guided** adds local text prompts, time ranges, short previews and 1–4 cleanup passes. Describe one unwanted sound—such as “water bubbling” or “footsteps”—then compare Before, Cleaned and Removed before saving a version. More passes can catch remnants and can also remove wanted audio. [Prompt cleanup guide](docs/TARGETED-CLEANUP.md).
 
 **Mixing Lab** puts your reference video beside Dialogue, Music, Effects and optional imported Ambience. Upload a file, use the visible **Extract stems** area, then adjust one second, one nominal frame or a selected range. Levels return to their saved values outside that interval. Solo tracks, target one stem, and export channel WAVs, a master, a ZIP or an MP4 with your mix. Automatic ambience extraction and recursive splits are not included. [Mixing Lab guide](docs/MIXING-LAB.md).
+
+![Target a Sound guided workflow with Water bubbling, a 7–11 second interval, 85 percent strength and two cleanup passes](docs/images/readme-targeted-cleanup.png)
+
+<p align="center"><sub>Describe one sound, select its time range, then preview. This saved bubble-cleanup example uses two passes; always audition what was removed.</sub></p>
 
 ## Install the desktop app
 
@@ -134,17 +138,19 @@ The [Akira walkthrough](docs/AKIRA-EXAMPLE.md) uses **TestFootage.mp4**, a rough
 
 Choose **Bubble FX → Water bubbles**, enable **Aggressive multi-pass**, and start with **2 passes**. Try 3 or 4 for stronger cleanup. Limit the range when possible, such as **7–11 seconds**, and listen to **Removed sounds** to check what was taken away.
 
-![Water bubbles cleanup with 85 percent reduction, two passes and a 7–11 second selection](docs/images/bubble-cleanup.png)
-
 More passes take longer and may reduce similar effects. Bubble FX uses preset sound descriptions. For your own description, use **Target a Sound · Guided** or a selected stem's cleanup controls in Mixing Lab. Prompt cleanup remains experimental; preview the removed audio before applying it.
 
 ### Every layer, its own track
 
 Listen to **Dialogue**, **Music**, **Sound effects** and **Removed sounds** independently, with waveforms and individual WAV downloads. Keep playback positions linked to compare the same moment.
 
-![Four isolated tracks from the Akira example with individual WAV downloads](docs/images/akira-isolated-tracks.png)
-
 Normal separation prepares the tracks automatically. In a Bubble FX session, use **Prepare isolated tracks** to separate dialogue, music and effects from the original audio; the cleaned result stays intact.
+
+In **Mixing Lab**, use each channel's download arrow for its selected source stem. Choose **Export mix & stems** to include your volume edits in channel WAVs and the master mix, plus an optional video with the new soundtrack.
+
+![Mixing Lab export panel with separate channel WAVs, a WAV mix, edit report, video and ZIP downloads](docs/images/readme-stem-exports.png)
+
+<p align="center"><sub>Take individual tracks back to your editor, or download the complete mix. The reminder appears when an export predates your latest edits—export again to include them.</sub></p>
 
 ## Sessions and updates
 
