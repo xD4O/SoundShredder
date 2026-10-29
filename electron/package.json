@@ -20,7 +20,7 @@
     "build": "electron-builder --publish never"
   },
   "devDependencies": {
-    "electron": "44.4.1",
+    "electron": "44.9.1",
     "electron-builder": "26.15.3",
     "linkedom": "0.18.13",
     "playwright": "1.63.0"
